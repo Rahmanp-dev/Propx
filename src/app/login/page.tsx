@@ -28,9 +28,9 @@ export default function LoginPage() {
   const [errorMessage, dispatch] = useActionState(authenticate, undefined)
 
   return (
-    <div className="dark flex min-h-screen w-full bg-[#030712] text-white">
+    <div className="dark flex min-h-screen w-full bg-slate-950 text-white">
       {/* ── Left Branding Panel ── */}
-      <div className="relative hidden w-1/2 overflow-hidden lg:flex lg:flex-col lg:justify-between border-r border-white/5 bg-[#030712]">
+      <div className="relative hidden w-1/2 overflow-hidden lg:flex lg:flex-col lg:justify-between border-r border-white/5 bg-slate-950">
         {/* Animated gradient orbs */}
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -left-24 -top-24 h-[500px] w-[500px] rounded-full bg-indigo-600/10 blur-[120px]" />
@@ -101,7 +101,7 @@ export default function LoginPage() {
       </div>
 
       {/* ── Right Form Panel ── */}
-      <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2 lg:px-12 bg-[#030712]">
+      <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2 lg:px-12 bg-slate-950">
         <div className="w-full max-w-md">
           {/* Mobile-only logo */}
           <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
@@ -114,7 +114,7 @@ export default function LoginPage() {
           </div>
 
           <form action={dispatch} className="w-full">
-            <div className="border border-white/10 bg-[#0f172a]/60 shadow-2xl shadow-black/20 backdrop-blur-xl rounded-2xl p-8 space-y-6">
+            <div className="border border-white/10 bg-slate-900/60 shadow-2xl shadow-black/20 backdrop-blur-xl rounded-2xl p-8 space-y-6">
               <div className="space-y-2 text-center">
                 <h2 className="text-2xl font-bold tracking-tight text-white">
                   Welcome back
@@ -138,7 +138,7 @@ export default function LoginPage() {
                       type="email"
                       placeholder="you@example.com"
                       required
-                      className="h-11 w-full rounded-lg border border-white/10 bg-[#030712]/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-[#030712]/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                      className="h-11 w-full rounded-lg border border-white/10 bg-slate-950/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-slate-950/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
                     />
                   </div>
                 </div>
@@ -164,7 +164,7 @@ export default function LoginPage() {
                       type="password"
                       placeholder="••••••••"
                       required
-                      className="h-11 w-full rounded-lg border border-white/10 bg-[#030712]/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-[#030712]/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                      className="h-11 w-full rounded-lg border border-white/10 bg-slate-950/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-slate-950/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
                     />
                   </div>
                 </div>

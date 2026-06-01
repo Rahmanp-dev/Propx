@@ -207,9 +207,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="dark flex min-h-screen w-full bg-[#030712] text-white selection:bg-indigo-500/30">
+    <div className="dark flex min-h-screen w-full bg-slate-950 text-white selection:bg-indigo-500/30">
       {/* ── Left Branding Panel ── */}
-      <div className="relative hidden w-1/2 overflow-hidden lg:flex lg:flex-col lg:justify-between border-r border-white/5 bg-[#030712]">
+      <div className="relative hidden w-1/2 overflow-hidden lg:flex lg:flex-col lg:justify-between border-r border-white/5 bg-slate-950">
         {/* Animated gradient orbs */}
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -left-24 -top-24 h-[500px] w-[500px] rounded-full bg-indigo-600/10 blur-[120px]" />
@@ -279,7 +279,7 @@ export default function RegisterPage() {
       </div>
 
       {/* ── Right Form Panel ── */}
-      <div className="flex w-full items-center justify-center px-4 py-8 lg:w-1/2 lg:px-8 bg-[#030712] overflow-y-auto">
+      <div className="flex w-full items-center justify-center px-4 py-8 lg:w-1/2 lg:px-8 bg-slate-950 overflow-y-auto">
         <div className="w-full max-w-lg pb-12">
           {/* Mobile-only logo */}
           <div className="mb-8 flex items-center justify-center gap-3 lg:hidden mt-6">
@@ -293,7 +293,7 @@ export default function RegisterPage() {
             </Link>
           </div>
 
-          <div className="border border-white/10 bg-[#0f172a]/60 shadow-2xl shadow-black/20 backdrop-blur-xl rounded-2xl p-6 md:p-8">
+          <div className="border border-white/10 bg-slate-900/60 shadow-2xl shadow-black/20 backdrop-blur-xl rounded-2xl p-6 md:p-8">
             
             {/* Step Progress Header */}
             <div className="mb-8 flex flex-col items-center">
@@ -304,7 +304,7 @@ export default function RegisterPage() {
                       className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300 ${
                         step >= s
                           ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/20'
-                          : 'bg-[#1e293b] text-slate-500 border border-white/5'
+                          : 'bg-slate-800 text-slate-500 border border-white/5'
                       }`}
                     >
                       {step > s ? <Check className="h-4 w-4" /> : s}
@@ -312,7 +312,7 @@ export default function RegisterPage() {
                     {s < 4 && (
                       <div
                         className={`h-0.5 w-full mx-1 rounded transition-all duration-300 ${
-                          step > s ? 'bg-indigo-500/50' : 'bg-[#1e293b]'
+                          step > s ? 'bg-indigo-500/50' : 'bg-slate-800'
                         }`}
                       />
                     )}
@@ -348,7 +348,7 @@ export default function RegisterPage() {
                         placeholder="Rajesh Kumar"
                         value={ownerName}
                         onChange={(e) => setOwnerName(e.target.value)}
-                        className="h-11 w-full rounded-lg border border-white/10 bg-[#030712]/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-[#030712]/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                        className="h-11 w-full rounded-lg border border-white/10 bg-slate-950/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-slate-950/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
                       />
                     </div>
                   </div>
@@ -361,7 +361,7 @@ export default function RegisterPage() {
                         placeholder="9848012345"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="h-11 w-full rounded-lg border border-white/10 bg-[#030712]/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-[#030712]/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                        className="h-11 w-full rounded-lg border border-white/10 bg-slate-950/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-slate-950/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
                       />
                     </div>
                   </div>
@@ -377,7 +377,7 @@ export default function RegisterPage() {
                         placeholder="rajesh@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="h-11 w-full rounded-lg border border-white/10 bg-[#030712]/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-[#030712]/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                        className="h-11 w-full rounded-lg border border-white/10 bg-slate-950/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-slate-950/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
                       />
                     </div>
                   </div>
@@ -390,7 +390,7 @@ export default function RegisterPage() {
                         placeholder="Hyderabad"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
-                        className="h-11 w-full rounded-lg border border-white/10 bg-[#030712]/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-[#030712]/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                        className="h-11 w-full rounded-lg border border-white/10 bg-slate-950/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-slate-950/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
                       />
                     </div>
                   </div>
@@ -406,7 +406,7 @@ export default function RegisterPage() {
                         placeholder="Min. 6 characters"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="h-11 w-full rounded-lg border border-white/10 bg-[#030712]/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-[#030712]/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                        className="h-11 w-full rounded-lg border border-white/10 bg-slate-950/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-slate-950/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
                       />
                     </div>
                   </div>
@@ -419,7 +419,7 @@ export default function RegisterPage() {
                         placeholder="Repeat your password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="h-11 w-full rounded-lg border border-white/10 bg-[#030712]/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-[#030712]/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                        className="h-11 w-full rounded-lg border border-white/10 bg-slate-950/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-slate-950/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
                       />
                     </div>
                   </div>
@@ -456,14 +456,14 @@ export default function RegisterPage() {
                       placeholder="e.g. Limra Pasha Residency"
                       value={businessName}
                       onChange={(e) => setBusinessName(e.target.value)}
-                      className="h-11 w-full rounded-lg border border-white/10 bg-[#030712]/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-[#030712]/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                      className="h-11 w-full rounded-lg border border-white/10 bg-slate-950/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-slate-950/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
                     />
                   </div>
                 </div>
 
                 {/* Billing toggle */}
                 <div className="flex justify-center pt-2">
-                  <div className="bg-[#030712]/40 rounded-full p-1 border border-white/10 flex items-center">
+                  <div className="bg-slate-950/40 rounded-full p-1 border border-white/10 flex items-center">
                     <button
                       onClick={() => setBillingCycle('MONTHLY')}
                       className={`px-5 py-2 rounded-full text-xs font-semibold transition-all duration-200 ${
@@ -572,7 +572,7 @@ export default function RegisterPage() {
                 {/* UPI Details */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-indigo-200/70">1. Pay via UPI</label>
-                  <div className="bg-[#030712]/40 rounded-xl p-4 border border-white/10">
+                  <div className="bg-slate-950/40 rounded-xl p-4 border border-white/10">
                     <div className="flex items-center justify-between bg-white/5 rounded-lg px-4 py-3 border border-white/5 mb-3">
                       <span className="font-mono font-semibold text-white text-sm">{upiId}</span>
                       <button
@@ -639,7 +639,7 @@ export default function RegisterPage() {
                       placeholder="12 digit UTR / Ref Number"
                       value={utrNumber}
                       onChange={(e) => setUtrNumber(e.target.value)}
-                      className="h-11 w-full rounded-lg border border-white/10 bg-[#030712]/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-[#030712]/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                      className="h-11 w-full rounded-lg border border-white/10 bg-slate-950/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-slate-950/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
                     />
                   </div>
                 </div>
@@ -680,7 +680,7 @@ export default function RegisterPage() {
                     Your details and payment proof have been received. We'll verify your transaction and activate your account.
                   </p>
                 </div>
-                <div className="bg-[#030712]/40 rounded-xl p-5 text-left border border-white/5 space-y-4">
+                <div className="bg-slate-950/40 rounded-xl p-5 text-left border border-white/5 space-y-4">
                   <h3 className="font-semibold text-indigo-300 text-sm border-b border-white/5 pb-2">Next Steps</h3>
                   <ul className="space-y-3 text-sm text-indigo-200/70">
                     <li className="flex items-start gap-3">
