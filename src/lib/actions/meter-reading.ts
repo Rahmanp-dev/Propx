@@ -5,6 +5,19 @@ import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { ObjectId } from "mongodb"
+import { auth } from "@/lib/auth"
+
+async function getOrgContext() {
+    const session = await auth()
+    if (!session?.user) return null
+    const user = session.user as any
+    return {
+        userId: user.id,
+        role: user.role as string,
+        organizationId: user.organizationId as string | null,
+        isSuperAdmin: user.role === 'SUPER_ADMIN',
+    }
+}
 
 const recordReadingSchema = z.object({
     flatId: z.string(),
@@ -16,6 +29,9 @@ const recordReadingSchema = z.object({
 export type RecordReadingInput = z.infer<typeof recordReadingSchema>
 
 export async function recordMeterReading(data: RecordReadingInput) {
+    const orgCtx = await getOrgContext()
+    if (!orgCtx) return { error: "Not authenticated" }
+
     const result = recordReadingSchema.safeParse(data)
 
     if (!result.success) {
@@ -25,8 +41,16 @@ export async function recordMeterReading(data: RecordReadingInput) {
     const { flatId, reading, month, year } = result.data
 
     try {
+        // Verify flat belongs to user's org
+        if (!orgCtx.isSuperAdmin) {
+            const flat = await prisma.flat.findFirst({
+                where: { id: flatId, building: { organizationId: orgCtx.organizationId! } }
+            })
+            if (!flat) return { error: "Flat not found" }
+        }
+
         const client = await clientPromise
-        const db = client.db("lpm_rental")
+        const db = client.db("propx")
 
         // 1. Save the meter reading
         await db.collection("MeterReading").updateOne(
@@ -128,6 +152,17 @@ export async function recordMeterReading(data: RecordReadingInput) {
 
 export async function getFlatReadings(flatId: string) {
     try {
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
+
+        // Verify flat belongs to user's org
+        if (!orgCtx.isSuperAdmin) {
+            const flat = await prisma.flat.findFirst({
+                where: { id: flatId, building: { organizationId: orgCtx.organizationId! } }
+            })
+            if (!flat) return { error: "Flat not found" }
+        }
+
         const readings = await prisma.meterReading.findMany({
             where: { flatId },
             orderBy: [{ year: 'desc' }, { month: 'desc' }],

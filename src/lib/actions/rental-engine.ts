@@ -4,11 +4,27 @@ import prisma from "@/lib/prisma"
 import clientPromise from "@/lib/mongo"
 import { revalidatePath } from "next/cache"
 import { ObjectId } from "mongodb"
+import { auth } from "@/lib/auth"
+
+async function getOrgContext() {
+    const session = await auth()
+    if (!session?.user) return null
+    const user = session.user as any
+    return {
+        userId: user.id,
+        role: user.role as string,
+        organizationId: user.organizationId as string | null,
+        isSuperAdmin: user.role === 'SUPER_ADMIN',
+    }
+}
 
 export async function generateMonthlyDues() {
     try {
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
+
         const client = await clientPromise
-        const db = client.db("lpm_rental")
+        const db = client.db("propx")
 
         const today = new Date()
         const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1)
@@ -18,16 +34,23 @@ export async function generateMonthlyDues() {
         const prevMonthIndex = readingMonth === 0 ? 11 : readingMonth - 1
         const prevYearIndex = readingMonth === 0 ? readingYear - 1 : readingYear
 
-        // Get all active tenants with Flat AND Building details
+        // Get all active tenants with Flat AND Building details — scoped by org
+        const tenantWhere: Record<string, any> = {
+            isActive: true,
+            leaseStartDate: { lte: today },
+            OR: [
+                { leaseEndDate: null },
+                { leaseEndDate: { gte: today } }
+            ]
+        }
+
+        // Scope through flat→building→org
+        if (!orgCtx.isSuperAdmin) {
+            tenantWhere.flat = { building: { organizationId: orgCtx.organizationId! } }
+        }
+
         const activeTenants = await prisma.tenant.findMany({
-            where: {
-                isActive: true,
-                leaseStartDate: { lte: today },
-                OR: [
-                    { leaseEndDate: null },
-                    { leaseEndDate: { gte: today } }
-                ]
-            },
+            where: tenantWhere,
             include: {
                 flat: {
                     include: {

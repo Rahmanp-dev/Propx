@@ -29,7 +29,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                             id: "admin-env-var",
                             name: "Platform Admin",
                             email: email,
-                            role: "SUPER_ADMIN"
+                            role: "SUPER_ADMIN",
+                            organizationId: null,
                         } as any;
                     }
 
@@ -38,7 +39,15 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                     if (!user) return null;
 
                     const passwordsMatch = await bcrypt.compare(password, user.password);
-                    if (passwordsMatch) return user;
+                    if (passwordsMatch) {
+                        return {
+                            id: user.id,
+                            name: user.name,
+                            email: user.email,
+                            role: user.role,
+                            organizationId: user.organizationId,
+                        } as any;
+                    }
                 }
 
                 console.log('Invalid credentials');

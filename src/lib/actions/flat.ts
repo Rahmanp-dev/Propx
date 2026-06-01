@@ -1,9 +1,23 @@
 'use server'
 
 import clientPromise from "@/lib/mongo"
+import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { ObjectId } from "mongodb"
+import { auth } from "@/lib/auth"
+
+async function getOrgContext() {
+    const session = await auth()
+    if (!session?.user) return null
+    const user = session.user as any
+    return {
+        userId: user.id,
+        role: user.role as string,
+        organizationId: user.organizationId as string | null,
+        isSuperAdmin: user.role === 'SUPER_ADMIN',
+    }
+}
 
 const createFlatSchema = z.object({
     buildingId: z.string(),
@@ -18,6 +32,9 @@ const createFlatSchema = z.object({
 export type CreateFlatInput = z.infer<typeof createFlatSchema>
 
 export async function createFlat(data: CreateFlatInput) {
+    const orgCtx = await getOrgContext()
+    if (!orgCtx) return { error: "Not authenticated" }
+
     const result = createFlatSchema.safeParse(data)
 
     if (!result.success) {
@@ -27,8 +44,16 @@ export async function createFlat(data: CreateFlatInput) {
     const { buildingId, floorId, flatNumber, flatType, rentAmount, maintenanceAmount, depositAmount } = result.data
 
     try {
+        // Verify building belongs to user's org
+        if (!orgCtx.isSuperAdmin) {
+            const building = await prisma.building.findFirst({
+                where: { id: buildingId, organizationId: orgCtx.organizationId! }
+            })
+            if (!building) return { error: "Building not found" }
+        }
+
         const client = await clientPromise
-        const db = client.db("lpm_rental")
+        const db = client.db("propx")
 
         const now = new Date()
         const flatDoc = {

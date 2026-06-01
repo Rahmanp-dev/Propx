@@ -1,11 +1,16 @@
 import { getFinanceStats } from "@/lib/actions/finance"
+import { getPendingVerifications } from "@/lib/actions/payment-proof"
 import { GenerateDuesButton } from "@/components/dashboard/generate-dues-button"
 import { FinanceCharts } from "@/components/dashboard/finance-charts"
+import { PendingVerifications } from "./pending-verifications"
 
 export const dynamic = 'force-dynamic'
 
 export default async function FinancePage() {
-    const { data, error } = await getFinanceStats()
+    const [{ data, error }, verificationsResult] = await Promise.all([
+        getFinanceStats(),
+        getPendingVerifications(),
+    ])
 
     if (error || !data) {
         return (
@@ -17,6 +22,8 @@ export default async function FinancePage() {
         )
     }
 
+    const pendingProofs = verificationsResult?.data || []
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -26,6 +33,11 @@ export default async function FinancePage() {
                 </div>
                 <GenerateDuesButton />
             </div>
+
+            {/* Pending Verifications Section */}
+            {pendingProofs.length > 0 && (
+                <PendingVerifications proofs={pendingProofs} />
+            )}
 
             <FinanceCharts data={data} />
         </div>

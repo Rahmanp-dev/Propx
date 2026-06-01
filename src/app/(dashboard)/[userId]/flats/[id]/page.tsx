@@ -1,6 +1,6 @@
 import { getFlatDetails } from "@/lib/actions/flat-details"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, User, CreditCard, History, Zap } from "lucide-react"
+import { ArrowLeft, User, CreditCard, History, Zap, KeyRound } from "lucide-react"
 import Link from "next/link"
 import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,8 +28,8 @@ export default async function FlatPage({ params }: { params: Promise<{ id: strin
         return <div className="p-8 text-center text-muted-foreground">Flat not found</div>
     }
 
-    const tenant = flat.Tenant[0]
-    const currentPayment = flat.payments[0]
+    const tenant = flat.tenants?.[0]
+    const currentPayment = flat.payments?.[0]
 
     return (
         <div className="space-y-6">
@@ -68,6 +68,14 @@ export default async function FlatPage({ params }: { params: Promise<{ id: strin
                                 <div>
                                     <div className="text-2xl font-bold">{tenant.fullName}</div>
                                     <div className="text-sm text-muted-foreground">{tenant.phone}</div>
+                                    {(tenant as any).tenantPin && (
+                                        <div className="flex items-center gap-1 mt-1">
+                                            <KeyRound className="h-3 w-3 text-amber-600" />
+                                            <Badge variant="outline" className="text-xs font-mono bg-amber-50 border-amber-200 text-amber-700">
+                                                Login PIN: {(tenant as any).tenantPin}
+                                            </Badge>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                     <div>

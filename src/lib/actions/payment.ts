@@ -5,6 +5,19 @@ import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { ObjectId } from "mongodb"
+import { auth } from "@/lib/auth"
+
+async function getOrgContext() {
+    const session = await auth()
+    if (!session?.user) return null
+    const user = session.user as any
+    return {
+        userId: user.id,
+        role: user.role as string,
+        organizationId: user.organizationId as string | null,
+        isSuperAdmin: user.role === 'SUPER_ADMIN',
+    }
+}
 
 const logPaymentSchema = z.object({
     paymentId: z.string(),
@@ -16,6 +29,9 @@ const logPaymentSchema = z.object({
 export type LogPaymentInput = z.infer<typeof logPaymentSchema>
 
 export async function logPayment(data: LogPaymentInput) {
+    const orgCtx = await getOrgContext()
+    if (!orgCtx) return { error: "Not authenticated" }
+
     const result = logPaymentSchema.safeParse(data)
 
     if (!result.success) {
@@ -27,10 +43,21 @@ export async function logPayment(data: LogPaymentInput) {
     try {
         const payment = await prisma.payment.findUnique({
             where: { id: paymentId },
-            include: { flat: true }
+            include: {
+                flat: {
+                    include: {
+                        building: { select: { organizationId: true } }
+                    }
+                }
+            }
         })
 
         if (!payment) return { error: "Payment record not found" }
+
+        // Verify org ownership
+        if (!orgCtx.isSuperAdmin && payment.flat.building.organizationId !== orgCtx.organizationId) {
+            return { error: "Payment record not found" }
+        }
 
         const newAmountPaid = payment.amountPaid + amount
         const newBalance = payment.totalDue - newAmountPaid
@@ -43,7 +70,7 @@ export async function logPayment(data: LogPaymentInput) {
         }
 
         const client = await clientPromise
-        const db = client.db("lpm_rental")
+        const db = client.db("propx")
 
         const updateNotes = notes
             ? (payment.notes ? `${payment.notes}\n${notes}` : notes)
@@ -84,7 +111,7 @@ export async function logPayment(data: LogPaymentInput) {
 async function updateFutureBalances(tenantId: string, currentPaymentMonth: Date, newBalanceFromCurrent: number) {
     try {
         const client = await clientPromise
-        const db = client.db("lpm_rental")
+        const db = client.db("propx")
 
         const futurePayments = await db.collection("Payment").find({
             tenantId: new ObjectId(tenantId),

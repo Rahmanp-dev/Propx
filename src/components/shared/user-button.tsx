@@ -1,16 +1,7 @@
 "use client"
 
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { handleSignOut } from "@/lib/actions/auth"
+import { LogOut } from "lucide-react"
+import { signOut } from "next-auth/react"
 
 interface UserButtonProps {
     user?: {
@@ -23,30 +14,27 @@ interface UserButtonProps {
 export function UserButton({ user }: UserButtonProps) {
     if (!user) return null
 
+    const initials = (user.name || "U").charAt(0).toUpperCase()
+
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                        <AvatarImage src="/avatars/01.png" alt={user.name || ""} />
-                        <AvatarFallback>{user.name?.[0] || "U"}</AvatarFallback>
-                    </Avatar>
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user.name}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                            {user.email}
-                        </p>
-                    </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => handleSignOut()} className="cursor-pointer">
-                    Log out
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex flex-col gap-2 w-full">
+            <div className="flex items-center gap-3 px-3 py-3 rounded-lg bg-white/5 border border-white/10">
+                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm shrink-0 shadow-inner">
+                    {initials}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{user.name || "User"}</p>
+                    <p className="text-[10px] text-zinc-400 truncate">{user.email}</p>
+                </div>
+            </div>
+            
+            <button 
+                onClick={() => signOut({ callbackUrl: '/login' })}
+                className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:text-white hover:bg-red-500/20 border border-transparent hover:border-red-500/30 transition-colors"
+            >
+                <LogOut className="h-4 w-4" />
+                Logout
+            </button>
+        </div>
     )
 }

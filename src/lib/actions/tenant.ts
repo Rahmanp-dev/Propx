@@ -1,11 +1,28 @@
 'use server'
 
 import clientPromise from "@/lib/mongo"
+import prisma from "@/lib/prisma"
 import { onboardTenantSchema, OnboardTenantInput } from "@/lib/validations"
 import { revalidatePath } from "next/cache"
 import { ObjectId } from "mongodb"
+import { auth } from "@/lib/auth"
+
+async function getOrgContext() {
+    const session = await auth()
+    if (!session?.user) return null
+    const user = session.user as any
+    return {
+        userId: user.id,
+        role: user.role as string,
+        organizationId: user.organizationId as string | null,
+        isSuperAdmin: user.role === 'SUPER_ADMIN',
+    }
+}
 
 export async function onboardTenant(data: OnboardTenantInput) {
+    const orgCtx = await getOrgContext()
+    if (!orgCtx) return { error: "Not authenticated" }
+
     const result = onboardTenantSchema.safeParse(data)
 
     if (!result.success) {
@@ -16,7 +33,7 @@ export async function onboardTenant(data: OnboardTenantInput) {
 
     try {
         const client = await clientPromise
-        const db = client.db("lpm_rental")
+        const db = client.db("propx")
 
         // 0. Record Initial Meter Reading if provided
         if (initialMeterReading !== undefined && initialMeterReading !== null) {
@@ -44,11 +61,26 @@ export async function onboardTenant(data: OnboardTenantInput) {
             )
         }
 
-        // 1. Get the flat to find its building
+        if (!ObjectId.isValid(flatId)) return { error: "Invalid Flat ID" }
+
+        // 1. Get the flat to find its building and verify org ownership
         const flat = await db.collection("Flat").findOne({ _id: new ObjectId(flatId) })
+        if (!flat) return { error: "Flat not found" }
+
+        // Verify building belongs to user's org
+        if (!orgCtx.isSuperAdmin) {
+            const building = await db.collection("Building").findOne({ _id: flat.buildingId })
+            if (!building || building.organizationId?.toString() !== orgCtx.organizationId) {
+                return { error: "Flat not found" }
+            }
+        }
 
         // 2. Native Insert Tenant
         const now = new Date()
+
+        // Auto-generate a secure random 4-digit tenant PIN
+        const tenantPin = Math.floor(1000 + Math.random() * 9000).toString()
+
         const tenantDoc = {
             fullName,
             phone,
@@ -57,6 +89,7 @@ export async function onboardTenant(data: OnboardTenantInput) {
             leaseStartDate,
             leaseEndDate,
             assignedFlatId: new ObjectId(flatId),
+            tenantPin,
             isActive: true,
             createdAt: now,
             updatedAt: now
@@ -92,9 +125,24 @@ export async function onboardTenant(data: OnboardTenantInput) {
 
 export async function offboardTenant(flatId: string) {
     try {
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
+
         const client = await clientPromise
-        const db = client.db("lpm_rental")
+        const db = client.db("propx")
+        if (!ObjectId.isValid(flatId)) return { error: "Invalid Flat ID" }
         const fId = new ObjectId(flatId)
+
+        // Verify flat's building belongs to org
+        const flat = await db.collection("Flat").findOne({ _id: fId })
+        if (!flat) return { error: "Flat not found" }
+
+        if (!orgCtx.isSuperAdmin) {
+            const building = await db.collection("Building").findOne({ _id: flat.buildingId })
+            if (!building || building.organizationId?.toString() !== orgCtx.organizationId) {
+                return { error: "Flat not found" }
+            }
+        }
 
         const tenant = await db.collection("Tenant").findOne({
             assignedFlatId: fId,
@@ -105,7 +153,6 @@ export async function offboardTenant(flatId: string) {
             return { error: "No active tenant found for this flat" }
         }
 
-        const flat = await db.collection("Flat").findOne({ _id: fId })
         const now = new Date()
 
         // Deactivate tenant
@@ -132,7 +179,7 @@ export async function offboardTenant(flatId: string) {
         )
 
         revalidatePath(`/flats/${flatId}`)
-        if (flat) revalidatePath(`/buildings/${flat.buildingId.toString()}`)
+        revalidatePath(`/buildings/${flat.buildingId.toString()}`)
         revalidatePath('/dashboard')
         revalidatePath('/tenants')
         revalidatePath('/')

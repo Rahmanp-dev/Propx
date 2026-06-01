@@ -4,8 +4,31 @@ import prisma from "@/lib/prisma"
 import clientPromise from "@/lib/mongo"
 import { createBuildingSchema, CreateBuildingInput } from "@/lib/validations"
 import { revalidatePath } from "next/cache"
+import { auth } from "@/lib/auth"
+
+// ==========================================
+// ORG CONTEXT HELPER
+// ==========================================
+
+async function getOrgContext() {
+    const session = await auth()
+    if (!session?.user) return null
+    const user = session.user as any
+    return {
+        userId: user.id,
+        role: user.role as string,
+        organizationId: user.organizationId as string | null,
+        isSuperAdmin: user.role === 'SUPER_ADMIN',
+    }
+}
 
 export async function createBuilding(data: CreateBuildingInput) {
+    const orgCtx = await getOrgContext()
+    if (!orgCtx) return { error: "Not authenticated" }
+    if (!orgCtx.organizationId && !orgCtx.isSuperAdmin) {
+        return { error: "No organization associated with this account" }
+    }
+
     const result = createBuildingSchema.safeParse(data)
 
     if (!result.success) {
@@ -16,10 +39,11 @@ export async function createBuilding(data: CreateBuildingInput) {
 
     try {
         const client = await clientPromise
-        const db = client.db("lpm_rental")
+        const db = client.db("propx")
+        const { ObjectId } = await import('mongodb')
 
         const now = new Date()
-        const buildingDoc = {
+        const buildingDoc: Record<string, any> = {
             name,
             address,
             totalFloors,
@@ -31,6 +55,11 @@ export async function createBuilding(data: CreateBuildingInput) {
             defaultRentBHK3: defaultRentBHK3 ?? 16000,
             createdAt: now,
             updatedAt: now
+        }
+
+        // Add organizationId for the building
+        if (orgCtx.organizationId) {
+            buildingDoc.organizationId = new ObjectId(orgCtx.organizationId)
         }
 
         const insertResult = await db.collection("Building").insertOne(buildingDoc)
@@ -59,7 +88,16 @@ export async function createBuilding(data: CreateBuildingInput) {
 
 export async function getBuildings() {
     try {
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
+
+        // Scope by organization (super admin sees all)
+        const where = orgCtx.isSuperAdmin
+            ? {}
+            : { organizationId: orgCtx.organizationId! }
+
         const buildings = await prisma.building.findMany({
+            where,
             include: {
                 floors: true,
                 flats: {

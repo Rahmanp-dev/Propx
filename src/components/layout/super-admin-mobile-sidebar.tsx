@@ -1,0 +1,31 @@
+"use client"
+
+import { Menu } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { SuperAdminSidebar } from "@/components/layout/super-admin-sidebar"
+import { useState, useEffect } from "react"
+import { usePathname } from "next/navigation"
+
+export function SuperAdminMobileSidebar({ user }: { user?: any }) {
+    const [open, setOpen] = useState(false)
+    const pathname = usePathname()
+
+    // Close sidebar on route change
+    useEffect(() => {
+        setOpen(false)
+    }, [pathname])
+
+    return (
+        <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                    <Menu className="h-6 w-6 text-gray-700" />
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 bg-[#0f172a] border-r-indigo-950 text-white w-72 max-w-[288px]">
+                <SuperAdminSidebar user={user} />
+            </SheetContent>
+        </Sheet>
+    )
+}

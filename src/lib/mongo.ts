@@ -4,9 +4,10 @@ import { MongoClient } from 'mongodb'
 if (!process.env.DATABASE_URL) {
     throw new Error('Invalid/Missing environment variable: "DATABASE_URL"')
 }
+
 let uri = process.env.DATABASE_URL
-if (!uri.includes("lpm_rental")) {
-    uri = uri.replace("mongodb.net/?", "mongodb.net/lpm_rental?")
+if (!uri.includes("propx")) {
+    uri = uri.replace("mongodb.net/?", "mongodb.net/propx?")
 }
 const options = {}
 
@@ -14,8 +15,6 @@ let client
 let clientPromise: Promise<MongoClient>
 
 if (process.env.NODE_ENV === 'development') {
-    // In development mode, use a global variable so that the value
-    // is preserved across module reloads caused by HMR (Hot Module Replacement).
     let globalWithMongo = global as typeof globalThis & {
         _mongoClientPromise?: Promise<MongoClient>
     }
@@ -26,9 +25,9 @@ if (process.env.NODE_ENV === 'development') {
     }
     clientPromise = globalWithMongo._mongoClientPromise
 } else {
-    // In production mode, it's best to not use a global variable.
     client = new MongoClient(uri, options)
     clientPromise = client.connect()
 }
 
 export default clientPromise
+

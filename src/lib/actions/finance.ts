@@ -1,15 +1,41 @@
 'use server'
 
 import prisma from "@/lib/prisma"
+import { auth } from "@/lib/auth"
+
+async function getOrgContext() {
+    const session = await auth()
+    if (!session?.user) return null
+    const user = session.user as any
+    return {
+        userId: user.id,
+        role: user.role as string,
+        organizationId: user.organizationId as string | null,
+        isSuperAdmin: user.role === 'SUPER_ADMIN',
+    }
+}
 
 export async function getFinanceStats() {
     try {
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
+
         const today = new Date()
         const startOfYear = new Date(today.getFullYear(), 0, 1)
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
 
+        // Org-scoped payment filter
+        const paymentWhere = orgCtx.isSuperAdmin
+            ? {}
+            : { flat: { building: { organizationId: orgCtx.organizationId! } } }
+
+        const buildingWhere = orgCtx.isSuperAdmin
+            ? {}
+            : { organizationId: orgCtx.organizationId! }
+
         // 1. Overall aggregation
         const paymentStats = await prisma.payment.aggregate({
+            where: paymentWhere,
             _sum: {
                 totalDue: true,
                 amountPaid: true,
@@ -24,7 +50,8 @@ export async function getFinanceStats() {
         // 2. Current month stats
         const currentMonthStats = await prisma.payment.aggregate({
             where: {
-                month: { gte: startOfMonth }
+                month: { gte: startOfMonth },
+                ...paymentWhere,
             },
             _sum: {
                 totalDue: true,
@@ -34,19 +61,26 @@ export async function getFinanceStats() {
             _count: true
         })
 
-        // 3. Payment status breakdown
+        // 3. Payment status breakdown for current month
         const statusBreakdown = await prisma.payment.groupBy({
             by: ['status'],
             _count: true,
+            _sum: {
+                totalDue: true,
+                amountPaid: true,
+                balance: true,
+            },
             where: {
-                month: { gte: startOfMonth }
+                month: { gte: startOfMonth },
+                ...paymentWhere,
             }
         })
 
-        // 4. Monthly chart data
+        // 4. Monthly chart data (Jan-Dec)
         const yearlyPayments = await prisma.payment.findMany({
             where: {
-                month: { gte: startOfYear }
+                month: { gte: startOfYear },
+                ...paymentWhere,
             },
             select: {
                 month: true,
@@ -72,6 +106,7 @@ export async function getFinanceStats() {
 
         // 5. Building-wise collection summary
         const buildingStats = await prisma.building.findMany({
+            where: buildingWhere,
             select: {
                 id: true,
                 name: true,
@@ -116,16 +151,23 @@ export async function getFinanceStats() {
             }
         })
 
-        // 6. Recent Transactions
+        // 6. Recent Transactions with tenant name, flat number, flat type, building name
         const recentTransactions = await prisma.payment.findMany({
-            take: 10,
+            take: 15,
             orderBy: { updatedAt: 'desc' },
             where: {
-                amountPaid: { gt: 0 }
+                amountPaid: { gt: 0 },
+                ...paymentWhere,
             },
             include: {
-                tenant: { select: { fullName: true } },
-                flat: { select: { flatNumber: true, flatType: true, building: { select: { name: true } } } }
+                tenant: { select: { fullName: true, phone: true } },
+                flat: {
+                    select: {
+                        flatNumber: true,
+                        flatType: true,
+                        building: { select: { name: true } }
+                    }
+                }
             }
         })
 

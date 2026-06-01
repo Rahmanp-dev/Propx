@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#fff;color:#1a1a1a;padding:1.25rem;font-size:14px}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem}
+.nb{font-size:12px;font-weight:500;padding:5px 13px;border-radius:20px;border:0.5px solid #ddd;background:#f5f5f5;color:#555;cursor:pointer;transition:all .15s}
+.nb.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.ph h2{font-size:15px;font-weight:500;margin-bottom:3px}
+.ph p{font-size:12px;color:#666;line-height:1.6;margin-bottom:1rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.card{background:#f9f9f9;border:0.5px solid #e0e0e0;border-radius:8px;padding:11px 13px}
+.card.win{border:2px solid #1a6b3c}
+.ctitle{font-size:12px;font-weight:500;margin-bottom:4px}
+.card p{font-size:12px;color:#555;line-height:1.55}
+.tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;margin-bottom:6px}
+.tag.r{background:#fde8e8;color:#c0392b}
+.tag.o{background:#fff3e0;color:#b06000}
+.tag.g{background:#e8f5e9;color:#1a6b3c}
+.divider{height:0.5px;background:#e8e8e8;margin:12px 0}
+.slbl{font-size:10px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:#aaa;margin-bottom:8px}
+.step{display:flex;gap:12px;margin-bottom:16px;align-items:flex-start}
+.snum{min-width:32px;height:32px;border-radius:50%;background:#f0f0f0;border:0.5px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#666;flex-shrink:0;margin-top:2px}
+.snum.done{background:#1a6b3c;border-color:#1a6b3c;color:#fff}
+.sbody .stitle{font-size:13px;font-weight:500;margin-bottom:3px}
+.sbody p{font-size:12px;color:#555;line-height:1.55}
+.metric{background:#f5f5f5;border-radius:8px;padding:10px 12px;text-align:center}
+.mval{font-size:18px;font-weight:500}
+.mlbl{font-size:10px;color:#888;margin-top:2px}
+.hl{background:#f0faf4;border:0.5px solid #a8d5b8;border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.hl p{font-size:12px;color:#1a4a2e;line-height:1.6}
+.hl-blue{background:#e8f4fd;border:0.5px solid #b0d4f0;border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.hl-blue p{font-size:12px;color:#1a3a6b;line-height:1.6}
+.tick{color:#1a6b3c;font-weight:600}
+.cross{color:#c0392b;font-weight:600}
+.price-tier{background:#f9f9f9;border:0.5px solid #e0e0e0;border-radius:8px;padding:12px 13px}
+.price-tier.featured{border:2px solid #1a6b3c;position:relative}
+.price-tier.featured::before{content:'Recommended';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#1a6b3c;color:#fff;font-size:9px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.price-main{font-size:22px;font-weight:500;margin:4px 0 2px}
+.price-sub{font-size:10px;color:#888;margin-bottom:10px}
+.feat-list p{font-size:11px;color:#555;padding:3px 0;border-bottom:0.5px solid #eee;line-height:1.4}
+.feat-list p:last-child{border:none}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <button class="nb active" onclick="show('models',this)">3 models compared</button>
+  <button class="nb" onclick="show('pricing',this)">Recommended tiers</button>
+  <button class="nb" onclick="show('hyd',this)">Hyderabad psychology</button>
+  <button class="nb" onclick="show('firstten',this)">First 10 customers</button>
+  <button class="nb" onclick="show('addons',this)">Add-on revenue</button>
+</div>
+<div id="panel"></div>
+
+<script>
+const pages = {
+
+models:`
+<div class="ph"><h2>Three models — one clear winner</h2>
+<p>Every pricing model has a fundamental economic logic. Here's the first principles breakdown of each one for a Hyderabad property management tool.</p></div>
+<div class="g3">
+  <div class="card">
+    <span class="tag r">Avoid</span>
+    <div class="ctitle">One-time setup fee</div>
+    <p>Sounds easiest to sell. Structurally the worst option.</p>
+    <div class="divider"></div>
+    <p><span class="cross">✗</span> Customer gets lifetime value, you get one payment. Fundamental mismatch.</p><br>
+    <p><span class="cross">✗</span> Hyderabad owner negotiates to ₹5,000 then expects lifetime support.</p><br>
+    <p><span class="cross">✗</span> Zero incentive for you to improve after sale.</p><br>
+    <p><span class="cross">✗</span> Hosting, support, bug fixes run forever. Their payment doesn't.</p>
+  </div>
+  <div class="card">
+    <span class="tag o">With caution</span>
+    <div class="ctitle">Per transaction (% of rent)</div>
+    <p>Feels fair. Has a fatal flaw specific to property rentals.</p>
+    <div class="divider"></div>
+    <p><span class="tick">✓</span> Zero friction to join — pay only when rent comes in.</p><br>
+    <p><span class="tick">✓</span> "I pay when I get paid" — Hyderabadis love this logic.</p><br>
+    <p><span class="cross">✗</span> Once they see 0.5–1% accumulating, they route payments off-platform.</p><br>
+    <p><span class="cross">✗</span> 50 tenants × ₹15K avg × 1% = ₹7,500/month you take. They'll walk eventually.</p>
+  </div>
+  <div class="card win">
+    <span class="tag g">Recommended</span>
+    <div class="ctitle">Annual subscription</div>
+    <p>Recurring, predictable, and what Hyderabad owners actually commit to.</p>
+    <div class="divider"></div>
+    <p><span class="tick">✓</span> Annual removes the monthly cancel decision. They stay committed.</p><br>
+    <p><span class="tick">✓</span> "Pay once for the year, save money" framing works perfectly.</p><br>
+    <p><span class="tick">✓</span> You get cash upfront to fund development.</p><br>
+    <p><span class="tick">✓</span> Annual churn is 3–5× lower than monthly. Owners forget to cancel.</p>
+  </div>
+</div>
+<div class="hl">
+<p><strong>The fundamental principle:</strong> You have ongoing costs — hosting, support, development. Your pricing model must match the value delivery model. The product delivers value every single month (payments collected, reminders sent, records maintained). Monthly or annual pricing matches that. One-time does not. Per-transaction leaks. Subscription is the only model that compounds.</p>
+</div>
+`,
+
+pricing:`
+<div class="ph"><h2>Recommended pricing tiers</h2>
+<p>Priced by units (flats/rooms), not by tenants. Units is the cleanest metric — the owner knows it instantly, no debate about what counts as a "tenant."</p></div>
+<div class="g3" style="margin-bottom:16px">
+  <div class="price-tier">
+    <div class="slbl">Starter</div>
+    <div class="price-main">₹499<span style="font-size:13px;font-weight:400;color:#888">/mo</span></div>
+    <div class="price-sub">₹4,999/year — save ₹989</div>
+    <div class="divider"></div>
+    <div style="margin-bottom:8px"><p style="font-size:12px;font-weight:500;margin-bottom:6px">Up to 20 units</p></div>
+    <div class="feat-list">
+      <p>Tenant dashboard</p>
+      <p>UPI payment collection</p>
+      <p>Auto rent reminders</p>
+      <p>WhatsApp notifications</p>
+      <p>Basic reporting</p>
+    </div>
+  </div>
+  <div class="price-tier featured">
+    <div class="slbl">Builder</div>
+    <div class="price-main">₹1,199<span style="font-size:13px;font-weight:400;color:#888">/mo</span></div>
+    <div class="price-sub">₹11,999/year — save ₹2.4K</div>
+    <div class="divider"></div>
+    <div style="margin-bottom:8px"><p style="font-size:12px;font-weight:500;margin-bottom:6px">Up to 60 units</p></div>
+    <div class="feat-list">
+      <p>Everything in Starter</p>
+      <p>Multi-property dashboard</p>
+      <p>Autopay UPI mandates</p>
+      <p>Document storage</p>
+      <p>Maintenance tracking</p>
+    </div>
+  </div>
+  <div class="price-tier">
+    <div class="slbl">Portfolio</div>
+    <div class="price-main">₹2,499<span style="font-size:13px;font-weight:400;color:#888">/mo</span></div>
+    <div class="price-sub">₹24,999/year — save ₹5K</div>
+    <div class="divider"></div>
+    <div style="margin-bottom:8px"><p style="font-size:12px;font-weight:500;margin-bottom:6px">Unlimited units</p></div>
+    <div class="feat-list">
+      <p>Everything in Builder</p>
+      <p>Revenue & occupancy reports</p>
+      <p>Tenant agreement storage</p>
+      <p>Priority WhatsApp support</p>
+      <p>Custom payment page</p>
+    </div>
+  </div>
+</div>
+<div class="hl-blue">
+<p><strong>The 0.2% rule for the pitch.</strong> Builder customer with 50 tenants at ₹15K avg = ₹7.5L/month income. Their ₹1,199/month is 0.16% of their rent income. Frame it that way, not as "₹1,199/month." Say: "For less than 0.2% of your rental income, all your collections are automated." The math closes itself.</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+  <div class="metric"><div class="mval">10</div><div class="mlbl">Customers (yr 1)</div></div>
+  <div class="metric"><div class="mval">₹1.4L</div><div class="mlbl">Annual revenue</div></div>
+  <div class="metric"><div class="mval">50</div><div class="mlbl">Customers (yr 2)</div></div>
+  <div class="metric"><div class="mval" style="color:#1a6b3c">₹7L</div><div class="mlbl">Annual revenue</div></div>
+</div>
+`,
+
+hyd:`
+<div class="ph"><h2>Hyderabad market psychology — what "kirrak" means for pricing</h2>
+<p>Hyderabad building owners are sharp, socially networked, and negotiation-first. Design your sales approach around that — don't fight it.</p></div>
+<div class="g2">
+  <div class="card">
+    <div class="ctitle">Lead with annual. Always.</div>
+    <p>Never open with monthly. Monthly gives an easy exit. Say "₹11,999 for the year" — offer monthly only as the expensive fallback. This reverses the psychology entirely. Annual feels like the smart deal.</p>
+  </div>
+  <div class="card">
+    <div class="ctitle">Anchor high, settle strategically.</div>
+    <p>Open Builder at ₹1,499. When they negotiate (and they will), move to ₹1,199. They feel like they won. You got the price you planned for. Never give a discount that wasn't pre-planned.</p>
+  </div>
+  <div class="card">
+    <div class="ctitle">Your 50-tenant story IS the pitch.</div>
+    <p>"Main khud 50 tenants manage karta tha, iska matlab toh pata hai." That one line converts faster than any feature demo. Show your actual dashboard, your real collections. Authenticity beats features every time in this market.</p>
+  </div>
+  <div class="card">
+    <div class="ctitle">Locality concentration beats city-wide spread.</div>
+    <p>Building owners in KPHB know each other. In Miyapur, in Kompally. One happy owner in a locality gets you 3–5 referrals in the same area. Go deep in one locality before moving to the next.</p>
+  </div>
+  <div class="card">
+    <div class="ctitle">WhatsApp support is non-negotiable.</div>
+    <p>Hyderabad owners will not raise a ticket or send an email. They'll message you directly. Make WhatsApp your primary support channel — fast responses there build more trust than any feature you could add.</p>
+  </div>
+  <div class="card">
+    <div class="ctitle">Never call it "software" in the pitch.</div>
+    <p>Say "apki building ka complete management system." Software sounds like something that breaks. A management system sounds like infrastructure they can rely on. Words matter in this market.</p>
+  </div>
+</div>
+<div class="hl">
+<p><strong>The kirrak paradox:</strong> These owners are cost-conscious AND value-conscious simultaneously. They will negotiate the price AND insist on quality. The way you handle negotiation tells them whether the product is worth it. Hold your price longer than feels comfortable. It signals confidence in the product's value. Caving immediately signals desperation.</p>
+</div>
+`,
+
+firstten:`
+<div class="ph"><h2>First 10 customers — without ads, without marketing</h2>
+<p>You have the hardest thing already — a real product built for a real problem you personally had. Use that story. It's worth more than any pitch deck.</p></div>
+<div style="position:relative">
+<div style="position:absolute;left:15px;top:20px;bottom:20px;width:1px;background:#e0e0e0"></div>
+<div class="step">
+  <div class="snum">1</div>
+  <div class="sbody">
+    <div class="stitle">List 5 building owners you know personally right now</div>
+    <p>Not strangers. People who already know you have 50 tenants and manage multiple buildings. Call them — not WhatsApp. "Bhai, ek cheez banaya hai, aake dekh." That's your entire opener.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="snum">2</div>
+  <div class="sbody">
+    <div class="stitle">Show them YOUR live dashboard — not a demo account</div>
+    <p>Your actual collections, your actual tenants (blur names if needed), your actual pending payments. Real data converts. Mock data doesn't. The moment they see live collections on a screen, they ask "mujhe kaise milega?"</p>
+  </div>
+</div>
+<div class="step">
+  <div class="snum">3</div>
+  <div class="sbody">
+    <div class="stitle">Offer 3 of them 60 days free for honest weekly feedback</div>
+    <p>Enter their tenant data yourself. Set everything up for them. Make it effortless. This is not giving software away — it's buying the most valuable product research you'll ever get. Every complaint is a feature that converts the next 10 customers.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="snum">4</div>
+  <div class="sbody">
+    <div class="stitle">At day 45, show them their own data in one screenshot</div>
+    <p>Collections on time. Late payments flagged automatically. Zero WhatsApp chasing. Show them that screenshot and say the annual price. They're already dependent on the system. The conversion is a formality at this point.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="snum done">5</div>
+  <div class="sbody">
+    <div class="stitle">Ask for introductions — not referrals. Introductions.</div>
+    <p>"Koi ek building owner hai jisko introduce kar sakta hai?" The word "introduction" implies you'll do the work. "Referral" implies they do the work. 3 paying customers × 2 introductions each = 6 warm leads = your first 10 customers.</p>
+  </div>
+</div>
+</div>
+<div class="hl">
+<p><strong>The compounding math:</strong> 10 customers → each refers 2 → 20 customers → each refers 2 → 40 customers. In a city like Hyderabad where building owners socialize together, the referral velocity is genuinely fast once trust is established with the first few. The product pays for itself — one month of automated collections saves an owner 4–6 hours of follow-up. That ROI story travels on its own.</p>
+</div>
+`,
+
+addons:`
+<div class="ph"><h2>Add-on revenue — don't bundle these into the base plan</h2>
+<p>Three things Hyderabad building owners will pay extra for. Keep them separate — bundling removes the perceived value of each.</p></div>
+<div class="g3">
+  <div class="card">
+    <div class="ctitle">Tenant verification report</div>
+    <p>ID check, address verification, one reference call. A 48-hour turnaround report that tells the owner: is this person safe to rent to?</p>
+    <div class="divider"></div>
+    <p style="font-size:13px;font-weight:500;color:#1a6b3c">₹299–499 per tenant</p>
+    <p style="font-size:11px;color:#888;margin-top:4px">High perceived value. Owners fear bad tenants more than they fear rent defaults.</p>
+  </div>
+  <div class="card">
+    <div class="ctitle">Rental agreement drafting</div>
+    <p>Standard 11-month agreement with their property details, tenant details, clauses, and digital stamp paper. Delivered in 24 hours.</p>
+    <div class="divider"></div>
+    <p style="font-size:13px;font-weight:500;color:#1a6b3c">₹499–999 per agreement</p>
+    <p style="font-size:11px;color:#888;margin-top:4px">Saves them a lawyer visit. The convenience alone justifies the price.</p>
+  </div>
+  <div class="card">
+    <div class="ctitle">Onboarding concierge</div>
+    <p>You personally enter all their tenant data, set up payment links, configure reminders, hand-hold for the first 30 days.</p>
+    <div class="divider"></div>
+    <p style="font-size:13px;font-weight:500;color:#1a6b3c">₹1,999 one-time</p>
+    <p style="font-size:11px;color:#888;margin-top:4px">Removes the #1 barrier: "I don't have time to set it up."</p>
+  </div>
+</div>
+<div class="divider"></div>
+<div class="slbl">Realistic revenue model at different scales</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+  <div class="metric"><div class="mval">10</div><div class="mlbl">Customers</div></div>
+  <div class="metric"><div class="mval">₹1.4L</div><div class="mlbl">Annual subscription</div></div>
+  <div class="metric"><div class="mval">+₹30K</div><div class="mlbl">Add-on revenue</div></div>
+  <div class="metric"><div class="mval">₹1.7L</div><div class="mlbl">Year 1 total</div></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+  <div class="metric"><div class="mval">50</div><div class="mlbl">Customers</div></div>
+  <div class="metric"><div class="mval">₹7L</div><div class="mlbl">Annual subscription</div></div>
+  <div class="metric"><div class="mval">+₹1.5L</div><div class="mlbl">Add-on revenue</div></div>
+  <div class="metric"><div class="mval" style="color:#1a6b3c">₹8.5L</div><div class="mlbl">Year 2 total</div></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+  <div class="metric"><div class="mval">200</div><div class="mlbl">Customers</div></div>
+  <div class="metric"><div class="mval">₹28L</div><div class="mlbl">Annual subscription</div></div>
+  <div class="metric"><div class="mval">+₹6L</div><div class="mlbl">Add-on revenue</div></div>
+  <div class="metric"><div class="mval" style="color:#1a6b3c">₹34L</div><div class="mlbl">Year 3 total</div></div>
+</div>
+<div class="hl">
+<p><strong>The long game:</strong> At 200 customers this is ₹34L/year running largely on its own. That is serious passive income alongside whatever GWD's main services are doing. The marginal cost of adding customer 201 is near zero. This is not a company you exit — it is a product you run efficiently and milk for a decade while the Sports Ecosystem becomes the main event.</p>
+</div>
+`
+};
+
+function show(key, btn) {
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('panel').innerHTML = pages[key];
+}
+show('models', null);
+</script>
+</body>
+</html>

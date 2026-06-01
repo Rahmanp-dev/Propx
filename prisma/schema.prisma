@@ -7,20 +7,121 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// ==========================================
+// AUTH & MULTI-TENANCY
+// ==========================================
+
 enum UserRole {
   SUPER_ADMIN
+  OWNER
   MANAGER
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String?
-  email     String   @unique
-  password  String
-  role      UserRole @default(MANAGER)
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  name           String?
+  email          String    @unique
+  password       String
+  phone          String?
+  role           UserRole  @default(OWNER)
+  organizationId String?   @db.ObjectId // null for SUPER_ADMIN
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+}
+
+// ==========================================
+// ORGANIZATION / MULTI-TENANT
+// ==========================================
+
+enum PlanType {
+  STARTER
+  BUILDER
+  PORTFOLIO
+}
+
+enum PlanStatus {
+  PENDING_PAYMENT
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum BillingCycle {
+  MONTHLY
+  ANNUAL
+}
+
+model Organization {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  name        String       // Business or building name
+  ownerName   String       // Full name of the owner
+  email       String       @unique
+  phone       String
+  city        String       @default("Hyderabad")
+
+  // Subscription
+  plan          PlanType     @default(STARTER)
+  planStatus    PlanStatus   @default(PENDING_PAYMENT)
+  maxUnits      Int          @default(20)
+  billingCycle  BillingCycle @default(ANNUAL)
+  subscriptionStart DateTime?
+  subscriptionEnd   DateTime?
+
+  // Owner's Payment Config (for tenant rent collection)
+  upiId         String?    // owner@upi  
+  bankName      String?
+  accountNumber String?
+  ifscCode      String?
+  accountHolder String?
+  paymentInstructions String?  // custom text shown to tenants
+  paymentMethods      Json?    // Array of { id, type: 'UPI'|'BANK', label, upiId?, bankName?, accountNumber?, ifscCode?, accountHolder?, isDefault }
+
+  // WhatsApp Business API (per-org)
+  whatsappAccessToken    String?  // Owner's own WhatsApp Cloud API access token
+  whatsappPhoneNumberId  String?  // Owner's WhatsApp phone number ID
+  whatsappVerifyToken    String?  // Webhook verification token
+
+  // Status
+  isActive    Boolean  @default(false) // activated after payment verified by super admin
+  isSuspended Boolean  @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  users                User[]
+  buildings            Building[]
+  subscriptionPayments SubscriptionPayment[]
+  notifications        Notification[]
 }
+
+model SubscriptionPayment {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  organizationId   String       @db.ObjectId
+  amount           Float
+  plan             PlanType
+  billingCycle     BillingCycle
+  upiTransactionId String?
+  screenshotUrl    String?      // uploaded payment proof image
+  status           String       @default("PENDING") // PENDING, VERIFIED, REJECTED
+  verifiedBy       String?      @db.ObjectId // super admin user id
+  verifiedAt       DateTime?
+  periodStart      DateTime
+  periodEnd        DateTime
+  notes            String?
+  createdAt        DateTime     @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+}
+
+// ==========================================
+// PROPERTY STRUCTURE
+// ==========================================
 
 enum FlatType {
   STUDIO
@@ -32,30 +133,41 @@ enum FlatType {
 
 model Building {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  organizationId  String   @db.ObjectId  // multi-tenancy key
   name            String
   address         String
+  city            String   @default("Hyderabad")
   totalFloors     Int      @default(0)
   totalFlats      Int      @default(0)
   occupancyRate   Float    @default(0.0)
-  ratePerUnit     Float    @default(10.0) // Electricity rate per unit
+  ratePerUnit     Float    @default(10.0)
   defaultRentBHK1 Float    @default(8000)
   defaultRentBHK2 Float    @default(12000)
   defaultRentBHK3 Float    @default(16000)
+  rentDueDay      Int      @default(5)
+  lateFeePercent  Float    @default(0)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  floors Floor[]
-  flats  Flat[]
+  organization        Organization         @relation(fields: [organizationId], references: [id])
+  floors              Floor[]
+  flats               Flat[]
+  maintenanceRequests MaintenanceRequest[]
+  tenantInquiries     TenantInquiry[]
+
+  @@index([organizationId])
 }
 
 model Floor {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   buildingId String @db.ObjectId
-  number     Int // Floor number: 0, 1, 2...
+  number     Int
   flatsCount Int    @default(0)
 
   building Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
-  flats    Flat[] // Flats strictly on this floor
+  flats    Flat[]
+
+  @@index([buildingId])
 }
 
 enum FlatStatus {
@@ -73,7 +185,7 @@ model Flat {
   id                String          @id @default(auto()) @map("_id") @db.ObjectId
   buildingId        String          @db.ObjectId
   floorId           String          @db.ObjectId
-  flatNumber        String // e.g., "101", "A-1"
+  flatNumber        String
   flatType          FlatType        @default(BHK1)
   rentAmount        Float
   maintenanceAmount Float           @default(0.0)
@@ -83,17 +195,26 @@ model Flat {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
-  building Building  @relation(fields: [buildingId], references: [id], onDelete: Cascade)
-  floor    Floor     @relation(fields: [floorId], references: [id], onDelete: Cascade)
-  Tenant   Tenant[]
-  payments Payment[]
+  building      Building           @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  floor         Floor              @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  tenants       Tenant[]
+  payments      Payment[]
   meterReadings MeterReading[]
+  maintenance   MaintenanceRequest[]
+
+  @@index([buildingId])
+  @@index([floorId])
 }
+
+// ==========================================
+// TENANT MANAGEMENT
+// ==========================================
 
 model Tenant {
   id               String    @id @default(auto()) @map("_id") @db.ObjectId
   fullName         String
   phone            String
+  email            String?
   aadhaarNumber    String?
   occupantsCount   Int       @default(1)
   leaseStartDate   DateTime
@@ -101,13 +222,23 @@ model Tenant {
   assignedFlatId   String?   @db.ObjectId
   emergencyContact String?
   notes            String?
+  tenantPin        String?
   isActive         Boolean   @default(true)
+  whatsappOptIn    Boolean   @default(true)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  flat     Flat?     @relation(fields: [assignedFlatId], references: [id])
-  payments Payment[]
+  flat                Flat?              @relation(fields: [assignedFlatId], references: [id])
+  payments            Payment[]
+  maintenanceRequests MaintenanceRequest[]
+  whatsappMessages    WhatsAppLog[]
+
+  @@index([assignedFlatId])
 }
+
+// ==========================================
+// FINANCIAL ENGINE
+// ==========================================
 
 enum PaymentStatus {
   PAID
@@ -128,7 +259,7 @@ model Payment {
   id              String        @id @default(auto()) @map("_id") @db.ObjectId
   tenantId        String        @db.ObjectId
   flatId          String        @db.ObjectId
-  month           DateTime // First day of the month for which rent is paid
+  month           DateTime
   rentDue         Float
   maintenanceDue  Float
   electricityDue  Float         @default(0.0)
@@ -139,12 +270,35 @@ model Payment {
   status          PaymentStatus @default(PENDING)
   paymentDate     DateTime?
   paymentMethod   PaymentMethod?
+  receiptNumber   String?
+  verifiedByOwner Boolean       @default(false)
   notes           String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  tenant Tenant @relation(fields: [tenantId], references: [id])
-  flat   Flat   @relation(fields: [flatId], references: [id])
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  flat          Flat           @relation(fields: [flatId], references: [id])
+  paymentProofs PaymentProof[]
+
+  @@index([tenantId])
+  @@index([flatId])
+  @@index([tenantId, month])
+}
+
+model PaymentProof {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  paymentId        String   @db.ObjectId
+  uploadedBy       String   // "tenant" or "owner"
+  screenshotUrl    String
+  upiTransactionId String?
+  isVerified       Boolean  @default(false)
+  verifiedAt       DateTime?
+  notes            String?
+  createdAt        DateTime @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id])
+
+  @@index([paymentId])
 }
 
 model MeterReading {
@@ -152,7 +306,7 @@ model MeterReading {
   flatId      String   @db.ObjectId
   reading     Float
   readingDate DateTime @default(now())
-  month       Int      // 0-11
+  month       Int
   year        Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -160,4 +314,171 @@ model MeterReading {
   flat Flat @relation(fields: [flatId], references: [id])
 
   @@unique([flatId, month, year])
+}
+
+// ==========================================
+// MAINTENANCE & COMPLAINTS
+// ==========================================
+
+enum MaintenanceCategory {
+  PLUMBING
+  ELECTRICAL
+  CARPENTRY
+  PAINTING
+  CLEANING
+  PEST_CONTROL
+  OTHER
+}
+
+enum MaintenancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum MaintenanceStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model MaintenanceRequest {
+  id          String              @id @default(auto()) @map("_id") @db.ObjectId
+  flatId      String              @db.ObjectId
+  tenantId    String?             @db.ObjectId
+  buildingId  String              @db.ObjectId
+  category    MaintenanceCategory @default(OTHER)
+  title       String
+  description String
+  priority    MaintenancePriority @default(MEDIUM)
+  status      MaintenanceStatus   @default(OPEN)
+  images      String[]
+  assignedTo  String?
+  resolvedAt  DateTime?
+  cost        Float?
+  notes       String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  flat     Flat     @relation(fields: [flatId], references: [id])
+  tenant   Tenant?  @relation(fields: [tenantId], references: [id])
+  building Building @relation(fields: [buildingId], references: [id])
+
+  @@index([flatId])
+  @@index([tenantId])
+  @@index([buildingId])
+}
+
+// ==========================================
+// WHATSAPP & COMMUNICATIONS
+// ==========================================
+
+enum WhatsAppMessageType {
+  RENT_REMINDER
+  PAYMENT_RECEIPT
+  MAINTENANCE_UPDATE
+  LEASE_ALERT
+  BROADCAST
+  INQUIRY_RESPONSE
+}
+
+enum WhatsAppStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+model WhatsAppLog {
+  id          String              @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String?             @db.ObjectId
+  phone       String
+  messageType WhatsAppMessageType
+  templateId  String?
+  content     String
+  status      WhatsAppStatus      @default(QUEUED)
+  sentAt      DateTime?
+  error       String?
+  createdAt   DateTime            @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+}
+
+// ==========================================
+// TENANT INQUIRIES / LEADS
+// ==========================================
+
+enum InquirySource {
+  WHATSAPP
+  WEBSITE
+  WALK_IN
+  REFERRAL
+  PHONE
+}
+
+enum InquiryStatus {
+  NEW
+  CONTACTED
+  VIEWING_SCHEDULED
+  CONVERTED
+  REJECTED
+}
+
+model TenantInquiry {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  buildingId  String?       @db.ObjectId
+  name        String
+  phone       String
+  email       String?
+  flatType    String?
+  budget      Float?
+  message     String?
+  source      InquirySource @default(WHATSAPP)
+  status      InquiryStatus @default(NEW)
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  building Building? @relation(fields: [buildingId], references: [id])
+
+  @@index([buildingId])
+}
+
+// ==========================================
+// NOTIFICATIONS
+// ==========================================
+
+enum NotificationType {
+  PAYMENT_RECEIVED
+  PAYMENT_OVERDUE
+  PAYMENT_PROOF_UPLOADED
+  LEASE_EXPIRING
+  MAINTENANCE_NEW
+  MAINTENANCE_RESOLVED
+  VACANCY_ALERT
+  INQUIRY_NEW
+  SUBSCRIPTION_PAYMENT
+  ORG_ACTIVATED
+  SYSTEM
+}
+
+model Notification {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  organizationId String?          @db.ObjectId  // null for super admin notifications
+  type           NotificationType
+  title          String
+  message        String
+  isRead         Boolean          @default(false)
+  data           String?
+  createdAt      DateTime         @default(now())
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
 }

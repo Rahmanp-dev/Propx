@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { RefreshCw, Play } from "lucide-react"
 import { generateMonthlyDues } from "@/lib/actions/rental-engine"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export function GenerateDuesButton() {
     const [loading, setLoading] = useState(false)
@@ -12,19 +13,27 @@ export function GenerateDuesButton() {
 
     async function handleGenerate() {
         setLoading(true)
-        const result = await generateMonthlyDues()
-        setLoading(false)
+        try {
+            const result = await generateMonthlyDues()
 
-        if (result.success) {
-            alert(`Successfully generated dues for ${result.count} tenants.`)
-            router.refresh()
-        } else {
-            alert("Failed to generate dues.")
+            if (result.success) {
+                toast.success(`Generated dues for ${result.count} tenants`, {
+                    description: result.count === 0
+                        ? "All tenants already have dues for this month."
+                        : "Payment records created. Finance dashboard updated.",
+                })
+                router.refresh()
+            } else {
+                toast.error("Failed to generate dues", { description: result.error })
+            }
+        } catch (err) {
+            toast.error("Something went wrong")
         }
+        setLoading(false)
     }
 
     return (
-        <Button onClick={handleGenerate} disabled={loading} variant="outline">
+        <Button onClick={handleGenerate} disabled={loading} variant="outline" size="sm">
             {loading ? (
                 <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
             ) : (

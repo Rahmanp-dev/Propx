@@ -24,7 +24,7 @@ export function MobileSidebar({ user }: { user?: any }) {
                     <Menu />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 bg-[#111827] border-r-gray-800 text-white">
+            <SheetContent side="left" className="p-0 bg-[#111827] border-r-gray-800 text-white w-72 max-w-[288px]">
                 <Sidebar user={user} />
             </SheetContent>
         </Sheet>
