@@ -10,24 +10,42 @@ export const authConfig = {
             const isLoggedIn = !!auth?.user;
             const isOnLogin = nextUrl.pathname === '/login';
             const isOnRegister = nextUrl.pathname.startsWith('/register');
+            const isTenantLogin = nextUrl.pathname === '/tenant-portal/login';
+            const isTenantProtectedRoute = nextUrl.pathname.startsWith('/tenant-portal') && !isTenantLogin;
             const isPublicRoute =
                 isOnLogin ||
                 isOnRegister ||
                 nextUrl.pathname.startsWith('/api/auth') ||
                 nextUrl.pathname.startsWith('/api/webhook') ||
                 nextUrl.pathname.startsWith('/api/upload') ||
-                nextUrl.pathname.startsWith('/tenant-portal') ||
+                isTenantLogin ||
                 nextUrl.pathname.startsWith('/pay') ||
                 nextUrl.pathname.startsWith('/inquiry') ||
                 nextUrl.pathname === '/';
 
             if (isPublicRoute) {
-                if (isOnLogin && isLoggedIn) {
+                if ((isOnLogin || isTenantLogin) && isLoggedIn) {
                     // @ts-ignore
                     const role = auth?.user?.role;
+                    if (role === 'TENANT') {
+                        return Response.redirect(new URL('/tenant-portal/dashboard', nextUrl));
+                    }
                     if (role === 'SUPER_ADMIN') {
                         return Response.redirect(new URL('/super-admin/dashboard', nextUrl));
                     }
+                    const userId = auth?.user?.id || 'user';
+                    return Response.redirect(new URL(`/${userId}/dashboard`, nextUrl));
+                }
+                return true;
+            }
+
+            // Protect tenant routes
+            if (isTenantProtectedRoute) {
+                if (!isLoggedIn) return Response.redirect(new URL('/tenant-portal/login', nextUrl));
+                // @ts-ignore
+                const role = auth?.user?.role;
+                if (role !== 'TENANT') {
+                    // Logged in as owner but trying to access tenant portal
                     const userId = auth?.user?.id || 'user';
                     return Response.redirect(new URL(`/${userId}/dashboard`, nextUrl));
                 }
@@ -59,6 +77,13 @@ export const authConfig = {
             if (!isLoggedIn) {
                 return false;
             }
+
+            // @ts-ignore
+            const role = auth?.user?.role;
+            if (role === 'TENANT') {
+                return Response.redirect(new URL('/tenant-portal/dashboard', nextUrl));
+            }
+            
             return true;
         },
         async session({ session, token }) {

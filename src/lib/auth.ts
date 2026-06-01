@@ -10,6 +10,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
     providers: [
         Credentials({
+            id: 'credentials',
             async authorize(credentials) {
                 const parsedCredentials = z
                     .object({ email: z.string().email(), password: z.string().min(6) })
@@ -54,5 +55,38 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 return null;
             },
         }),
+        Credentials({
+            id: 'tenant-credentials',
+            name: 'Tenant Login',
+            credentials: {
+                phone: { label: "Phone", type: "text" },
+                pin: { label: "PIN", type: "password" }
+            },
+            async authorize(credentials) {
+                const parsedCredentials = z
+                    .object({ phone: z.string().min(10), pin: z.string().min(4) })
+                    .safeParse(credentials);
+
+                if (parsedCredentials.success) {
+                    const { phone, pin } = parsedCredentials.data;
+
+                    const tenant = await prisma.tenant.findFirst({ where: { phone } });
+                    if (!tenant) return null;
+
+                    const expectedPin = tenant.tenantPin || tenant.phone.slice(-4);
+                    if (pin !== expectedPin) return null;
+
+                    return {
+                        id: tenant.id,
+                        name: tenant.fullName,
+                        phone: tenant.phone,
+                        role: "TENANT",
+                    } as any;
+                }
+
+                console.log('Invalid tenant credentials');
+                return null;
+            }
+        })
     ],
 });
