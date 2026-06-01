@@ -48,6 +48,10 @@ export const authConfig = {
 
             // Intercept direct hits to /dashboard and redirect to user-specific dashboard
             if (nextUrl.pathname === '/dashboard' && isLoggedIn) {
+                // @ts-ignore
+                if (auth?.user?.role === 'SUPER_ADMIN') {
+                    return Response.redirect(new URL('/super-admin/dashboard', nextUrl));
+                }
                 const userId = auth?.user?.id || 'user';
                 return Response.redirect(new URL(`/${userId}/dashboard`, nextUrl));
             }

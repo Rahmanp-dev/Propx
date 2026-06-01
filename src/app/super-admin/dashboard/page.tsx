@@ -118,11 +118,11 @@ export default async function SuperAdminDashboard() {
     ]
 
     return (
-        <div>
-            <h2 className="text-3xl font-bold tracking-tight mb-8">Super Admin Dashboard</h2>
+        <div className="space-y-4 md:space-y-8">
+            <h2 className="text-3xl font-bold tracking-tight">Super Admin Dashboard</h2>
 
             {/* Stat Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 {statCards.map((card) => (
                     <Card key={card.title}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -138,7 +138,7 @@ export default async function SuperAdminDashboard() {
             </div>
 
             {/* Plan Distribution Chart */}
-            <div className="grid gap-4 md:grid-cols-2 mb-8">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                 <DashboardCharts planDistribution={planDistribution} />
 
                 {/* Recent Registrations */}
@@ -147,8 +147,8 @@ export default async function SuperAdminDashboard() {
                         <CardTitle>Recent Registrations</CardTitle>
                         <CardDescription>Last 10 organizations that signed up</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <Table>
+                    <CardContent className="overflow-x-auto">
+                        <Table className="min-w-[600px]">
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Organization</TableHead>
@@ -191,8 +191,8 @@ export default async function SuperAdminDashboard() {
                     <CardTitle>Recent Subscription Payments</CardTitle>
                     <CardDescription>Latest payment submissions from organizations</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <Table>
+                <CardContent className="overflow-x-auto">
+                    <Table className="min-w-[600px]">
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Organization</TableHead>

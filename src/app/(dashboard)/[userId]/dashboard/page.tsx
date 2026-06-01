@@ -35,7 +35,7 @@ export default async function DashboardPage() {
     const collectionRate = revenue.expected > 0 ? Math.round((revenue.collected / revenue.expected) * 100) : 0
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-4 md:space-y-8">
             {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div>
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
             </div>
 
             {/* Top Stats Row */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
                 <Card className="border-l-4 border-l-emerald-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Expected Revenue</CardTitle>
@@ -136,7 +136,9 @@ export default async function DashboardPage() {
             {alerts.overdue.length > 0 && (
                 <div className="space-y-4">
                     <h2 className="text-2xl font-bold tracking-tight">Pending Dues</h2>
-                    <PendingPaymentsTable payments={alerts.overdue} />
+                    <div className="overflow-x-auto pb-2">
+                        <PendingPaymentsTable payments={alerts.overdue} />
+                    </div>
                 </div>
             )}
 
@@ -149,7 +151,7 @@ export default async function DashboardPage() {
                 <AddBuildingDialog />
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {buildings.map((building) => {
                     const occupiedFlats = building.flats.filter((f: any) => f.status === 'OCCUPIED').length
                     const totalRevenue = building.flats.reduce((sum: number, f: any) => sum + f.rentAmount, 0)
