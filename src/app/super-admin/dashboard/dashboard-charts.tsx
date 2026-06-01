@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
 
@@ -10,6 +11,12 @@ export function DashboardCharts({
 }: {
     planDistribution: { STARTER: number; BUILDER: number; PORTFOLIO: number }
 }) {
+    const [isMounted, setIsMounted] = useState(false)
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
+
     const pieData = [
         { name: 'Starter', value: planDistribution.STARTER, color: '#6b7280' },
         { name: 'Builder', value: planDistribution.BUILDER, color: '#3b82f6' },
@@ -23,6 +30,19 @@ export function DashboardCharts({
     ]
 
     const total = planDistribution.STARTER + planDistribution.BUILDER + planDistribution.PORTFOLIO
+
+    if (!isMounted) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Plan Distribution</CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    Loading charts...
+                </CardContent>
+            </Card>
+        )
+    }
 
     if (total === 0) {
         return (
