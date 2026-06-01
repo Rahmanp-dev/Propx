@@ -28,9 +28,9 @@ export default function LoginPage() {
   const [errorMessage, dispatch] = useActionState(authenticate, undefined)
 
   return (
-    <div className="dark flex min-h-screen w-full bg-slate-950 text-white">
+    <div className="dark flex min-h-screen w-full overflow-x-hidden bg-slate-950 text-white">
       {/* ── Left Branding Panel ── */}
-      <div className="relative hidden w-1/2 overflow-hidden lg:flex lg:flex-col lg:justify-between border-r border-white/5 bg-slate-950">
+      <div className="relative hidden lg:w-1/2 overflow-hidden lg:flex lg:flex-col lg:justify-between border-r border-white/5 bg-slate-950">
         {/* Animated gradient orbs */}
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -left-24 -top-24 h-[500px] w-[500px] rounded-full bg-indigo-600/10 blur-[120px]" />
@@ -114,7 +114,7 @@ export default function LoginPage() {
           </div>
 
           <form action={dispatch} className="w-full">
-            <div className="border border-white/10 bg-slate-900/60 shadow-2xl shadow-black/20 backdrop-blur-xl rounded-2xl p-8 space-y-6">
+            <div className="border border-white/10 bg-slate-900/60 shadow-2xl shadow-black/20 backdrop-blur-xl rounded-2xl p-4 sm:p-8 space-y-6">
               <div className="space-y-2 text-center">
                 <h2 className="text-2xl font-bold tracking-tight text-white">
                   Welcome back

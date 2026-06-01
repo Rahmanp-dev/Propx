@@ -94,7 +94,7 @@ export default async function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-16 md:pt-32 md:pb-28 text-center space-y-8">
+      <section className="relative z-10 max-w-7xl mx-auto px-6 pt-12 pb-8 md:pt-32 md:pb-28 text-center space-y-8">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/10 text-indigo-300 text-xs font-semibold uppercase tracking-wider animate-pulse">
           <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
           The Operating System for Property Portfolios
@@ -143,7 +143,7 @@ export default async function LandingPage() {
       </section>
 
       {/* Dashboard Preview Component / Visual Showcase */}
-      <section id="dashboard-preview" className="relative z-10 max-w-6xl mx-auto px-6 pb-24 md:pb-36">
+      <section id="dashboard-preview" className="relative z-10 max-w-6xl mx-auto px-6 pb-12 md:pb-36">
         <div className="relative border border-white/10 bg-slate-900/60 rounded-2xl p-4 md:p-6 shadow-2xl shadow-indigo-950/20 backdrop-blur-md">
           {/* Top border ambient glow */}
           <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
@@ -206,7 +206,7 @@ export default async function LandingPage() {
               </div>
 
               {/* Main content split */}
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Building detail cards */}
                 <div className="bg-white/[0.02] border border-white/5 rounded-xl p-5 space-y-4">
                   <div className="flex items-center justify-between">
@@ -257,7 +257,7 @@ export default async function LandingPage() {
       </section>
 
       {/* Feature Grid Section */}
-      <section id="features" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-white/5 bg-slate-950">
+      <section id="features" className="relative z-10 max-w-7xl mx-auto px-6 py-12 md:py-24 border-t border-white/5 bg-slate-950">
         <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
           <span className="inline-flex items-center justify-center rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-300 tracking-wider uppercase">
             Powerful Modules
@@ -270,7 +270,7 @@ export default async function LandingPage() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {FEATURES.map((feature, i) => {
             const Icon = feature.icon
             return (
@@ -294,8 +294,8 @@ export default async function LandingPage() {
       </section>
 
       {/* Seamless Workflow Section (Replaces Old Audiences/Sample Login) */}
-      <section id="workflow" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-white/5">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <section id="workflow" className="relative z-10 max-w-7xl mx-auto px-6 py-12 md:py-24 border-t border-white/5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           <div className="space-y-8">
             <div className="space-y-4">
               <span className="inline-flex items-center justify-center rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1.5 text-xs font-semibold text-violet-300 tracking-wider uppercase">
@@ -373,7 +373,7 @@ export default async function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative z-10 max-w-5xl mx-auto px-6 py-20 text-center">
+      <section className="relative z-10 max-w-5xl mx-auto px-6 py-12 md:py-20 text-center">
         <div className="p-8 md:p-16 rounded-3xl border border-indigo-500/20 bg-gradient-to-b from-slate-900 to-indigo-950/80 shadow-2xl shadow-indigo-500/20 relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-indigo-600/10 to-violet-600/10 opacity-50" />
           <div className="relative z-10 space-y-6 max-w-2xl mx-auto">
