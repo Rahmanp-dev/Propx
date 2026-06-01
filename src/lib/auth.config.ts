@@ -28,7 +28,8 @@ export const authConfig = {
                     if (role === 'SUPER_ADMIN') {
                         return Response.redirect(new URL('/super-admin/dashboard', nextUrl));
                     }
-                    return Response.redirect(new URL('/dashboard', nextUrl));
+                    const userId = auth?.user?.id || 'user';
+                    return Response.redirect(new URL(`/${userId}/dashboard`, nextUrl));
                 }
                 return true;
             }
@@ -39,9 +40,16 @@ export const authConfig = {
                 // @ts-ignore
                 const role = auth?.user?.role;
                 if (role !== 'SUPER_ADMIN') {
-                    return Response.redirect(new URL('/dashboard', nextUrl));
+                    const userId = auth?.user?.id || 'user';
+                    return Response.redirect(new URL(`/${userId}/dashboard`, nextUrl));
                 }
                 return true;
+            }
+
+            // Intercept direct hits to /dashboard and redirect to user-specific dashboard
+            if (nextUrl.pathname === '/dashboard' && isLoggedIn) {
+                const userId = auth?.user?.id || 'user';
+                return Response.redirect(new URL(`/${userId}/dashboard`, nextUrl));
             }
 
             if (!isLoggedIn) {

@@ -76,7 +76,7 @@ export default async function LandingPage() {
 
           <div className="flex items-center gap-4">
             {user ? (
-              <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-lg shadow-indigo-500/20 transition-all">
+              <Link href={`/${user.id}/dashboard`} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-lg shadow-indigo-500/20 transition-all">
                 Go to Dashboard <ArrowRight className="h-4 w-4" />
               </Link>
             ) : (
@@ -112,7 +112,7 @@ export default async function LandingPage() {
         </p>
 
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href={user ? "/dashboard" : "/register"} className="inline-flex items-center justify-center h-14 px-8 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold shadow-xl shadow-indigo-500/25 transition-all text-base group">
+          <Link href={user ? `/${user.id}/dashboard` : "/register"} className="inline-flex items-center justify-center h-14 px-8 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold shadow-xl shadow-indigo-500/25 transition-all text-base group">
             {user ? "Go to Dashboard" : "Get Started Today"} 
             <ArrowRight className="h-5 w-5 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
