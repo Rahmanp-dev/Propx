@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users } from "lucide-react"
 import Link from "next/link"
 import { auth } from "@/lib/auth"
+import { CopyPortalLink } from "@/components/dashboard/copy-portal-link"
 
 export default async function TenantsPage() {
     const session = await auth()
@@ -16,11 +17,14 @@ export default async function TenantsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight">All Tenants</h1>
-                <Badge variant="outline" className="text-lg px-4 py-1">
-                    <Users className="mr-2 h-4 w-4" /> {tenants?.length || 0} Tenants
-                </Badge>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <h1 className="text-3xl font-bold tracking-tight">All Tenants</h1>
+                    <Badge variant="outline" className="text-lg px-4 py-1">
+                        <Users className="mr-2 h-4 w-4" /> {tenants?.length || 0} Tenants
+                    </Badge>
+                </div>
+                <CopyPortalLink />
             </div>
 
             {tenants && tenants.length > 0 ? (

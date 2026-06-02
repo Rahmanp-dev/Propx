@@ -72,6 +72,9 @@ export default async function LandingPage() {
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#workflow" className="hover:text-white transition-colors">Platform</a>
             <Link href="/packages" className="hover:text-white transition-colors">Packages & Pricing</Link>
+            <Link href="/tenant-portal/login" className="flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">
+              <Users className="h-4 w-4" /> Tenant Portal
+            </Link>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -87,6 +90,11 @@ export default async function LandingPage() {
                 <Link href="/register" className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/10 transition-all">
                   Register Now
                 </Link>
+                <div className="md:hidden">
+                  <Link href="/tenant-portal/login" className="inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-semibold border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 transition-all">
+                    Tenant Portal
+                  </Link>
+                </div>
               </>
             )}
           </div>

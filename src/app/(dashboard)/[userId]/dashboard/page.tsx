@@ -7,6 +7,7 @@ import { AlertTriangle, TrendingUp, Wallet, Clock, Users, Building2, BarChart3, 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PendingPaymentsTable } from "@/components/dashboard/pending-payments-table"
 import { GenerateDuesButton } from "@/components/dashboard/generate-dues-button"
+import { CopyPortalLink } from "@/components/dashboard/copy-portal-link"
 
 export const dynamic = 'force-dynamic'
 
@@ -46,7 +47,10 @@ export default async function DashboardPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
                     <p className="text-muted-foreground">Overview of your property portfolio</p>
                 </div>
-                <GenerateDuesButton />
+                <div className="flex items-center gap-2">
+                    <CopyPortalLink />
+                    <GenerateDuesButton />
+                </div>
             </div>
 
             {/* Top Stats Row */}
