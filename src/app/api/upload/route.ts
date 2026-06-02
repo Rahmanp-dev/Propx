@@ -29,36 +29,26 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Try Cloudinary first, fallback to local storage
-    if (isCloudinaryConfigured()) {
-      try {
-        const cloudinaryUrl = await uploadToCloudinary(buffer, 'propx')
-        return NextResponse.json({
-          url: cloudinaryUrl,
-          storage: 'cloudinary' as const,
-        })
-      } catch (cloudinaryError: any) {
-        console.error('Cloudinary upload failed:', cloudinaryError?.message || cloudinaryError)
-        // Fall through to local storage
-      }
+    if (!isCloudinaryConfigured()) {
+      return NextResponse.json(
+        { error: 'Cloudinary environment variables are not configured on this server.' },
+        { status: 500 }
+      )
     }
 
-    // Local storage fallback
-    const ext = path.extname(file.name) || '.jpg'
-    const timestamp = Date.now()
-    const randomSuffix = Math.random().toString(36).substring(2, 8)
-    const filename = `${timestamp}-${randomSuffix}${ext}`
-
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
-    await mkdir(uploadsDir, { recursive: true })
-
-    const filePath = path.join(uploadsDir, filename)
-    await writeFile(filePath, buffer)
-
-    return NextResponse.json({
-      url: `/uploads/${filename}`,
-      storage: 'local' as const,
-    })
+    try {
+      const cloudinaryUrl = await uploadToCloudinary(buffer, 'propx')
+      return NextResponse.json({
+        url: cloudinaryUrl,
+        storage: 'cloudinary' as const,
+      })
+    } catch (cloudinaryError: any) {
+      console.error('Cloudinary upload failed:', cloudinaryError?.message || cloudinaryError)
+      return NextResponse.json(
+        { error: `Cloudinary upload failed: ${cloudinaryError?.message || 'Unknown error'}` },
+        { status: 500 }
+      )
+    }
   } catch (error) {
     console.error('Upload error:', error)
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
