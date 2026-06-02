@@ -2,8 +2,19 @@ import { PrismaClient } from '@prisma/client'
 
 const prismaClientSingleton = () => {
     let url = process.env.DATABASE_URL
-    if (url && !url.includes("propx")) {
-        url = url.replace("mongodb.net/?", "mongodb.net/propx?")
+    if (url) {
+        try {
+            const parsed = new URL(url)
+            if (parsed.pathname === '/' || parsed.pathname === '') {
+                parsed.pathname = '/propx'
+                url = parsed.toString()
+            }
+        } catch (e) {
+            // fallback if URL parsing fails
+            if (!url.includes("propx")) {
+                url = url.replace("mongodb.net/?", "mongodb.net/propx?")
+            }
+        }
     }
     return new PrismaClient({ datasources: { db: { url } } })
 }

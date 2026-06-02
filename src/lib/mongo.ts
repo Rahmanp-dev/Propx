@@ -6,8 +6,18 @@ if (!process.env.DATABASE_URL) {
 }
 
 let uri = process.env.DATABASE_URL
-if (!uri.includes("propx")) {
-    uri = uri.replace("mongodb.net/?", "mongodb.net/propx?")
+if (uri) {
+    try {
+        const parsed = new URL(uri)
+        if (parsed.pathname === '/' || parsed.pathname === '') {
+            parsed.pathname = '/propx'
+            uri = parsed.toString()
+        }
+    } catch (e) {
+        if (!uri.includes("propx")) {
+            uri = uri.replace("mongodb.net/?", "mongodb.net/propx?")
+        }
+    }
 }
 const options = {}
 
