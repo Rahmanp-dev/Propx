@@ -69,7 +69,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets — cache first, fall back to network
+  // Static assets — network first, fall back to cache
   if (
     url.pathname.startsWith('/_next/static/') ||
     url.pathname.startsWith('/icons/') ||
@@ -80,9 +80,8 @@ self.addEventListener('fetch', (event) => {
     url.pathname.endsWith('.woff2')
   ) {
     event.respondWith(
-      caches.match(request).then((cachedResponse) => {
-        if (cachedResponse) return cachedResponse;
-        return fetch(request).then((response) => {
+      fetch(request)
+        .then((response) => {
           if (response.ok) {
             const responseClone = response.clone();
             caches.open(STATIC_CACHE).then((cache) => {
@@ -90,8 +89,10 @@ self.addEventListener('fetch', (event) => {
             });
           }
           return response;
-        });
-      })
+        })
+        .catch(() => {
+          return caches.match(request);
+        })
     );
     return;
   }
