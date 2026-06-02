@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { uploadToCloudinary, isCloudinaryConfigured } from '@/lib/cloudinary'
+import { auth } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {

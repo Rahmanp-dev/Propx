@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
                     // Update all matching logs (there might be retries)
                     await db.collection('WhatsAppLog').updateMany(
-                        { 'messageId': waMessageId },
+                        { 'waMessageId': waMessageId },
                         {
                             $set: {
                                 status: newStatus,

@@ -5,6 +5,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { AddFlatDialog } from "@/components/dashboard/add-flat-dialog"
 import { UpdateBuildingDialog } from "@/components/dashboard/update-building-dialog"
+import { DeleteBuildingDialog } from "@/components/dashboard/delete-building-dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Zap, IndianRupee } from "lucide-react"
 
@@ -57,6 +58,7 @@ export default async function BuildingPage({ params }: { params: Promise<{ id: s
                         totalFloors={building.totalFloors}
                         defaultRents={defaultRents}
                     />
+                    <DeleteBuildingDialog buildingId={id} buildingName={building.name} />
                     <AddFlatDialog buildingId={id} floors={floorsForDialog} defaultRents={defaultRents} />
                 </div>
             </div>

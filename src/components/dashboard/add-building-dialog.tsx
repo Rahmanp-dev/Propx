@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -56,6 +57,7 @@ export function AddBuildingDialog() {
             setLoading(false)
 
             if (result.success) {
+                toast.success("Building created successfully!")
                 setOpen(false)
                 form.reset()
                 router.refresh()

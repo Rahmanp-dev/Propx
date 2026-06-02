@@ -17,6 +17,7 @@ import { Settings } from "lucide-react"
 import { updateBuildingSettings } from "@/lib/actions/building-settings"
 import { useRouter } from "next/navigation"
 import { Separator } from "@/components/ui/separator"
+import { toast } from "sonner"
 
 interface UpdateBuildingDialogProps {
     buildingId: string
@@ -57,6 +58,7 @@ export function UpdateBuildingDialog({ buildingId, currentRate, buildingName, to
             if (!res.success && res.error) {
                 setError(res.error)
             } else if (res.success) {
+                toast.success("Settings updated successfully!")
                 setOpen(false)
                 router.refresh()
             }

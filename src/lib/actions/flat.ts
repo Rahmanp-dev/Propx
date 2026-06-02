@@ -93,3 +93,56 @@ export async function createFlat(data: CreateFlatInput) {
         return { error: `Failed to create flat: ${error.message || String(error)}` }
     }
 }
+
+export async function deleteFlat(flatId: string) {
+    try {
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
+
+        const flat = await prisma.flat.findFirst({
+            where: { id: flatId, building: orgCtx.isSuperAdmin ? undefined : { organizationId: orgCtx.organizationId! } },
+            include: { building: true, tenants: true }
+        })
+
+        if (!flat) return { error: "Flat not found" }
+
+        const client = await clientPromise
+        const db = client.db("propx")
+
+        const flatObjectId = new ObjectId(flatId)
+        
+        // 1. Delete Payments, Meter Readings, Maintenance Requests
+        await db.collection("Payment").deleteMany({ flatId: flatObjectId })
+        await db.collection("MeterReading").deleteMany({ flatId: flatObjectId })
+        await db.collection("MaintenanceRequest").deleteMany({ flatId: flatObjectId })
+
+        // 2. Delete Tenants and their WhatsAppLogs
+        const tenantIds = flat.tenants.map(t => new ObjectId(t.id))
+        if (tenantIds.length > 0) {
+            await db.collection("WhatsAppLog").deleteMany({ tenantId: { $in: tenantIds } })
+            await db.collection("Tenant").deleteMany({ _id: { $in: tenantIds } })
+        }
+
+        // 3. Delete Flat
+        await db.collection("Flat").deleteOne({ _id: flatObjectId })
+
+        // 4. Decrement Building and Floor counts
+        await db.collection("Building").updateOne(
+            { _id: new ObjectId(flat.buildingId) },
+            { $inc: { totalFlats: -1 } }
+        )
+        await db.collection("Floor").updateOne(
+            { _id: new ObjectId(flat.floorId) },
+            { $inc: { flatsCount: -1 } }
+        )
+
+        revalidatePath(`/buildings/${flat.buildingId}`)
+        revalidatePath('/dashboard')
+        revalidatePath('/flats')
+        
+        return { success: true }
+    } catch (error: any) {
+        console.error("Failed to delete flat:", error)
+        return { error: `Failed to delete flat: ${error.message || String(error)}` }
+    }
+}

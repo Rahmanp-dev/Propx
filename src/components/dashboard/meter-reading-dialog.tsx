@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label"
 import { Zap } from "lucide-react"
 import { recordMeterReading, getFlatReadings } from "@/lib/actions/meter-reading"
 import { useEffect, useMemo } from "react"
+import { toast } from "sonner"
 
 interface MeterReadingDialogProps {
     flatId: string
@@ -79,6 +80,7 @@ export function MeterReadingDialog({ flatId, flatNumber }: MeterReadingDialogPro
                 console.error("Server Action returned error:", result.error)
                 setError(result.error)
             } else {
+                toast.success("Meter reading recorded successfully!")
                 setOpen(false)
                 setReading("")
             }

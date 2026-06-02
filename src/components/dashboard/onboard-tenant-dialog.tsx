@@ -7,6 +7,7 @@ import { UserPlus, CalendarIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -71,6 +72,7 @@ export function OnboardTenantDialog({ flatId, suggestedRent, suggestedDeposit }:
             setLoading(false)
 
             if (result.success) {
+                toast.success("Tenant onboarded successfully!")
                 setOpen(false)
                 form.reset()
                 router.refresh()

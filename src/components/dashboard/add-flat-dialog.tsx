@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label"
 import { Plus } from "lucide-react"
 import { createFlat } from "@/lib/actions/flat"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 const FLAT_TYPES = [
     { value: "STUDIO", label: "Studio" },
@@ -78,6 +79,7 @@ export function AddFlatDialog({ buildingId, floors, defaultRents }: AddFlatDialo
             if (result.error) {
                 setError(result.error)
             } else {
+                toast.success(`Flat ${flatNumber} added successfully!`)
                 setOpen(false)
                 setFloorId("")
                 setFlatNumber("")

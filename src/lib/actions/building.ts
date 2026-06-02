@@ -122,3 +122,59 @@ export async function getBuildings() {
         return { error: `Failed to fetch buildings: ${error.message || String(error)}` }
     }
 }
+
+export async function deleteBuilding(buildingId: string) {
+    try {
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
+
+        const building = await prisma.building.findFirst({
+            where: { id: buildingId, ...(orgCtx.isSuperAdmin ? {} : { organizationId: orgCtx.organizationId! }) },
+            include: { flats: true, floors: true }
+        })
+
+        if (!building) return { error: "Building not found" }
+
+        const flatIds = building.flats.map(f => new ObjectId(f.id))
+        const floorIds = building.floors.map(f => new ObjectId(f.id))
+        
+        const client = await clientPromise
+        const db = client.db("propx")
+
+        // 1. Delete Payments and Meter Readings for these flats
+        if (flatIds.length > 0) {
+            await db.collection("Payment").deleteMany({ flatId: { $in: flatIds } })
+            await db.collection("MeterReading").deleteMany({ flatId: { $in: flatIds } })
+            await db.collection("MaintenanceRequest").deleteMany({ flatId: { $in: flatIds } })
+            
+            // Tenants associated with flats
+            const tenants = await db.collection("Tenant").find({ assignedFlatId: { $in: flatIds } }).toArray()
+            const tenantIds = tenants.map(t => t._id)
+            if (tenantIds.length > 0) {
+                await db.collection("WhatsAppLog").deleteMany({ tenantId: { $in: tenantIds } })
+                await db.collection("Tenant").deleteMany({ _id: { $in: tenantIds } })
+            }
+            
+            await db.collection("Flat").deleteMany({ _id: { $in: flatIds } })
+        }
+
+        // 2. Delete Floors
+        if (floorIds.length > 0) {
+            await db.collection("Floor").deleteMany({ _id: { $in: floorIds } })
+        }
+
+        // 3. Delete Inquiries for this building
+        await db.collection("TenantInquiry").deleteMany({ buildingId: new ObjectId(buildingId) })
+
+        // 4. Delete Building
+        await db.collection("Building").deleteOne({ _id: new ObjectId(buildingId) })
+
+        revalidatePath('/dashboard')
+        revalidatePath('/buildings')
+        
+        return { success: true }
+    } catch (error: any) {
+        console.error("Failed to delete building:", error)
+        return { error: `Failed to delete building: ${error.message || String(error)}` }
+    }
+}

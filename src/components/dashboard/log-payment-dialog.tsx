@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useRouter } from "next/navigation"
 import { Banknote } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -63,6 +64,7 @@ export function LogPaymentDialog({ payment, asIcon }: LogPaymentDialogProps) {
             setLoading(false)
 
             if (result.success) {
+                toast.success("Payment logged successfully!")
                 setOpen(false)
                 router.refresh()
             } else {
