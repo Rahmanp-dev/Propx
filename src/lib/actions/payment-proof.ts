@@ -68,15 +68,17 @@ export async function uploadPaymentProof(paymentId: string, data: {
 
         // Create notification for the owner
         const orgId = payment.flat.building.organizationId
-        await db.collection("Notification").insertOne({
-            organizationId: new ObjectId(orgId),
-            type: "PAYMENT_PROOF_UPLOADED",
-            title: "Payment Proof Uploaded",
-            message: `${payment.tenant.fullName} uploaded payment proof for Flat ${payment.flat.flatNumber} (₹${payment.totalDue.toLocaleString('en-IN')})`,
-            isRead: false,
-            data: JSON.stringify({ paymentId, proofId: insertResult.insertedId.toString() }),
-            createdAt: now,
-        })
+        if (orgId) {
+            await db.collection("Notification").insertOne({
+                organizationId: new ObjectId(orgId),
+                type: "PAYMENT_PROOF_UPLOADED",
+                title: "Payment Proof Uploaded",
+                message: `${payment.tenant.fullName} uploaded payment proof for Flat ${payment.flat.flatNumber} (₹${payment.totalDue.toLocaleString('en-IN')})`,
+                isRead: false,
+                data: JSON.stringify({ paymentId, proofId: insertResult.insertedId.toString() }),
+                createdAt: now,
+            })
+        }
 
         revalidatePath('/dashboard')
         revalidatePath('/finance')
