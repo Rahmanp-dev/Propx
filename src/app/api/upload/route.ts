@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
           url: cloudinaryUrl,
           storage: 'cloudinary' as const,
         })
-      } catch (cloudinaryError) {
-        console.error('Cloudinary upload failed, falling back to local:', cloudinaryError)
+      } catch (cloudinaryError: any) {
+        console.error('Cloudinary upload failed:', cloudinaryError?.message || cloudinaryError)
         // Fall through to local storage
       }
     }

@@ -20,12 +20,12 @@ const calculateOccupancy = (occupied: number, total: number) => {
     return Math.round((occupied / total) * 100);
 }
 
-export function BuildingCard({ building }: { building: BuildingStats }) {
+export function BuildingCard({ building, userId }: { building: BuildingStats; userId: string }) {
     const occupancy = calculateOccupancy(building.occupiedFlats, building.totalFlats)
     const outstanding = building.totalRevenue - building.collectedRevenue
 
     return (
-        <Link href={`/buildings/${building.id}`}>
+        <Link href={`/${userId}/buildings/${building.id}`}>
             <Card className="hover:shadow-lg transition-all cursor-pointer border-l-4 border-l-blue-500">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-xl font-bold">{building.name}</CardTitle>

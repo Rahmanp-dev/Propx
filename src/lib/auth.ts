@@ -70,7 +70,9 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 if (parsedCredentials.success) {
                     const { phone, pin } = parsedCredentials.data;
 
-                    const tenant = await prisma.tenant.findFirst({ where: { phone } });
+                    const tenant = await prisma.tenant.findFirst({ 
+                        where: { phone, isActive: true } 
+                    });
                     if (!tenant) return null;
 
                     const expectedPin = tenant.tenantPin || tenant.phone.slice(-4);

@@ -1,5 +1,6 @@
 import { getBuildings } from "@/lib/actions/building"
 import { getDashboardStats } from "@/lib/actions/dashboard"
+import { auth } from "@/lib/auth"
 import { BuildingCard } from "@/components/dashboard/building-card"
 import { AddBuildingDialog } from "@/components/dashboard/add-building-dialog"
 import { AlertTriangle, TrendingUp, Wallet, Clock, Users, Building2, BarChart3, Zap } from "lucide-react"
@@ -10,6 +11,9 @@ import { GenerateDuesButton } from "@/components/dashboard/generate-dues-button"
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
+    const session = await auth()
+    const userId = session?.user?.id || 'user'
+
     const [bRes, sRes] = await Promise.all([
         getBuildings(),
         getDashboardStats()
@@ -163,6 +167,7 @@ export default async function DashboardPage() {
                     return (
                         <BuildingCard
                             key={building.id}
+                            userId={userId}
                             building={{
                                 id: building.id,
                                 name: building.name,

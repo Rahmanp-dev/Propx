@@ -18,8 +18,8 @@ const FLAT_TYPE_LABELS: Record<string, string> = {
     OTHER: "Other",
 }
 
-export default async function BuildingPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params
+export default async function BuildingPage({ params }: { params: Promise<{ id: string; userId: string }> }) {
+    const { id, userId } = await params
     const { data: building, error } = await getBuildingDetails(id)
 
     if (error || !building) {
@@ -121,7 +121,7 @@ export default async function BuildingPage({ params }: { params: Promise<{ id: s
                             <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Floor {floor.number}</h3>
                             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                                 {floor.flats.map((flat) => (
-                                    <FlatTile key={flat.id} flat={flat} />
+                                    <FlatTile key={flat.id} flat={flat} userId={userId} />
                                 ))}
                                 {floor.flats.length === 0 && (
                                     <div className="col-span-full py-4 text-sm text-muted-foreground bg-slate-50 rounded-md flex items-center justify-center border border-dashed">
@@ -137,7 +137,7 @@ export default async function BuildingPage({ params }: { params: Promise<{ id: s
     )
 }
 
-function FlatTile({ flat }: { flat: any }) {
+function FlatTile({ flat, userId }: { flat: any; userId: string }) {
     const isOccupied = flat.status === "OCCUPIED"
     const isMaintenance = flat.status === "UNDER_MAINTENANCE"
 
@@ -164,7 +164,7 @@ function FlatTile({ flat }: { flat: any }) {
     const typeLabel = FLAT_TYPE_LABELS[flat.flatType] || flat.flatType || ""
 
     return (
-        <Link href={`/flats/${flat.id}`}>
+        <Link href={`/${userId}/flats/${flat.id}`}>
             <div className={cn(
                 "relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all hover:shadow-md cursor-pointer h-28",
                 statusColor

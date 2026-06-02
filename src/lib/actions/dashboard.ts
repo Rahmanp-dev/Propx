@@ -75,10 +75,10 @@ export async function getDashboardStats() {
             // 5. Total active tenants
             prisma.tenant.count({ where: { ...tenantWhere, isActive: true } }),
 
-            // 6. Current month payment aggregation (revenue from Payment model)
+            // 6. ALL-TIME outstanding payment aggregation (portfolio health)
             prisma.payment.aggregate({
                 where: {
-                    month: { gte: startOfMonth },
+                    balance: { gt: 0 },
                     ...paymentWhere,
                 },
                 _sum: {
