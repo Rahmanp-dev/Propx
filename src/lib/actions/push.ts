@@ -5,11 +5,13 @@ import { auth } from "@/lib/auth"
 import webpush from "web-push"
 
 // Configure web-push
-webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT || 'mailto:support@propx.in',
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '',
-    process.env.VAPID_PRIVATE_KEY || ''
-)
+if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+        process.env.VAPID_SUBJECT || 'mailto:support@propx.in',
+        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+        process.env.VAPID_PRIVATE_KEY
+    )
+}
 
 export async function saveSubscription(subscription: any) {
     try {
