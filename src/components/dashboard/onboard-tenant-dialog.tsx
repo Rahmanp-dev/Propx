@@ -44,6 +44,8 @@ interface OnboardTenantDialogProps {
 
 export function OnboardTenantDialog({ flatId, suggestedRent, suggestedDeposit }: OnboardTenantDialogProps) {
     const [open, setOpen] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
     const router = useRouter()
 
     const form = useForm({
@@ -62,15 +64,24 @@ export function OnboardTenantDialog({ flatId, suggestedRent, suggestedDeposit }:
     })
 
     async function onSubmit(values: OnboardTenantInput) {
-        const result = await onboardTenant(values)
+        setLoading(true)
+        setError("")
+        try {
+            const result = await onboardTenant(values)
+            setLoading(false)
 
-        if (result.success) {
-            setOpen(false)
-            form.reset()
-            router.refresh()
-        } else {
-            console.error(result.error)
-            // Ideally show toast here
+            if (result.success) {
+                setOpen(false)
+                form.reset()
+                router.refresh()
+            } else {
+                console.error("Server Action returned error:", result.error)
+                setError(result.error || "Failed to onboard tenant")
+            }
+        } catch (err) {
+            setLoading(false)
+            console.error("Fetch/Network error:", err)
+            setError("An unexpected error occurred. Please check your connection.")
         }
     }
 
@@ -235,8 +246,14 @@ export function OnboardTenantDialog({ flatId, suggestedRent, suggestedDeposit }:
                             )}
                         />
 
+                        {error && (
+                            <p className="text-sm text-red-500 font-medium text-center">{error}</p>
+                        )}
+
                         <DialogFooter>
-                            <Button type="submit">Complete Onboarding</Button>
+                            <Button type="submit" disabled={loading}>
+                                {loading ? "Onboarding..." : "Complete Onboarding"}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </Form>

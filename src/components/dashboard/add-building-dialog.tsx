@@ -32,6 +32,7 @@ import { Separator } from "@/components/ui/separator"
 export function AddBuildingDialog() {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
     const router = useRouter()
 
     const form = useForm({
@@ -49,15 +50,23 @@ export function AddBuildingDialog() {
 
     async function onSubmit(values: CreateBuildingInput) {
         setLoading(true)
-        const result = await createBuilding(values)
-        setLoading(false)
+        setError("")
+        try {
+            const result = await createBuilding(values)
+            setLoading(false)
 
-        if (result.success) {
-            setOpen(false)
-            form.reset()
-            router.refresh()
-        } else {
-            console.error(result.error)
+            if (result.success) {
+                setOpen(false)
+                form.reset()
+                router.refresh()
+            } else {
+                console.error("Server Action returned error:", result.error)
+                setError(result.error || "Failed to create building")
+            }
+        } catch (err) {
+            setLoading(false)
+            console.error("Fetch/Network error:", err)
+            setError("An unexpected error occurred. Please check your connection.")
         }
     }
 
@@ -173,6 +182,10 @@ export function AddBuildingDialog() {
                                 )}
                             />
                         </div>
+
+                        {error && (
+                            <p className="text-sm text-red-500 font-medium text-center">{error}</p>
+                        )}
 
                         <DialogFooter>
                             <Button type="submit" disabled={loading}>

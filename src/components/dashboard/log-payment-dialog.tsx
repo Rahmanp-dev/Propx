@@ -42,23 +42,37 @@ interface LogPaymentDialogProps {
 
 export function LogPaymentDialog({ payment, asIcon }: LogPaymentDialogProps) {
     const [open, setOpen] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
     const router = useRouter()
     const [amount, setAmount] = useState(payment.balance)
     const [method, setMethod] = useState("CASH")
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault()
-        const result = await logPayment({
-            paymentId: payment.id,
-            amount: Number(amount),
-            method: method as any
-        })
+        setLoading(true)
+        setError("")
 
-        if (result.success) {
-            setOpen(false)
-            router.refresh()
-        } else {
-            console.error(result.error)
+        try {
+            const result = await logPayment({
+                paymentId: payment.id,
+                amount: Number(amount),
+                method: method as any
+            })
+
+            setLoading(false)
+
+            if (result.success) {
+                setOpen(false)
+                router.refresh()
+            } else {
+                console.error("Server Action returned error:", result.error)
+                setError(result.error || "Failed to log payment")
+            }
+        } catch (err) {
+            setLoading(false)
+            console.error("Fetch/Network error:", err)
+            setError("An unexpected error occurred. Please check your connection.")
         }
     }
 
@@ -110,8 +124,14 @@ export function LogPaymentDialog({ payment, asIcon }: LogPaymentDialogProps) {
                         </Select>
                     </div>
 
+                    {error && (
+                        <p className="text-sm text-red-500 font-medium text-center">{error}</p>
+                    )}
+
                     <DialogFooter>
-                        <Button type="submit">Confirm Payment</Button>
+                        <Button type="submit" disabled={loading}>
+                            {loading ? "Confirming..." : "Confirm Payment"}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

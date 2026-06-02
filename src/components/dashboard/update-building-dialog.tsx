@@ -34,29 +34,36 @@ export function UpdateBuildingDialog({ buildingId, currentRate, buildingName, to
     const [rent1, setRent1] = useState((defaultRents?.BHK1 ?? 8000).toString())
     const [rent2, setRent2] = useState((defaultRents?.BHK2 ?? 12000).toString())
     const [rent3, setRent3] = useState((defaultRents?.BHK3 ?? 16000).toString())
+    const [error, setError] = useState("")
     const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
+        setError("")
 
-        const res = await updateBuildingSettings({
-            buildingId,
-            ratePerUnit: parseFloat(rate),
-            totalFloors: parseInt(floors),
-            defaultRentBHK1: parseFloat(rent1),
-            defaultRentBHK2: parseFloat(rent2),
-            defaultRentBHK3: parseFloat(rent3),
-        })
+        try {
+            const res = await updateBuildingSettings({
+                buildingId,
+                ratePerUnit: parseFloat(rate),
+                totalFloors: parseInt(floors),
+                defaultRentBHK1: parseFloat(rent1),
+                defaultRentBHK2: parseFloat(rent2),
+                defaultRentBHK3: parseFloat(rent3),
+            })
 
-        if (!res.success && res.error) {
-            alert(res.error)
-        }
+            setLoading(false)
 
-        setLoading(false)
-        if (res.success) {
-            setOpen(false)
-            router.refresh()
+            if (!res.success && res.error) {
+                setError(res.error)
+            } else if (res.success) {
+                setOpen(false)
+                router.refresh()
+            }
+        } catch (err) {
+            setLoading(false)
+            console.error("Fetch/Network error:", err)
+            setError("An unexpected error occurred. Please check your connection.")
         }
     }
 
@@ -134,6 +141,9 @@ export function UpdateBuildingDialog({ buildingId, currentRate, buildingName, to
                                 />
                             </div>
                         </div>
+                        {error && (
+                            <p className="text-sm text-red-500 font-medium text-center mt-2">{error}</p>
+                        )}
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={loading}>

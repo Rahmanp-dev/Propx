@@ -24,20 +24,28 @@ interface OffboardTenantDialogProps {
 export function OffboardTenantDialog({ flatId, tenantName }: OffboardTenantDialogProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
     const router = useRouter()
 
     const handleOffboard = async () => {
         setLoading(true)
-        const result = await offboardTenant(flatId)
+        setError("")
+        try {
+            const result = await offboardTenant(flatId)
 
-        if (result.success) {
-            setOpen(false)
-            router.refresh()
-        } else {
-            console.error(result.error)
-            alert(result.error)
+            setLoading(false)
+            if (result.success) {
+                setOpen(false)
+                router.refresh()
+            } else {
+                console.error("Server Action returned error:", result.error)
+                setError(result.error || "Failed to offboard tenant")
+            }
+        } catch (err) {
+            setLoading(false)
+            console.error("Fetch/Network error:", err)
+            setError("An unexpected error occurred. Please check your connection.")
         }
-        setLoading(false)
     }
 
     return (
@@ -55,6 +63,9 @@ export function OffboardTenantDialog({ flatId, tenantName }: OffboardTenantDialo
                         This will mark the flat as VACANT and deactivate the tenant.
                     </DialogDescription>
                 </DialogHeader>
+                {error && (
+                    <p className="text-sm text-red-500 font-medium text-center py-2">{error}</p>
+                )}
                 <DialogFooter>
                     <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
                         Cancel

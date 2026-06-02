@@ -63,27 +63,33 @@ export function AddFlatDialog({ buildingId, floors, defaultRents }: AddFlatDialo
         setLoading(true)
         setError("")
 
-        const result = await createFlat({
-            buildingId,
-            floorId,
-            flatNumber,
-            flatType: flatType as any,
-            rentAmount: parseFloat(rentAmount),
-            maintenanceAmount: parseFloat(maintenanceAmount)
-        })
+        try {
+            const result = await createFlat({
+                buildingId,
+                floorId,
+                flatNumber,
+                flatType: flatType as any,
+                rentAmount: parseFloat(rentAmount),
+                maintenanceAmount: parseFloat(maintenanceAmount)
+            })
 
-        setLoading(false)
+            setLoading(false)
 
-        if (result.error) {
-            setError(result.error)
-        } else {
-            setOpen(false)
-            setFloorId("")
-            setFlatNumber("")
-            setRentAmount("")
-            setMaintenanceAmount("")
-            setFlatType("BHK1")
-            router.refresh()
+            if (result.error) {
+                setError(result.error)
+            } else {
+                setOpen(false)
+                setFloorId("")
+                setFlatNumber("")
+                setRentAmount("")
+                setMaintenanceAmount("")
+                setFlatType("BHK1")
+                router.refresh()
+            }
+        } catch (err) {
+            setLoading(false)
+            console.error("Fetch/Network error:", err)
+            setError("An unexpected error occurred. Please check your connection.")
         }
     }
 

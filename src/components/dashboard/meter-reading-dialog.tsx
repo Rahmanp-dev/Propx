@@ -25,6 +25,7 @@ interface MeterReadingDialogProps {
 export function MeterReadingDialog({ flatId, flatNumber }: MeterReadingDialogProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
     const [reading, setReading] = useState("")
 
     // Default to current month
@@ -62,17 +63,30 @@ export function MeterReadingDialog({ flatId, flatNumber }: MeterReadingDialogPro
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
+        setError("")
 
-        await recordMeterReading({
-            flatId,
-            reading: parseFloat(reading),
-            month: parseInt(month),
-            year: parseInt(year)
-        })
+        try {
+            const result = await recordMeterReading({
+                flatId,
+                reading: parseFloat(reading),
+                month: parseInt(month),
+                year: parseInt(year)
+            })
 
-        setLoading(false)
-        setOpen(false)
-        setReading("")
+            setLoading(false)
+
+            if (result && result.error) {
+                console.error("Server Action returned error:", result.error)
+                setError(result.error)
+            } else {
+                setOpen(false)
+                setReading("")
+            }
+        } catch (err) {
+            setLoading(false)
+            console.error("Fetch/Network error:", err)
+            setError("An unexpected error occurred. Please check your connection.")
+        }
     }
 
     return (
@@ -143,6 +157,10 @@ export function MeterReadingDialog({ flatId, flatNumber }: MeterReadingDialogPro
                                 </span>
                             </div>
                         </div>
+
+                        {error && (
+                            <p className="text-sm text-red-500 font-medium text-center">{error}</p>
+                        )}
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={loading}>
