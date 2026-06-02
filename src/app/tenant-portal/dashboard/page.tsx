@@ -1,4 +1,4 @@
-import { getTenantSession } from "@/lib/tenant-auth"
+import { auth } from "@/lib/auth"
 import { getTenantDashboard } from "@/lib/actions/tenant-portal"
 import { redirect } from "next/navigation"
 import { TenantNav } from "../tenant-nav"
@@ -21,10 +21,10 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export default async function TenantDashboardPage() {
-    const session = await getTenantSession()
-    if (!session) redirect('/tenant-portal/login')
+    const session = await auth()
+    if (!session?.user?.id) redirect('/tenant-portal/login')
 
-    const data = await getTenantDashboard(session.tenantId)
+    const data = await getTenantDashboard(session.user.id)
     if (!data) {
         return <div className="p-4 text-red-500">Error loading dashboard</div>
     }

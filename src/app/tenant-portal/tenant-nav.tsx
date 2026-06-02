@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Home, IndianRupee, Wrench, LogOut } from "lucide-react"
-import { logoutTenant } from "@/lib/tenant-auth"
+import { signOut } from "next-auth/react"
 
 const navItems = [
     { label: "Home", href: "/tenant-portal/dashboard", icon: Home },
@@ -17,9 +17,7 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
     const router = useRouter()
 
     async function handleLogout() {
-        await logoutTenant()
-        router.push('/tenant-portal/login')
-        router.refresh()
+        await signOut({ callbackUrl: '/tenant-portal/login' })
     }
 
     return (

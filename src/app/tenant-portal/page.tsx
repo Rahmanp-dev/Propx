@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation'
-import { getTenantSession } from '@/lib/tenant-auth'
+import { auth } from '@/lib/auth'
 
 export default async function TenantPortalPage() {
-  const session = await getTenantSession()
+  const session = await auth()
   
   if (session) {
     redirect('/tenant-portal/dashboard')

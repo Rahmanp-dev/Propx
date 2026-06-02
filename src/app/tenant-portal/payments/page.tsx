@@ -1,4 +1,4 @@
-import { getTenantSession } from "@/lib/tenant-auth"
+import { auth } from "@/lib/auth"
 import { getTenantPayments } from "@/lib/actions/tenant-portal"
 import { redirect } from "next/navigation"
 import { TenantNav } from "../tenant-nav"
@@ -17,14 +17,14 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export default async function TenantPaymentsPage() {
-    const session = await getTenantSession()
-    if (!session) redirect('/tenant-portal/login')
+    const session = await auth()
+    if (!session?.user?.id) redirect('/tenant-portal/login')
 
-    const payments = await getTenantPayments(session.tenantId)
+    const payments = await getTenantPayments(session.user.id)
 
     return (
         <>
-            <TenantNav tenantName={session.name} />
+            <TenantNav tenantName={session.user?.name || ''} />
             <main className="max-w-lg mx-auto px-4 py-6 pb-24 space-y-4">
                 <h1 className="text-xl font-bold text-gray-900">Payment History</h1>
 
