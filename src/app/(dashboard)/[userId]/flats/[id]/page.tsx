@@ -20,8 +20,8 @@ const FLAT_TYPE_LABELS: Record<string, string> = {
     OTHER: "Other",
 }
 
-export default async function FlatPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params
+export default async function FlatPage({ params }: { params: Promise<{ id: string; userId: string }> }) {
+    const { id, userId } = await params
     const { data: flat, error } = await getFlatDetails(id)
 
     if (error || !flat) {
@@ -33,7 +33,7 @@ export default async function FlatPage({ params }: { params: Promise<{ id: strin
 
     return (
         <div className="space-y-6">
-            <Link href={`/buildings/${flat.buildingId}`} className="flex items-center text-sm text-muted-foreground hover:text-foreground">
+            <Link href={`/${userId}/buildings/${flat.buildingId}`} className="flex items-center text-sm text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Building
             </Link>
 

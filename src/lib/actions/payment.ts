@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { ObjectId } from "mongodb"
 import { auth } from "@/lib/auth"
+import { sendPushToOrganization } from "./push"
 
 async function getOrgContext() {
     const session = await auth()
@@ -90,6 +91,26 @@ export async function logPayment(data: LogPaymentInput) {
                 }
             }
         )
+
+        // Add Notification
+        if (payment.flat.building.organizationId) {
+            await db.collection("Notification").insertOne({
+                organizationId: new ObjectId(payment.flat.building.organizationId),
+                type: "PAYMENT_RECEIVED",
+                title: "Payment Received",
+                message: `Received ₹${amount.toLocaleString()} via ${method} for Flat ${payment.flat.flatNumber}.`,
+                isRead: false,
+                data: JSON.stringify({ paymentId, amount, method }),
+                createdAt: new Date(),
+            })
+
+            // Fire and forget push notification
+            sendPushToOrganization(payment.flat.building.organizationId, {
+                title: "Payment Received",
+                message: `Received ₹${amount.toLocaleString()} via ${method} for Flat ${payment.flat.flatNumber}.`,
+                url: `/finance`
+            }).catch(console.error)
+        }
 
         // Cascade balance updates to future months
         await updateFutureBalances(payment.tenantId, payment.month, Math.max(0, newBalance))

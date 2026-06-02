@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { ObjectId } from "mongodb"
 import { auth } from "@/lib/auth"
+import { sendPushToOrganization } from "./push"
 
 // ==========================================
 // ORG CONTEXT HELPER
@@ -213,6 +214,26 @@ export async function createMaintenanceRequest(data: CreateMaintenanceInput) {
 
         const insertResult = await db.collection("MaintenanceRequest").insertOne(doc)
 
+        // Create notification for the organization
+        if (orgCtx.organizationId) {
+            await db.collection("Notification").insertOne({
+                organizationId: new ObjectId(orgCtx.organizationId),
+                type: "MAINTENANCE_NEW",
+                title: "New Maintenance Request",
+                message: `New ${priority} priority request for Flat ${flat.flatNumber}: ${title}`,
+                isRead: false,
+                data: JSON.stringify({ requestId: insertResult.insertedId.toString(), flatId }),
+                createdAt: now,
+            })
+            
+            // Fire and forget push notification
+            sendPushToOrganization(orgCtx.organizationId, {
+                title: "New Maintenance Request",
+                message: `New ${priority} priority request for Flat ${flat.flatNumber}: ${title}`,
+                url: `/maintenance`
+            }).catch(console.error)
+        }
+
         revalidatePath('/dashboard')
         revalidatePath('/maintenance')
         revalidatePath(`/buildings/${buildingId}`)
@@ -237,7 +258,10 @@ export async function updateMaintenanceStatus(
         // Get current request to validate status transition
         const current = await prisma.maintenanceRequest.findUnique({
             where: { id },
-            include: { building: { select: { organizationId: true } } }
+            include: { 
+                building: { select: { organizationId: true } },
+                flat: { select: { flatNumber: true } }
+            }
         })
 
         if (!current) {
@@ -274,6 +298,25 @@ export async function updateMaintenanceStatus(
 
         if (status === "RESOLVED") {
             updateFields.resolvedAt = new Date()
+            
+            if (current.building.organizationId) {
+                await db.collection("Notification").insertOne({
+                    organizationId: new ObjectId(current.building.organizationId),
+                    type: "MAINTENANCE_RESOLVED",
+                    title: "Maintenance Request Resolved",
+                    message: `Maintenance request for Flat ${current.flat?.flatNumber || 'Unknown'} has been resolved.`,
+                    isRead: false,
+                    data: JSON.stringify({ requestId: id }),
+                    createdAt: new Date(),
+                })
+                
+                // Fire and forget push notification
+                sendPushToOrganization(current.building.organizationId, {
+                    title: "Maintenance Request Resolved",
+                    message: `Maintenance request for Flat ${current.flat?.flatNumber || 'Unknown'} has been resolved.`,
+                    url: `/maintenance`
+                }).catch(console.error)
+            }
         }
 
         await db.collection("MaintenanceRequest").updateOne(

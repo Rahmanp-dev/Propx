@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 
-export default function BuildingsPage() {
+export default async function BuildingsPage({ params }: { params: Promise<{ userId: string }> }) {
+    const { userId } = await params
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight">Buildings</h1>
-                <Link href="/dashboard">
+                <Link href={`/${userId}/dashboard`}>
                     <Button variant="outline">
                         <Plus className="mr-2 h-4 w-4" /> Add Building
                     </Button>
@@ -21,7 +23,7 @@ export default function BuildingsPage() {
                 </CardHeader>
                 <CardContent>
                     <p className="text-muted-foreground">
-                        Go to the <Link href="/dashboard" className="text-primary underline">Dashboard</Link> to see all your buildings and add new ones.
+                        Go to the <Link href={`/${userId}/dashboard`} className="text-primary underline">Dashboard</Link> to see all your buildings and add new ones.
                     </p>
                 </CardContent>
             </Card>

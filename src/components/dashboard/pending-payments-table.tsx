@@ -15,9 +15,10 @@ import Link from "next/link"
 
 interface PendingPaymentsTableProps {
     payments: any[]
+    userId: string
 }
 
-export function PendingPaymentsTable({ payments }: PendingPaymentsTableProps) {
+export function PendingPaymentsTable({ payments, userId }: PendingPaymentsTableProps) {
     if (!payments || payments.length === 0) {
         return (
             <div className="text-center py-6 text-muted-foreground border rounded-md bg-slate-50">
@@ -46,7 +47,7 @@ export function PendingPaymentsTable({ payments }: PendingPaymentsTableProps) {
                                 {payment.tenant.fullName}
                             </TableCell>
                             <TableCell>
-                                <Link href={`/flats/${payment.flatId}`} className="hover:underline">
+                                <Link href={`/${userId}/flats/${payment.flatId}`} className="hover:underline">
                                     {payment.flat.building.name} - {payment.flat.flatNumber}
                                 </Link>
                             </TableCell>

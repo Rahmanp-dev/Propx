@@ -41,7 +41,7 @@ export default async function DashboardPage() {
     return (
         <div className="space-y-4 md:space-y-8">
             {/* Page Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
                     <p className="text-muted-foreground">Overview of your property portfolio</p>
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
                 <div className="space-y-4">
                     <h2 className="text-2xl font-bold tracking-tight">Pending Dues</h2>
                     <div className="overflow-x-auto pb-2">
-                        <PendingPaymentsTable payments={alerts.overdue} />
+                        <PendingPaymentsTable payments={alerts.overdue} userId={userId} />
                     </div>
                 </div>
             )}

@@ -3,8 +3,11 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users } from "lucide-react"
 import Link from "next/link"
+import { auth } from "@/lib/auth"
 
 export default async function TenantsPage() {
+    const session = await auth()
+    const userId = session?.user?.id || 'user'
     const { data: tenants, error } = await getTenants()
 
     if (error) {
@@ -23,7 +26,7 @@ export default async function TenantsPage() {
             {tenants && tenants.length > 0 ? (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {tenants.map((tenant) => (
-                        <Link key={tenant.id} href={tenant.flat ? `/flats/${tenant.flat.id}` : '#'}>
+                        <Link key={tenant.id} href={tenant.flat ? `/${userId}/flats/${tenant.flat.id}` : '#'}>
                             <Card className="hover:shadow-md transition-shadow cursor-pointer">
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-lg">{tenant.fullName}</CardTitle>

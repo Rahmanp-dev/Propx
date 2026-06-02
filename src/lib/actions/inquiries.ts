@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { ObjectId } from "mongodb"
 import { auth } from "@/lib/auth"
+import { sendPushToOrganization } from "./push"
 
 // ==========================================
 // ORG CONTEXT HELPER
@@ -162,6 +163,25 @@ export async function createInquiry(data: CreateInquiryInput) {
         }
 
         const insertResult = await db.collection("TenantInquiry").insertOne(doc)
+
+        if (orgCtx.organizationId) {
+            await db.collection("Notification").insertOne({
+                organizationId: new ObjectId(orgCtx.organizationId),
+                type: "INQUIRY_NEW",
+                title: "New Lead Inquiry",
+                message: `New inquiry from ${name} via ${source}`,
+                isRead: false,
+                data: JSON.stringify({ inquiryId: insertResult.insertedId.toString(), phone, email }),
+                createdAt: now,
+            })
+
+            // Fire and forget push notification
+            sendPushToOrganization(orgCtx.organizationId, {
+                title: "New Lead Inquiry",
+                message: `New inquiry from ${name} via ${source}`,
+                url: `/inquiries`
+            }).catch(console.error)
+        }
 
         revalidatePath('/inquiries')
         revalidatePath('/dashboard')

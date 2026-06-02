@@ -1,14 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Settings, IndianRupee } from 'lucide-react'
-import { WhatsAppSettingsSection } from '@/components/settings/whatsapp-settings'
-import { getOrgWhatsAppConfig, getOwnerPaymentConfig } from '@/lib/actions/settings'
+import { getOwnerPaymentConfig } from '@/lib/actions/settings'
 import { PaymentConfigForm } from './payment-config-form'
+import { PushSettings } from '@/components/settings/push-settings'
 
 export const dynamic = 'force-dynamic'
 
 export default async function SettingsPage() {
-    const [waStatus, payConfig] = await Promise.all([
-        getOrgWhatsAppConfig(),
+    const [payConfig] = await Promise.all([
         getOwnerPaymentConfig(),
     ])
 
@@ -36,12 +35,6 @@ export default async function SettingsPage() {
                     </CardContent>
                 </Card>
 
-                {/* WhatsApp */}
-                <WhatsAppSettingsSection
-                    configured={waStatus.configured}
-                    maskedToken={waStatus.maskedToken}
-                    phoneNumberId={waStatus.phoneNumberId}
-                />
 
                 <Card>
                     <CardHeader>
@@ -50,8 +43,9 @@ export default async function SettingsPage() {
                             General Settings
                         </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground">
+                    <CardContent className="space-y-6">
+                        <PushSettings />
+                        <p className="text-sm text-muted-foreground pt-4 border-t">
                             More configuration options coming soon.
                         </p>
                     </CardContent>

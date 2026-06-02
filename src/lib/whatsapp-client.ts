@@ -35,12 +35,10 @@ type WhatsAppResult = {
 }
 
 async function callWhatsAppAPI(
-    body: Record<string, any>,
-    accessToken?: string,
-    phoneNumberId?: string
+    body: Record<string, any>
 ): Promise<WhatsAppResult> {
-    const token = accessToken || process.env.WHATSAPP_ACCESS_TOKEN
-    const phoneId = phoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID
+    const token = process.env.WHATSAPP_ACCESS_TOKEN
+    const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID
 
     if (!token || !phoneId) {
         return { success: false, error: 'WhatsApp API not configured' }
@@ -76,25 +74,21 @@ async function callWhatsAppAPI(
 
 export async function sendWhatsAppMessage(
     phone: string,
-    message: string,
-    accessToken?: string,
-    phoneNumberId?: string
+    message: string
 ): Promise<WhatsAppResult> {
     return callWhatsAppAPI({
         messaging_product: 'whatsapp',
         to: formatPhoneNumber(phone),
         type: 'text',
         text: { body: message },
-    }, accessToken, phoneNumberId)
+    })
 }
 
 export async function sendWhatsAppTemplate(
     phone: string,
     templateName: string,
     language: string,
-    components?: any[],
-    accessToken?: string,
-    phoneNumberId?: string
+    components?: any[]
 ): Promise<WhatsAppResult> {
     const template: Record<string, any> = {
         name: templateName,
@@ -109,5 +103,5 @@ export async function sendWhatsAppTemplate(
         to: formatPhoneNumber(phone),
         type: 'template',
         template,
-    }, accessToken, phoneNumberId)
+    })
 }

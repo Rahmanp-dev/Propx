@@ -204,21 +204,7 @@ export async function sendRentReminders(buildingId?: string) {
         let sent = 0
         let queued = logs.length
 
-        let waAccessToken: string | undefined = undefined
-        let waPhoneNumberId: string | undefined = undefined
-        let waConfigured = false
-
-        if (orgCtx.organizationId) {
-            const org = await prisma.organization.findUnique({
-                where: { id: orgCtx.organizationId },
-                select: { whatsappAccessToken: true, whatsappPhoneNumberId: true }
-            })
-            if (org?.whatsappAccessToken && org?.whatsappPhoneNumberId) {
-                waAccessToken = org.whatsappAccessToken
-                waPhoneNumberId = org.whatsappPhoneNumberId
-                waConfigured = true
-            }
-        }
+        const waConfigured = isWhatsAppConfigured()
 
         if (waConfigured) {
             for (let i = 0; i < logs.length; i++) {
@@ -226,10 +212,7 @@ export async function sendRentReminders(buildingId?: string) {
                 const result = await sendWhatsAppTemplate(
                     log.phone,
                     'rent_reminder_v1',
-                    'en',
-                    undefined,
-                    waAccessToken,
-                    waPhoneNumberId
+                    'en'
                 )
 
                 if (result.success && result.messageId) {
@@ -319,30 +302,14 @@ export async function sendBroadcastMessage(message: string, buildingId?: string)
         let sent = 0
         let queued = logs.length
 
-        let waAccessToken: string | undefined = undefined
-        let waPhoneNumberId: string | undefined = undefined
-        let waConfigured = false
-
-        if (orgCtx.organizationId) {
-            const org = await prisma.organization.findUnique({
-                where: { id: orgCtx.organizationId },
-                select: { whatsappAccessToken: true, whatsappPhoneNumberId: true }
-            })
-            if (org?.whatsappAccessToken && org?.whatsappPhoneNumberId) {
-                waAccessToken = org.whatsappAccessToken
-                waPhoneNumberId = org.whatsappPhoneNumberId
-                waConfigured = true
-            }
-        }
+        const waConfigured = isWhatsAppConfigured()
 
         if (waConfigured) {
             for (let i = 0; i < logs.length; i++) {
                 const log = logs[i]
                 const result = await sendWhatsAppMessage(
                     log.phone, 
-                    trimmedMessage,
-                    waAccessToken,
-                    waPhoneNumberId
+                    trimmedMessage
                 )
 
                 if (result.success && result.messageId) {

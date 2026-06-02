@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Calculator, Calendar, CreditCard, Settings, Smile, User, Building, MapPin } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 
 import {
     CommandDialog,
@@ -22,6 +22,8 @@ export function GlobalSearch() {
     const [query, setQuery] = React.useState("")
     const [data, setData] = React.useState<{ tenants: any[], buildings: any[], flats: any[] } | null>(null)
     const router = useRouter()
+    const pathname = usePathname()
+    const userId = pathname.split('/')[1] || 'user'
 
     React.useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -76,7 +78,7 @@ export function GlobalSearch() {
                     {data?.buildings && data.buildings.length > 0 && (
                         <CommandGroup heading="Buildings">
                             {data.buildings.map(b => (
-                                <CommandItem key={b.id} onSelect={() => runCommand(() => router.push(`/buildings/${b.id}`))}>
+                                <CommandItem key={b.id} onSelect={() => runCommand(() => router.push(`/${userId}/buildings/${b.id}`))}>
                                     <Building className="mr-2 h-4 w-4" />
                                     <span>{b.name}</span>
                                 </CommandItem>
@@ -87,7 +89,7 @@ export function GlobalSearch() {
                     {data?.flats && data.flats.length > 0 && (
                         <CommandGroup heading="Flats">
                             {data.flats.map(f => (
-                                <CommandItem key={f.id} onSelect={() => runCommand(() => router.push(`/flats/${f.id}`))}>
+                                <CommandItem key={f.id} onSelect={() => runCommand(() => router.push(`/${userId}/flats/${f.id}`))}>
                                     <MapPin className="mr-2 h-4 w-4" />
                                     <span>{f.flatNumber} - {f.building.name}</span>
                                 </CommandItem>
@@ -98,7 +100,7 @@ export function GlobalSearch() {
                     {data?.tenants && data.tenants.length > 0 && (
                         <CommandGroup heading="Tenants">
                             {data.tenants.map(t => (
-                                <CommandItem key={t.id} onSelect={() => runCommand(() => router.push(`/flats/${t.assignedFlatId}`))}>
+                                <CommandItem key={t.id} onSelect={() => runCommand(() => router.push(`/${userId}/flats/${t.assignedFlatId}`))}>
                                     <User className="mr-2 h-4 w-4" />
                                     <span>{t.fullName}</span>
                                     <span className="ml-2 text-xs text-muted-foreground">({t.flat?.flatNumber})</span>
@@ -110,11 +112,11 @@ export function GlobalSearch() {
                     <CommandSeparator />
 
                     <CommandGroup heading="Quick Actions">
-                        <CommandItem onSelect={() => runCommand(() => router.push('/dashboard'))}>
+                        <CommandItem onSelect={() => runCommand(() => router.push(`/${userId}/dashboard`))}>
                             <LayoutDashboard className="mr-2 h-4 w-4" />
                             <span>Dashboard</span>
                         </CommandItem>
-                        <CommandItem onSelect={() => runCommand(() => router.push('/finance'))}>
+                        <CommandItem onSelect={() => runCommand(() => router.push(`/${userId}/finance`))}>
                             <CreditCard className="mr-2 h-4 w-4" />
                             <span>Finance</span>
                         </CommandItem>

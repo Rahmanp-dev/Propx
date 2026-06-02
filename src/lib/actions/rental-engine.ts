@@ -5,6 +5,7 @@ import clientPromise from "@/lib/mongo"
 import { revalidatePath } from "next/cache"
 import { ObjectId } from "mongodb"
 import { auth } from "@/lib/auth"
+import { sendPushToOrganization } from "./push"
 
 async function getOrgContext() {
     const session = await auth()
@@ -131,6 +132,26 @@ export async function generateMonthlyDues() {
             })
 
             generatedCount++
+        }
+
+        // Add notification for the organization
+        if (generatedCount > 0 && orgCtx.organizationId) {
+            await db.collection("Notification").insertOne({
+                organizationId: new ObjectId(orgCtx.organizationId),
+                type: "SYSTEM",
+                title: "Monthly Dues Generated",
+                message: `Successfully generated ${generatedCount} payment bills for ${currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}.`,
+                isRead: false,
+                data: JSON.stringify({ generatedCount, month: currentMonth }),
+                createdAt: new Date(),
+            })
+
+            // Fire and forget push notification
+            sendPushToOrganization(orgCtx.organizationId, {
+                title: "Monthly Dues Generated",
+                message: `Successfully generated ${generatedCount} payment bills for ${currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}.`,
+                url: `/finance`
+            }).catch(console.error)
         }
 
         // Revalidate all relevant pages

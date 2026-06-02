@@ -29,6 +29,7 @@ model User {
   updatedAt      DateTime  @updatedAt
 
   organization Organization? @relation(fields: [organizationId], references: [id])
+  pushSubscriptions PushSubscription[]
 
   @@index([organizationId])
 }
@@ -80,10 +81,8 @@ model Organization {
   paymentInstructions String?  // custom text shown to tenants
   paymentMethods      Json?    // Array of { id, type: 'UPI'|'BANK', label, upiId?, bankName?, accountNumber?, ifscCode?, accountHolder?, isDefault }
 
-  // WhatsApp Business API (per-org)
-  whatsappAccessToken    String?  // Owner's own WhatsApp Cloud API access token
-  whatsappPhoneNumberId  String?  // Owner's WhatsApp phone number ID
-  whatsappVerifyToken    String?  // Webhook verification token
+  // WhatsApp Business API (Centralized Model)
+  // Fields removed: PropX will send all messages via the global SaaS WhatsApp configuration.
 
   // Status
   isActive    Boolean  @default(false) // activated after payment verified by super admin
@@ -481,4 +480,18 @@ model Notification {
   organization Organization? @relation(fields: [organizationId], references: [id])
 
   @@index([organizationId])
+}
+
+model PushSubscription {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String   @db.ObjectId
+  endpoint       String   @unique
+  p256dh         String
+  auth           String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
