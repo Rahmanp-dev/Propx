@@ -6,9 +6,13 @@ import { PendingVerifications } from "./pending-verifications"
 
 export const dynamic = 'force-dynamic'
 
-export default async function FinancePage() {
+export default async function FinancePage({ searchParams }: { searchParams: Promise<{ month?: string, year?: string }> }) {
+    const resolvedSearchParams = await searchParams;
+    const monthParam = resolvedSearchParams.month ? parseInt(resolvedSearchParams.month) : undefined;
+    const yearParam = resolvedSearchParams.year ? parseInt(resolvedSearchParams.year) : undefined;
+
     const [{ data, error }, verificationsResult] = await Promise.all([
-        getFinanceStats(),
+        getFinanceStats(monthParam, yearParam),
         getPendingVerifications(),
     ])
 

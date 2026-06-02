@@ -219,6 +219,7 @@ model Tenant {
   leaseStartDate   DateTime
   leaseEndDate     DateTime?
   assignedFlatId   String?   @db.ObjectId
+  paymentMethodId  String?
   emergencyContact String?
   notes            String?
   tenantPin        String?
@@ -262,6 +263,8 @@ model Payment {
   rentDue         Float
   maintenanceDue  Float
   electricityDue  Float         @default(0.0)
+  customDues      Float         @default(0.0)
+  customDuesList  Json?         // Array of { label, amount, date }
   arrears         Float         @default(0.0)
   totalDue        Float
   amountPaid      Float         @default(0.0)
@@ -270,6 +273,7 @@ model Payment {
   paymentDate     DateTime?
   paymentMethod   PaymentMethod?
   receiptNumber   String?
+  upiReference    String?       // For tracking UPI transaction IDs
   verifiedByOwner Boolean       @default(false)
   notes           String?
   createdAt       DateTime      @default(now())

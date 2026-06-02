@@ -24,6 +24,7 @@ export const onboardTenantSchema = z.object({
     leaseStartDate: z.date(),
     leaseEndDate: z.date().optional(),
     flatId: z.string().min(1, "Flat ID is required"),
+    paymentMethodId: z.string().optional().or(z.literal("")),
     rentAmount: z.coerce.number().min(0),
     depositAmount: z.coerce.number().min(0),
     initialMeterReading: z.coerce.number().min(0).optional(),

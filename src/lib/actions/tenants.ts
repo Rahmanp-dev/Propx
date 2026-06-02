@@ -33,11 +33,26 @@ export async function getTenants() {
                             select: { name: true }
                         }
                     }
+                },
+                payments: {
+                    orderBy: { month: 'desc' },
+                    take: 1
                 }
             },
             orderBy: { createdAt: 'desc' }
         })
-        return { success: true, data: tenants }
+        
+        // Map the tenants to include current payment info directly for easier access
+        const mappedTenants = tenants.map(tenant => {
+            const latestPayment = tenant.payments?.[0];
+            return {
+                ...tenant,
+                currentPaymentStatus: latestPayment?.status || 'PENDING',
+                currentBalance: latestPayment?.balance || 0,
+            }
+        })
+        
+        return { success: true, data: mappedTenants }
     } catch (error) {
         console.error("Failed to fetch tenants:", error)
         return { error: "Failed to fetch tenants" }

@@ -40,6 +40,8 @@ A subscription-based SaaS platform where building owners register, select packag
 | 💰 **Financial Command Center** | Revenue charts, monthly breakdowns, collection rates, payment verification |
 | ⚡ **Electricity Billing** | Per-flat meter readings, auto-calculation based on building rate-per-unit |
 | 📅 **Monthly Dues Auto-Generation** | Generate rent + maintenance + electricity for all occupied flats in one click |
+| 📄 **Physical PDF Receipts** | Real PDF generation engine for monthly receipts (9-grid extreme density format) |
+| 🔍 **Global Master Search** | Command palette to instantly find tenants, flats, or buildings across properties |
 | 🔧 **Maintenance Tracker** | Create, assign, resolve tickets — Plumbing, Electrical, Carpentry, etc. |
 | 📱 **WhatsApp Business API** | Rent reminders, receipts, maintenance updates, broadcast messages |
 | 🔍 **Tenant Inquiry Pipeline** | Track leads from WhatsApp, Website, Walk-in, Referral |
@@ -368,7 +370,15 @@ node seed-production.js
 
 ## 🔄 Changelog
 
-### v2.1 — Security Audit & UI Overhaul (Latest)
+### v2.2 — Production Polish & Scalability (Latest)
+- 📄 **Real PDF Generation** — Replaced native browser print with a true physical PDF engine (`html-to-image` + `jsPDF`) for downloadable receipts.
+- 🖨️ **9-Grid Density Layout** — Engineered an extreme density 3x3 layout to fit exactly 9 highly detailed receipts on a single A4 PDF page.
+- 🔍 **Global Master Search** — Integrated a fast command-palette search mounted in the top-bar to instantly find any tenant, flat, or building.
+- ⚡ **Real-Time Filtering** — Upgraded building flat lists with instant client-side search filtering by flat number or tenant name.
+- 🗂️ **UI/UX Refinements** — Added permanent "Receipts" access to core navigation sidebars and refined data tables.
+- 🛠️ **Next.js 16 Hardening** — Resolved Server Component `searchParams` Promise unwrap errors and illegal event handlers for bulletproof production builds.
+
+### v2.1 — Security Audit & UI Overhaul
 - 🔒 **Middleware Protection** — Added `middleware.ts` for route-level NextAuth enforcement
 - 🔒 **Super Admin Action Guards** — All server actions require authenticated SUPER_ADMIN role
 - 🔒 **Encrypted Tenant Cookies** — AES-256-GCM encrypted session cookies (no more plain-text)

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { AddFlatDialog } from "@/components/dashboard/add-flat-dialog"
 import { UpdateBuildingDialog } from "@/components/dashboard/update-building-dialog"
 import { DeleteBuildingDialog } from "@/components/dashboard/delete-building-dialog"
+import { BuildingFlatsClient } from "@/components/dashboard/building-flats-client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Zap, IndianRupee } from "lucide-react"
 
@@ -114,71 +115,7 @@ export default async function BuildingPage({ params }: { params: Promise<{ id: s
 
             <Separator />
 
-            {/* Floors & Flats */}
-            <div className="space-y-8">
-                <h2 className="text-xl font-semibold">Floors & Flats</h2>
-                <div className="space-y-6">
-                    {building.floors.map((floor) => (
-                        <div key={floor.id} className="space-y-3">
-                            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Floor {floor.number}</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                                {floor.flats.map((flat) => (
-                                    <FlatTile key={flat.id} flat={flat} userId={userId} />
-                                ))}
-                                {floor.flats.length === 0 && (
-                                    <div className="col-span-full py-4 text-sm text-muted-foreground bg-slate-50 rounded-md flex items-center justify-center border border-dashed">
-                                        No flats on this floor
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            <BuildingFlatsClient floors={building.floors} userId={userId} />
         </div>
-    )
-}
-
-function FlatTile({ flat, userId }: { flat: any; userId: string }) {
-    const isOccupied = flat.status === "OCCUPIED"
-    const isMaintenance = flat.status === "UNDER_MAINTENANCE"
-
-    let statusColor = "bg-gray-100 border-gray-200 text-gray-500"
-    let statusLabel = "Vacant"
-
-    if (isMaintenance) {
-        statusColor = "bg-orange-50 border-orange-200 text-orange-700"
-        statusLabel = "Maint."
-    } else if (isOccupied) {
-        const payment = flat.payments?.[0]
-        if (payment && payment.status === "PAID") {
-            statusColor = "bg-green-50 border-green-200 text-green-700"
-            statusLabel = "Paid"
-        } else if (payment && payment.status === "PARTIAL") {
-            statusColor = "bg-amber-50 border-amber-200 text-amber-700"
-            statusLabel = "Partial"
-        } else {
-            statusColor = "bg-red-50 border-red-200 text-red-700"
-            statusLabel = "Due"
-        }
-    }
-
-    const typeLabel = FLAT_TYPE_LABELS[flat.flatType] || flat.flatType || ""
-
-    return (
-        <Link href={`/${userId}/flats/${flat.id}`}>
-            <div className={cn(
-                "relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all hover:shadow-md cursor-pointer h-28",
-                statusColor
-            )}>
-                <span className="text-lg font-bold">{flat.flatNumber}</span>
-                {typeLabel && (
-                    <span className="text-[10px] font-medium text-muted-foreground mt-0.5">{typeLabel}</span>
-                )}
-                <Badge variant="secondary" className="mt-1 text-[10px] h-5 px-1.5 bg-white/50 backdrop-blur-sm">
-                    {statusLabel}
-                </Badge>
-            </div>
-        </Link>
     )
 }

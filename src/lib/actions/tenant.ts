@@ -29,7 +29,7 @@ export async function onboardTenant(data: OnboardTenantInput) {
         return { error: "Invalid input" }
     }
 
-    const { flatId, fullName, phone, aadhaarNumber, occupantsCount, leaseStartDate, leaseEndDate, rentAmount, depositAmount, initialMeterReading } = result.data
+    const { flatId, fullName, phone, aadhaarNumber, occupantsCount, leaseStartDate, leaseEndDate, rentAmount, depositAmount, initialMeterReading, paymentMethodId } = result.data
 
     try {
         const client = await clientPromise
@@ -89,6 +89,7 @@ export async function onboardTenant(data: OnboardTenantInput) {
             leaseStartDate,
             leaseEndDate,
             assignedFlatId: new ObjectId(flatId),
+            paymentMethodId: paymentMethodId || null,
             tenantPin,
             isActive: true,
             createdAt: now,

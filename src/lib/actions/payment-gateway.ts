@@ -117,76 +117,7 @@ export async function verifyPaymentWebhook(body: string, signature: string) {
   }
 }
 
-// Process a successful payment from webhook
-export async function processPaymentCapture(
-  paymentId: string,
-  amountPaid: number,
-  razorpayPaymentId: string
-) {
-  try {
-    const client = await clientPromise
-    const db = client.db('propx')
-    const paymentsCollection = db.collection('Payment')
 
-    // Get payment to find org for notification
-    const payment = await prisma.payment.findUnique({
-      where: { id: paymentId },
-      include: { flat: { include: { building: { select: { organizationId: true } } } } }
-    })
-
-    // Generate receipt number
-    const receiptNumber = `RCP-${Date.now().toString(36).toUpperCase()}`
-
-    // Update payment record
-    const result = await paymentsCollection.updateOne(
-      { _id: new ObjectId(paymentId) },
-      {
-        $set: {
-          amountPaid: amountPaid,
-          balance: 0,
-          status: 'PAID',
-          paymentDate: new Date(),
-          paymentMethod: 'UPI',
-          receiptNumber: receiptNumber,
-          notes: `Paid via Razorpay (${razorpayPaymentId})`,
-          updatedAt: new Date(),
-        },
-      }
-    )
-
-    if (result.modifiedCount === 0) {
-      return { success: false, error: 'Payment record not found or already updated.' }
-    }
-
-    // Create a notification with organizationId
-    const notifDoc: Record<string, any> = {
-      type: 'PAYMENT_RECEIVED',
-      title: 'Online Payment Received',
-      message: `Payment of ₹${amountPaid.toLocaleString('en-IN')} received via Razorpay (${receiptNumber})`,
-      isRead: false,
-      data: JSON.stringify({ paymentId, razorpayPaymentId }),
-      createdAt: new Date(),
-    }
-
-    if (payment?.flat?.building?.organizationId) {
-      notifDoc.organizationId = new ObjectId(payment.flat.building.organizationId)
-    }
-
-    await db.collection('Notification').insertOne(notifDoc)
-
-    revalidatePath('/dashboard')
-    revalidatePath('/(dashboard)/finance', 'page')
-    revalidatePath(`/pay/${paymentId}`)
-
-    return { success: true, receiptNumber }
-  } catch (error) {
-    console.error('Error processing payment:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to process payment.',
-    }
-  }
-}
 
 // Fetch payment details for public payment page — includes org payment config for UPI
 export async function getPaymentForPublicPage(paymentId: string) {
@@ -194,7 +125,7 @@ export async function getPaymentForPublicPage(paymentId: string) {
     const payment = await prisma.payment.findUnique({
       where: { id: paymentId },
       include: {
-        tenant: { select: { fullName: true } },
+        tenant: { select: { fullName: true, paymentMethodId: true } },
         flat: {
           select: {
             flatNumber: true,
@@ -234,6 +165,37 @@ export async function getPaymentForPublicPage(paymentId: string) {
 
     const org = payment.flat.building.organization
 
+    let paymentMethods = (org?.paymentMethods as any[]) || []
+    
+    // Default legacy fields
+    let upiId = org?.upiId || null
+    let bankName = org?.bankName || null
+    let accountNumber = org?.accountNumber || null
+    let ifscCode = org?.ifscCode || null
+    let accountHolder = org?.accountHolder || null
+    
+    // Override if tenant has a specific assigned payment method
+    const assignedId = payment.tenant.paymentMethodId
+    if (assignedId) {
+        const specificMethod = paymentMethods.find(m => m.id === assignedId)
+        if (specificMethod) {
+            paymentMethods = [specificMethod]
+            if (specificMethod.type === 'UPI') {
+                upiId = specificMethod.upiId || null
+                bankName = null
+                accountNumber = null
+                ifscCode = null
+                accountHolder = null
+            } else {
+                upiId = null
+                bankName = specificMethod.bankName || null
+                accountNumber = specificMethod.accountNumber || null
+                ifscCode = specificMethod.ifscCode || null
+                accountHolder = specificMethod.accountHolder || null
+            }
+        }
+    }
+
     return {
       success: true,
       data: {
@@ -248,16 +210,16 @@ export async function getPaymentForPublicPage(paymentId: string) {
         balance: payment.balance,
         status: payment.status,
         isRazorpayConfigured: isRazorpayConfigured(),
-        // UPI / org payment details
-        upiId: org?.upiId || null,
+        // UPI / org payment details (overridden if assigned)
+        upiId,
         ownerName: org?.ownerName || null,
-        bankName: org?.bankName || null,
-        accountNumber: org?.accountNumber || null,
-        ifscCode: org?.ifscCode || null,
-        accountHolder: org?.accountHolder || null,
+        bankName,
+        accountNumber,
+        ifscCode,
+        accountHolder,
         paymentInstructions: org?.paymentInstructions || null,
-        // Multiple payment methods
-        paymentMethods: (org?.paymentMethods as any[]) || [],
+        // Multiple payment methods (filtered if assigned)
+        paymentMethods,
         // Existing proofs
         paymentProofs: payment.paymentProofs,
       }

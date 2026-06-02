@@ -5,8 +5,23 @@ import clientPromise from "@/lib/mongo"
 import { revalidatePath } from "next/cache"
 import { ObjectId } from "mongodb"
 
+import { auth } from "@/lib/auth"
+
+async function requireTenantAuth(tenantId: string) {
+    const session = await auth()
+    if (!session?.user) {
+        throw new Error("Unauthorized")
+    }
+    const user = session.user as any
+    // Allow if it's the tenant themselves, OR if it's a platform admin/owner (who might view tenant details)
+    if (user.role === 'TENANT' && user.id !== tenantId) {
+        throw new Error("Unauthorized: Cannot access other tenant data")
+    }
+}
+
 export async function getTenantDashboard(tenantId: string) {
     try {
+        await requireTenantAuth(tenantId)
         const tenant = await prisma.tenant.findUnique({
             where: { id: tenantId },
             include: {
@@ -74,6 +89,7 @@ export async function getTenantDashboard(tenantId: string) {
 
 export async function getTenantPayments(tenantId: string) {
     try {
+        await requireTenantAuth(tenantId)
         const payments = await prisma.payment.findMany({
             where: { tenantId },
             include: {
@@ -107,6 +123,7 @@ export async function getTenantPayments(tenantId: string) {
 
 export async function getTenantMaintenanceRequests(tenantId: string) {
     try {
+        await requireTenantAuth(tenantId)
         const requests = await prisma.maintenanceRequest.findMany({
             where: { tenantId },
             include: {
@@ -146,6 +163,7 @@ export async function submitMaintenanceRequest(
     }
 ) {
     try {
+        await requireTenantAuth(tenantId)
         const tenant = await prisma.tenant.findUnique({
             where: { id: tenantId },
             include: {

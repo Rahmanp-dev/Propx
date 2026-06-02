@@ -124,3 +124,21 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  /* Hide sidebar and top header when printing */
+  .print-hide {
+    display: none !important;
+  }
+
+  /* Optimize page layout for receipts */
+  @page {
+    margin: 0;
+    size: A4;
+  }
+}

@@ -1,6 +1,7 @@
 import { Sidebar } from "@/components/layout/sidebar"
 import { MobileSidebar } from "@/components/layout/mobile-sidebar"
 import { auth } from "@/lib/auth"
+import { GlobalSearch } from "@/components/dashboard/global-search"
 
 export default async function DashboardLayout({
     children,
@@ -23,9 +24,10 @@ export default async function DashboardLayout({
                 {/* ── Mobile Header ── */}
                 <header className="flex items-center gap-3 px-4 h-14 border-b border-gray-200/80 bg-white md:hidden sticky top-0 z-50">
                     <MobileSidebar user={user} />
-                    <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                    <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent flex-1">
                         PropX
                     </span>
+                    <GlobalSearch />
                 </header>
 
                 {/* ── Desktop Top Bar ── */}
@@ -39,11 +41,14 @@ export default async function DashboardLayout({
                         </h2>
                     </div>
 
-                    {user?.email && (
-                        <p className="text-xs text-gray-400 font-medium tracking-wide">
-                            {user.email}
-                        </p>
-                    )}
+                    <div className="flex items-center gap-4">
+                        <GlobalSearch />
+                        {user?.email && (
+                            <p className="text-xs text-gray-400 font-medium tracking-wide border-l pl-4 border-gray-200">
+                                {user.email}
+                            </p>
+                        )}
+                    </div>
                 </header>
 
                 {/* ── Page Content ── */}

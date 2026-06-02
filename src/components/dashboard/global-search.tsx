@@ -100,10 +100,24 @@ export function GlobalSearch() {
                     {data?.tenants && data.tenants.length > 0 && (
                         <CommandGroup heading="Tenants">
                             {data.tenants.map(t => (
-                                <CommandItem key={t.id} onSelect={() => runCommand(() => router.push(`/${userId}/flats/${t.assignedFlatId}`))}>
-                                    <User className="mr-2 h-4 w-4" />
-                                    <span>{t.fullName}</span>
-                                    <span className="ml-2 text-xs text-muted-foreground">({t.flat?.flatNumber})</span>
+                                <CommandItem key={t.id} onSelect={() => runCommand(() => router.push(`/${userId}/flats/${t.flatId}`))}>
+                                    <div className="flex w-full items-center justify-between">
+                                        <div className="flex items-center">
+                                            <User className="mr-2 h-4 w-4" />
+                                            <span>{t.title}</span>
+                                            <span className="ml-2 text-xs text-muted-foreground">({t.subtitle})</span>
+                                        </div>
+                                        {t.extra && t.extra !== 'UNKNOWN' && (
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                                                t.extra === 'PAID' ? 'bg-green-100 text-green-700' :
+                                                t.extra === 'PARTIAL' ? 'bg-amber-100 text-amber-700' :
+                                                t.extra === 'OVERDUE' ? 'bg-red-100 text-red-700' :
+                                                'bg-gray-100 text-gray-700'
+                                            }`}>
+                                                {t.extra}
+                                            </span>
+                                        )}
+                                    </div>
                                 </CommandItem>
                             ))}
                         </CommandGroup>

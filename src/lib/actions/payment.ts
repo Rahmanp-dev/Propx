@@ -24,7 +24,8 @@ const logPaymentSchema = z.object({
     paymentId: z.string(),
     amount: z.coerce.number().min(1),
     method: z.enum(["CASH", "UPI", "BANK_TRANSFER", "CHEQUE", "OTHER"]),
-    notes: z.string().optional()
+    notes: z.string().optional(),
+    upiReference: z.string().optional()
 })
 
 export type LogPaymentInput = z.infer<typeof logPaymentSchema>
@@ -39,7 +40,7 @@ export async function logPayment(data: LogPaymentInput) {
         return { error: "Invalid input" }
     }
 
-    const { paymentId, amount, method, notes } = result.data
+    const { paymentId, amount, method, notes, upiReference } = result.data
 
     try {
         const payment = await prisma.payment.findUnique({
@@ -85,6 +86,7 @@ export async function logPayment(data: LogPaymentInput) {
                     balance: Math.max(0, newBalance),
                     status: newStatus,
                     paymentMethod: method,
+                    upiReference: upiReference || payment.upiReference,
                     paymentDate: new Date(),
                     notes: updateNotes,
                     updatedAt: new Date()
@@ -143,7 +145,7 @@ async function updateFutureBalances(tenantId: string, currentPaymentMonth: Date,
 
         for (const payment of futurePayments) {
             const newArrears = carriedBalance
-            const newTotalDue = (payment.rentDue || 0) + (payment.maintenanceDue || 0) + (payment.electricityDue || 0) + newArrears
+            const newTotalDue = (payment.rentDue || 0) + (payment.maintenanceDue || 0) + (payment.electricityDue || 0) + (payment.customDues || 0) + newArrears
             const newBalance = newTotalDue - (payment.amountPaid || 0)
 
             let newStatus = payment.status

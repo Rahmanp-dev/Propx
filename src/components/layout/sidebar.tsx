@@ -8,9 +8,12 @@ import {
   Users,
   IndianRupee,
   Wrench,
+  Zap,
+  BookOpen,
   MessageCircle,
   UserPlus,
   Settings,
+  ReceiptText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
@@ -58,6 +61,16 @@ const navItems = [
     hoverColor: "group-hover:text-emerald-500",
   },
   {
+    label: "Electricity",
+    href: "/electricity",
+    icon: Zap,
+    color: "text-yellow-500",
+    hoverBg: "hover:bg-yellow-500/10",
+    borderColor: "border-yellow-500",
+    hoverBorderColor: "hover:border-yellow-500",
+    hoverColor: "group-hover:text-yellow-500",
+  },
+  {
     label: "Maintenance",
     href: "/maintenance",
     icon: Wrench,
@@ -66,6 +79,26 @@ const navItems = [
     borderColor: "border-orange-500",
     hoverBorderColor: "hover:border-orange-500",
     hoverColor: "group-hover:text-orange-500",
+  },
+  {
+    label: "Ledger",
+    href: "/ledger",
+    icon: BookOpen,
+    color: "text-teal-500",
+    hoverBg: "hover:bg-teal-500/10",
+    borderColor: "border-teal-500",
+    hoverBorderColor: "hover:border-teal-500",
+    hoverColor: "group-hover:text-teal-500",
+  },
+  {
+    label: "Receipts",
+    href: "/receipts",
+    icon: ReceiptText,
+    color: "text-indigo-500",
+    hoverBg: "hover:bg-indigo-500/10",
+    borderColor: "border-indigo-500",
+    hoverBorderColor: "hover:border-indigo-500",
+    hoverColor: "group-hover:text-indigo-500",
   },
   {
     label: "WhatsApp",

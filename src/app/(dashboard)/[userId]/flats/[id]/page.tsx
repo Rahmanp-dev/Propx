@@ -1,4 +1,5 @@
 import { getFlatDetails } from "@/lib/actions/flat-details"
+import { getPaymentMethods } from "@/lib/actions/settings"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, User, CreditCard, History, Zap, KeyRound } from "lucide-react"
 import Link from "next/link"
@@ -10,6 +11,8 @@ import { MeterReadingDialog } from "@/components/dashboard/meter-reading-dialog"
 import { PaymentHistoryList } from "@/components/dashboard/payment-history-list"
 import { OffboardTenantDialog } from "@/components/dashboard/offboard-tenant-dialog"
 import { DeleteFlatDialog } from "@/components/dashboard/delete-flat-dialog"
+import { AddDueDialog } from "@/components/dashboard/add-due-dialog"
+import { EditTenantDialog } from "@/components/dashboard/edit-tenant-dialog"
 
 export const dynamic = 'force-dynamic'
 
@@ -24,6 +27,7 @@ const FLAT_TYPE_LABELS: Record<string, string> = {
 export default async function FlatPage({ params }: { params: Promise<{ id: string; userId: string }> }) {
     const { id, userId } = await params
     const { data: flat, error } = await getFlatDetails(id)
+    const { data: paymentMethods = [] } = await getPaymentMethods()
 
     if (error || !flat) {
         return <div className="p-8 text-center text-muted-foreground">Flat not found</div>
@@ -68,7 +72,10 @@ export default async function FlatPage({ params }: { params: Promise<{ id: strin
                         {tenant ? (
                             <div className="space-y-4">
                                 <div>
-                                    <div className="text-2xl font-bold">{tenant.fullName}</div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="text-2xl font-bold">{tenant.fullName}</div>
+                                        <EditTenantDialog tenant={tenant as any} paymentMethods={paymentMethods} />
+                                    </div>
                                     <div className="text-sm text-muted-foreground">{tenant.phone}</div>
                                     {(tenant as any).tenantPin && (
                                         <div className="flex items-center gap-1 mt-1">
@@ -100,6 +107,7 @@ export default async function FlatPage({ params }: { params: Promise<{ id: strin
                                     flatId={flat.id}
                                     suggestedRent={flat.rentAmount}
                                     suggestedDeposit={flat.depositAmount}
+                                    paymentMethods={paymentMethods}
                                 />
                             </div>
                         )}
@@ -144,6 +152,12 @@ export default async function FlatPage({ params }: { params: Promise<{ id: strin
                                         <span>Arrears</span>
                                         <span>₹{((currentPayment as any).arrears || 0).toLocaleString()}</span>
                                     </div>
+                                    {(currentPayment.customDues || 0) > 0 && (
+                                        <div className="flex justify-between text-amber-600">
+                                            <span>Custom Dues</span>
+                                            <span>₹{currentPayment.customDues.toLocaleString()}</span>
+                                        </div>
+                                    )}
                                     <Separator className="my-1" />
                                     <div className="flex justify-between font-bold">
                                         <span>Total Due</span>
@@ -174,9 +188,14 @@ export default async function FlatPage({ params }: { params: Promise<{ id: strin
                                         )}
                                     </div>
                                 </div>
-                                {currentPayment && currentPayment.status !== "PAID" && (
-                                    <LogPaymentDialog payment={currentPayment as any} />
-                                )}
+                                <div className="flex items-center gap-2">
+                                    {currentPayment && currentPayment.status !== "PAID" && (
+                                        <LogPaymentDialog payment={currentPayment as any} />
+                                    )}
+                                    {tenant && currentPayment && (
+                                        <AddDueDialog tenantId={tenant.id} currentMonth={currentPayment.month} />
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </CardContent>

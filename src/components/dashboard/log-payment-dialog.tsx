@@ -48,6 +48,7 @@ export function LogPaymentDialog({ payment, asIcon }: LogPaymentDialogProps) {
     const router = useRouter()
     const [amount, setAmount] = useState(payment.balance)
     const [method, setMethod] = useState("CASH")
+    const [upiReference, setUpiReference] = useState("")
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault()
@@ -58,7 +59,8 @@ export function LogPaymentDialog({ payment, asIcon }: LogPaymentDialogProps) {
             const result = await logPayment({
                 paymentId: payment.id,
                 amount: Number(amount),
-                method: method as any
+                method: method as any,
+                ...(method === "UPI" && upiReference ? { upiReference } : {})
             })
 
             setLoading(false)
@@ -125,6 +127,18 @@ export function LogPaymentDialog({ payment, asIcon }: LogPaymentDialogProps) {
                             </SelectContent>
                         </Select>
                     </div>
+
+                    {method === "UPI" && (
+                        <div className="grid w-full items-center gap-1.5">
+                            <Label htmlFor="upiReference">UPI Reference (Optional)</Label>
+                            <Input
+                                id="upiReference"
+                                value={upiReference}
+                                onChange={(e) => setUpiReference(e.target.value)}
+                                placeholder="e.g. 123456789012"
+                            />
+                        </div>
+                    )}
 
                     {error && (
                         <p className="text-sm text-red-500 font-medium text-center">{error}</p>

@@ -71,7 +71,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                     const { phone, pin } = parsedCredentials.data;
 
                     const tenant = await prisma.tenant.findFirst({ 
-                        where: { phone, isActive: true } 
+                        where: { phone, isActive: true },
+                        include: { flat: { include: { building: true } } }
                     });
                     if (!tenant) return null;
 
@@ -83,6 +84,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                         name: tenant.fullName,
                         phone: tenant.phone,
                         role: "TENANT",
+                        flatId: tenant.assignedFlatId,
+                        organizationId: tenant.flat?.building?.organizationId
                     } as any;
                 }
 

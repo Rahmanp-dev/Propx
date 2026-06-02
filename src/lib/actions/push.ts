@@ -61,6 +61,14 @@ export async function removeSubscription(endpoint: string) {
 
 // Function to send push notification to an organization's users
 export async function sendPushToOrganization(organizationId: string, payload: any) {
+    const session = await auth()
+    if (!session?.user) return { error: "Not authenticated" }
+    
+    const user = session.user as any
+    if (user.role !== 'SUPER_ADMIN' && user.organizationId !== organizationId) {
+        return { error: "Unauthorized" }
+    }
+
     if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
         console.warn("VAPID keys not configured, skipping push notification")
         return { success: false, error: "VAPID keys not configured" }

@@ -97,6 +97,8 @@ export const authConfig = {
             if (session.user) {
                 // @ts-ignore
                 session.user.organizationId = token.organizationId ?? null;
+                // @ts-ignore
+                session.user.flatId = token.flatId ?? null;
             }
             return session;
         },
@@ -106,6 +108,8 @@ export const authConfig = {
                 token.role = user.role;
                 // @ts-ignore
                 token.organizationId = user.organizationId ?? null;
+                // @ts-ignore
+                token.flatId = user.flatId ?? null;
             }
             return token;
         }

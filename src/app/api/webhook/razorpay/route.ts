@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyPaymentWebhook, processPaymentCapture } from '@/lib/actions/payment-gateway'
+import { verifyPaymentWebhook } from '@/lib/actions/payment-gateway'
+import prisma from '@/lib/prisma'
+import clientPromise from '@/lib/mongo'
+import { ObjectId } from 'mongodb'
+import { revalidatePath } from 'next/cache'
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,20 +53,80 @@ export async function POST(request: NextRequest) {
       const amountPaid = paymentEntity.amount / 100
       const razorpayPaymentId = paymentEntity.id
 
-      const result = await processPaymentCapture(paymentId, amountPaid, razorpayPaymentId)
+      let success = false;
+      let error = '';
+      let receiptNumber = '';
 
-      if (!result.success) {
-        console.error('Payment processing failed:', result.error)
+      try {
+        const client = await clientPromise
+        const db = client.db('propx')
+        const paymentsCollection = db.collection('Payment')
+
+        const payment = await prisma.payment.findUnique({
+          where: { id: paymentId },
+          include: { flat: { include: { building: { select: { organizationId: true } } } } }
+        })
+
+        receiptNumber = `RCP-${Date.now().toString(36).toUpperCase()}`
+
+        const updateResult = await paymentsCollection.updateOne(
+          { _id: new ObjectId(paymentId) },
+          {
+            $set: {
+              amountPaid: amountPaid,
+              balance: 0,
+              status: 'PAID',
+              paymentDate: new Date(),
+              paymentMethod: 'UPI',
+              receiptNumber: receiptNumber,
+              notes: `Paid via Razorpay (${razorpayPaymentId})`,
+              updatedAt: new Date(),
+            },
+          }
+        )
+
+        if (updateResult.modifiedCount === 0) {
+          success = false;
+          error = 'Payment record not found or already updated.';
+        } else {
+          success = true;
+
+          const notifDoc: Record<string, any> = {
+            type: 'PAYMENT_RECEIVED',
+            title: 'Online Payment Received',
+            message: `Payment of ₹${amountPaid.toLocaleString('en-IN')} received via Razorpay (${receiptNumber})`,
+            isRead: false,
+            data: JSON.stringify({ paymentId, razorpayPaymentId }),
+            createdAt: new Date(),
+          }
+
+          if (payment?.flat?.building?.organizationId) {
+            notifDoc.organizationId = new ObjectId(payment.flat.building.organizationId)
+          }
+
+          await db.collection('Notification').insertOne(notifDoc)
+
+          revalidatePath('/dashboard')
+          revalidatePath('/(dashboard)/finance', 'page')
+          revalidatePath(`/pay/${paymentId}`)
+        }
+      } catch (err: any) {
+         success = false;
+         error = err.message || 'Failed to process payment.';
+      }
+
+      if (!success) {
+        console.error('Payment processing failed:', error)
         // Still return 200 to acknowledge receipt to Razorpay
         return NextResponse.json(
-          { status: 'processing_failed', error: result.error },
+          { status: 'processing_failed', error: error },
           { status: 200 }
         )
       }
 
-      console.log(`Payment processed successfully: ${result.receiptNumber}`)
+      console.log(`Payment processed successfully: ${receiptNumber}`)
       return NextResponse.json(
-        { status: 'processed', receiptNumber: result.receiptNumber },
+        { status: 'processed', receiptNumber: receiptNumber },
         { status: 200 }
       )
     }

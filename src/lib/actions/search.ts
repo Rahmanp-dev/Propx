@@ -31,22 +31,23 @@ export async function searchGlobal(query: string) {
             ? {}
             : { building: { organizationId: orgCtx.organizationId! } }
 
-        const tenantFlatFilter = orgCtx.isSuperAdmin
-            ? {}
-            : { flat: { building: { organizationId: orgCtx.organizationId! } } }
-
         const [tenants, buildings, flats] = await Promise.all([
             prisma.tenant.findMany({
                 where: {
                     OR: [
                         { fullName: { contains: query, mode: 'insensitive' } },
-                        { phone: { contains: query, mode: 'insensitive' } }
+                        { phone: { contains: query } }
                     ],
                     isActive: true,
-                    ...tenantFlatFilter,
+                    flat: orgCtx.isSuperAdmin ? undefined : {
+                        building: { organizationId: orgCtx.organizationId! }
+                    }
                 },
-                include: { flat: { include: { building: true } } },
-                take: 5
+                include: { 
+                    flat: { include: { building: true } },
+                    payments: { orderBy: { month: 'desc' }, take: 1 }
+                },
+                take: 10
             }),
             prisma.building.findMany({
                 where: {
@@ -70,7 +71,14 @@ export async function searchGlobal(query: string) {
 
         return {
             results: {
-                tenants,
+                tenants: tenants.map(t => ({
+                    type: 'TENANT',
+                    id: t.id,
+                    flatId: t.assignedFlatId,
+                    title: t.fullName,
+                    subtitle: `${t.flat?.building?.name || 'No Building'} - Flat ${t.flat?.flatNumber || 'Unassigned'}`,
+                    extra: t.payments[0]?.status || 'UNKNOWN'
+                })),
                 buildings,
                 flats
             }

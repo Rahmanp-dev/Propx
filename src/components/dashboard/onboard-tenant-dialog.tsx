@@ -34,6 +34,13 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { onboardTenant } from "@/lib/actions/tenant"
 import { onboardTenantSchema, OnboardTenantInput } from "@/lib/validations"
 
@@ -41,9 +48,10 @@ interface OnboardTenantDialogProps {
     flatId: string
     suggestedRent: number
     suggestedDeposit: number
+    paymentMethods?: { id: string; label: string; type: string }[]
 }
 
-export function OnboardTenantDialog({ flatId, suggestedRent, suggestedDeposit }: OnboardTenantDialogProps) {
+export function OnboardTenantDialog({ flatId, suggestedRent, suggestedDeposit, paymentMethods = [] }: OnboardTenantDialogProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
@@ -60,7 +68,8 @@ export function OnboardTenantDialog({ flatId, suggestedRent, suggestedDeposit }:
             leaseStartDate: new Date(),
             rentAmount: suggestedRent,
             depositAmount: suggestedDeposit,
-            initialMeterReading: 0
+            initialMeterReading: 0,
+            paymentMethodId: "",
         },
     })
 
@@ -204,6 +213,34 @@ export function OnboardTenantDialog({ flatId, suggestedRent, suggestedDeposit }:
                                 )}
                             />
                         </div>
+
+                        {paymentMethods.length > 0 && (
+                            <FormField
+                                control={form.control}
+                                name="paymentMethodId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Assigned Payment Method</FormLabel>
+                                        <Select onValueChange={(val) => field.onChange(val === "default" ? "" : val)} value={field.value || "default"}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Organization Default" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="default">Organization Default</SelectItem>
+                                                {paymentMethods.map(method => (
+                                                    <SelectItem key={method.id} value={method.id}>
+                                                        {method.label} ({method.type})
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
 
                         <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg border">
                             <FormField

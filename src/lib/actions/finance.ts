@@ -15,14 +15,18 @@ async function getOrgContext() {
     }
 }
 
-export async function getFinanceStats() {
+export async function getFinanceStats(filterMonth?: number, filterYear?: number) {
     try {
         const orgCtx = await getOrgContext()
         if (!orgCtx) return { error: "Not authenticated" }
 
         const today = new Date()
-        const startOfYear = new Date(today.getFullYear(), 0, 1)
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+        const targetYear = filterYear ?? today.getFullYear()
+        const targetMonth = filterMonth ?? today.getMonth()
+
+        const startOfYear = new Date(targetYear, 0, 1)
+        const startOfMonth = new Date(targetYear, targetMonth, 1)
+        const endOfMonth = new Date(targetYear, targetMonth + 1, 0)
 
         // Org-scoped payment filter
         const paymentWhere = orgCtx.isSuperAdmin
@@ -50,7 +54,7 @@ export async function getFinanceStats() {
         // 2. Current month stats
         const currentMonthStats = await prisma.payment.aggregate({
             where: {
-                month: { gte: startOfMonth },
+                month: { gte: startOfMonth, lte: endOfMonth },
                 ...paymentWhere,
             },
             _sum: {
@@ -71,7 +75,7 @@ export async function getFinanceStats() {
                 balance: true,
             },
             where: {
-                month: { gte: startOfMonth },
+                month: { gte: startOfMonth, lte: endOfMonth },
                 ...paymentWhere,
             }
         })
@@ -113,7 +117,7 @@ export async function getFinanceStats() {
                 flats: {
                     select: {
                         payments: {
-                            where: { month: { gte: startOfMonth } },
+                            where: { month: { gte: startOfMonth, lte: endOfMonth } },
                             select: {
                                 totalDue: true,
                                 amountPaid: true,
