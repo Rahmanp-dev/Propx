@@ -4,9 +4,27 @@ import clientPromise from "@/lib/mongo"
 import prisma from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
+import { z } from "zod"
 import { ObjectId } from "mongodb"
 
+const updateOwnerPaymentConfigSchema = z.object({
+    upiId: z.string().optional(),
+    bankName: z.string().optional(),
+    accountNumber: z.string().optional(),
+    ifscCode: z.string().optional(),
+    accountHolder: z.string().optional(),
+    paymentInstructions: z.string().optional(),
+})
 
+const addPaymentMethodSchema = z.object({
+    type: z.enum(['UPI', 'BANK']),
+    label: z.string().min(1),
+    upiId: z.string().optional(),
+    bankName: z.string().optional(),
+    accountNumber: z.string().optional(),
+    ifscCode: z.string().optional(),
+    accountHolder: z.string().optional(),
+})
 
 // ==========================================
 // OWNER PAYMENT CONFIG
@@ -55,6 +73,10 @@ export async function updateOwnerPaymentConfig(data: {
     const orgId = user.organizationId
     if (!orgId) return { error: "No organization" }
 
+    const result = updateOwnerPaymentConfigSchema.safeParse(data)
+    if (!result.success) return { error: "Invalid input data" }
+    const parsedData = result.data
+
     try {
         const client = await clientPromise
         const db = client.db("propx")
@@ -63,12 +85,12 @@ export async function updateOwnerPaymentConfig(data: {
             { _id: new ObjectId(orgId) },
             {
                 $set: {
-                    upiId: data.upiId || null,
-                    bankName: data.bankName || null,
-                    accountNumber: data.accountNumber || null,
-                    ifscCode: data.ifscCode || null,
-                    accountHolder: data.accountHolder || null,
-                    paymentInstructions: data.paymentInstructions || null,
+                    upiId: parsedData.upiId || null,
+                    bankName: parsedData.bankName || null,
+                    accountNumber: parsedData.accountNumber || null,
+                    ifscCode: parsedData.ifscCode || null,
+                    accountHolder: parsedData.accountHolder || null,
+                    paymentInstructions: parsedData.paymentInstructions || null,
                     updatedAt: new Date(),
                 }
             }
@@ -124,6 +146,10 @@ export async function addPaymentMethod(data: Omit<PaymentMethodEntry, 'id' | 'is
     const orgId = await getOrgId()
     if (!orgId) return { error: "Not authenticated" }
 
+    const result = addPaymentMethodSchema.safeParse(data)
+    if (!result.success) return { error: "Invalid input data" }
+    const parsedData = result.data
+
     try {
         const client = await clientPromise
         const db = client.db("propx")
@@ -132,7 +158,7 @@ export async function addPaymentMethod(data: Omit<PaymentMethodEntry, 'id' | 'is
         const existing: PaymentMethodEntry[] = (org?.paymentMethods as PaymentMethodEntry[] | null) || []
 
         const newMethod: PaymentMethodEntry = {
-            ...data,
+            ...parsedData,
             id: new ObjectId().toHexString(),
             isDefault: existing.length === 0, // first method is auto-default
         }

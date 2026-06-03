@@ -35,7 +35,21 @@ export async function onboardTenant(data: OnboardTenantInput) {
         const client = await clientPromise
         const db = client.db("propx")
 
-        // 0. Record Initial Meter Reading if provided
+        if (!ObjectId.isValid(flatId)) return { error: "Invalid Flat ID" }
+
+        // 1. Get the flat to find its building and verify org ownership
+        const flat = await db.collection("Flat").findOne({ _id: new ObjectId(flatId) })
+        if (!flat) return { error: "Flat not found" }
+
+        // Verify building belongs to user's org (IDOR Patch)
+        if (!orgCtx.isSuperAdmin) {
+            const building = await db.collection("Building").findOne({ _id: flat.buildingId })
+            if (!building || building.organizationId?.toString() !== orgCtx.organizationId) {
+                return { error: "Flat not found" }
+            }
+        }
+
+        // 2. Record Initial Meter Reading if provided (Moved down after auth check)
         if (initialMeterReading !== undefined && initialMeterReading !== null) {
             const readingDate = new Date(leaseStartDate)
             const rMonth = readingDate.getMonth()
@@ -61,25 +75,13 @@ export async function onboardTenant(data: OnboardTenantInput) {
             )
         }
 
-        if (!ObjectId.isValid(flatId)) return { error: "Invalid Flat ID" }
-
-        // 1. Get the flat to find its building and verify org ownership
-        const flat = await db.collection("Flat").findOne({ _id: new ObjectId(flatId) })
-        if (!flat) return { error: "Flat not found" }
-
-        // Verify building belongs to user's org
-        if (!orgCtx.isSuperAdmin) {
-            const building = await db.collection("Building").findOne({ _id: flat.buildingId })
-            if (!building || building.organizationId?.toString() !== orgCtx.organizationId) {
-                return { error: "Flat not found" }
-            }
-        }
-
-        // 2. Native Insert Tenant
+        // 3. Native Insert Tenant
         const now = new Date()
 
         // Auto-generate a secure random 4-digit tenant PIN
-        const tenantPin = Math.floor(1000 + Math.random() * 9000).toString()
+        const randomBuffer = new Uint32Array(1);
+        crypto.getRandomValues(randomBuffer);
+        const tenantPin = (1000 + (randomBuffer[0] % 9000)).toString();
 
         const tenantDoc = {
             fullName,

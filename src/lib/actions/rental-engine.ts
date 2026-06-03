@@ -30,10 +30,10 @@ export async function generateMonthlyDues() {
         const today = new Date()
         const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1)
 
-        const readingMonth = today.getMonth()
+        const readingMonth = today.getMonth() + 1
         const readingYear = today.getFullYear()
-        const prevMonthIndex = readingMonth === 0 ? 11 : readingMonth - 1
-        const prevYearIndex = readingMonth === 0 ? readingYear - 1 : readingYear
+        const prevMonthIndex = readingMonth === 1 ? 12 : readingMonth - 1
+        const prevYearIndex = readingMonth === 1 ? readingYear - 1 : readingYear
 
         // Get all active tenants with Flat AND Building details — scoped by org
         const tenantWhere: Record<string, any> = {

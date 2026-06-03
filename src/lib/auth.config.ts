@@ -21,6 +21,7 @@ export const authConfig = {
                 isTenantLogin ||
                 nextUrl.pathname.startsWith('/pay') ||
                 nextUrl.pathname.startsWith('/inquiry') ||
+                nextUrl.pathname.startsWith('/packages') ||
                 nextUrl.pathname === '/';
 
             if (isPublicRoute) {

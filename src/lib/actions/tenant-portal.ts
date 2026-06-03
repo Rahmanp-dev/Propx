@@ -6,6 +6,14 @@ import { revalidatePath } from "next/cache"
 import { ObjectId } from "mongodb"
 
 import { auth } from "@/lib/auth"
+import { z } from "zod"
+
+const submitMaintenanceRequestSchema = z.object({
+    category: z.string().min(1),
+    title: z.string().min(1).max(200),
+    description: z.string().min(1),
+    priority: z.string().min(1),
+})
 
 async function requireTenantAuth(tenantId: string) {
     const session = await auth()
@@ -13,9 +21,22 @@ async function requireTenantAuth(tenantId: string) {
         throw new Error("Unauthorized")
     }
     const user = session.user as any
-    // Allow if it's the tenant themselves, OR if it's a platform admin/owner (who might view tenant details)
-    if (user.role === 'TENANT' && user.id !== tenantId) {
-        throw new Error("Unauthorized: Cannot access other tenant data")
+    
+    if (user.role === 'TENANT') {
+        if (user.id !== tenantId) {
+            throw new Error("Unauthorized: Cannot access other tenant data")
+        }
+    } else {
+        // Platform admin or owner - must verify organization
+        if (user.role !== 'SUPER_ADMIN') {
+            const tenant = await prisma.tenant.findUnique({
+                where: { id: tenantId },
+                include: { flat: { include: { building: true } } }
+            })
+            if (!tenant || tenant.flat?.building?.organizationId !== user.organizationId) {
+                throw new Error("Unauthorized: Tenant does not belong to your organization")
+            }
+        }
     }
 }
 
@@ -162,6 +183,10 @@ export async function submitMaintenanceRequest(
         priority: string
     }
 ) {
+    const result = submitMaintenanceRequestSchema.safeParse(data)
+    if (!result.success) return { success: false, error: "Invalid input data" }
+    const parsedData = result.data
+
     try {
         await requireTenantAuth(tenantId)
         const tenant = await prisma.tenant.findUnique({
@@ -189,10 +214,10 @@ export async function submitMaintenanceRequest(
             flatId: new ObjectId(tenant.flat.id),
             buildingId: new ObjectId(tenant.flat.buildingId),
             tenantId: new ObjectId(tenantId),
-            category: data.category,
-            title: data.title,
-            description: data.description,
-            priority: data.priority,
+            category: parsedData.category,
+            title: parsedData.title,
+            description: parsedData.description,
+            priority: parsedData.priority,
             status: 'OPEN',
             images: [],
             assignedTo: null,
@@ -207,7 +232,7 @@ export async function submitMaintenanceRequest(
         const notifDoc: Record<string, any> = {
             type: 'MAINTENANCE_NEW',
             title: 'New Maintenance Request',
-            message: `${data.title} — submitted by tenant via portal`,
+            message: `${parsedData.title} — submitted by tenant via portal`,
             isRead: false,
             data: null,
             createdAt: now,

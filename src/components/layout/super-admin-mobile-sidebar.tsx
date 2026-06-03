@@ -2,7 +2,7 @@
 
 import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { SuperAdminSidebar } from "@/components/layout/super-admin-sidebar"
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
@@ -24,6 +24,7 @@ export function SuperAdminMobileSidebar({ user }: { user?: any }) {
                 </Button>
             </SheetTrigger>
             <SheetContent side="left" className="p-0 bg-[#0f172a] border-r-indigo-950 text-white w-72 max-w-[288px]">
+                <SheetTitle className="sr-only">Super Admin Navigation Menu</SheetTitle>
                 <SuperAdminSidebar user={user} />
             </SheetContent>
         </Sheet>

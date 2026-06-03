@@ -74,14 +74,18 @@ function StatusDropdown({ inquiry, onUpdate }: { inquiry: InquiryItem; onUpdate:
     const router = useRouter()
 
     async function handleStatusChange(newStatus: string) {
-        const result = await updateInquiryStatus(inquiry.id, newStatus)
-        if (result.success) {
-            toast.success(`Status updated to ${newStatus.replace(/_/g, " ")}`)
-            setOpen(false)
-            onUpdate()
-            router.refresh()
-        } else {
-            toast.error((result as any).error || "Failed to update status")
+        try {
+            const result = await updateInquiryStatus(inquiry.id, newStatus)
+            if (result.success) {
+                toast.success(`Status updated to ${newStatus.replace(/_/g, " ")}`)
+                setOpen(false)
+                onUpdate()
+                router.refresh()
+            } else {
+                toast.error((result as any).error || "Failed to update status")
+            }
+        } catch (error: any) {
+            toast.error(error.message || "Failed to update status")
         }
     }
 
@@ -93,6 +97,7 @@ function StatusDropdown({ inquiry, onUpdate }: { inquiry: InquiryItem; onUpdate:
                     "inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border transition",
                     STATUS_STYLES[inquiry.status] || ""
                 )}
+                aria-label={`Change status for ${inquiry.name}, currently ${inquiry.status.replace(/_/g, " ")}`}
             >
                 {inquiry.status.replace(/_/g, " ")}
                 <ChevronDown className="h-3 w-3" />
@@ -143,8 +148,8 @@ export function InquiriesList({ inquiries }: { inquiries: InquiryItem[] }) {
             } else {
                 toast.error((result as any).error || "Failed to add inquiry")
             }
-        } catch {
-            toast.error("An error occurred")
+        } catch (error: any) {
+            toast.error(error.message || "An error occurred")
         } finally {
             setLoading(false)
         }

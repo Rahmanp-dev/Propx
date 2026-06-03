@@ -49,6 +49,7 @@ export function LogPaymentDialog({ payment, asIcon }: LogPaymentDialogProps) {
     const [amount, setAmount] = useState(payment.balance)
     const [method, setMethod] = useState("CASH")
     const [upiReference, setUpiReference] = useState("")
+    const [notes, setNotes] = useState("")
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault()
@@ -60,7 +61,8 @@ export function LogPaymentDialog({ payment, asIcon }: LogPaymentDialogProps) {
                 paymentId: payment.id,
                 amount: Number(amount),
                 method: method as any,
-                ...(method === "UPI" && upiReference ? { upiReference } : {})
+                ...(method === "UPI" && upiReference ? { upiReference } : {}),
+                ...(notes.trim() ? { notes: notes.trim() } : {})
             })
 
             setLoading(false)
@@ -139,6 +141,17 @@ export function LogPaymentDialog({ payment, asIcon }: LogPaymentDialogProps) {
                             />
                         </div>
                     )}
+
+                    <div className="grid w-full items-center gap-1.5">
+                        <Label htmlFor="notes">Remarks/Notes (Optional)</Label>
+                        <textarea
+                            id="notes"
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            placeholder="e.g. Paid in cash to building manager..."
+                            className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+                        />
+                    </div>
 
                     {error && (
                         <p className="text-sm text-red-500 font-medium text-center">{error}</p>

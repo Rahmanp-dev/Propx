@@ -42,8 +42,8 @@ const createMaintenanceSchema = z.object({
 export type CreateMaintenanceInput = z.infer<typeof createMaintenanceSchema>
 
 const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
-    OPEN: ["ASSIGNED", "IN_PROGRESS", "CLOSED"],
-    ASSIGNED: ["IN_PROGRESS", "CLOSED"],
+    OPEN: ["ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"],
+    ASSIGNED: ["IN_PROGRESS", "RESOLVED", "CLOSED"],
     IN_PROGRESS: ["RESOLVED", "CLOSED"],
     RESOLVED: ["CLOSED"],
     CLOSED: [],
@@ -316,6 +316,62 @@ export async function updateMaintenanceStatus(
                     message: `Maintenance request for Flat ${current.flat?.flatNumber || 'Unknown'} has been resolved.`,
                     url: `/maintenance`
                 }).catch(console.error)
+            }
+
+            // Charge repair cost to tenant's current month ledger if applicable
+            if (cost && cost > 0 && current.tenantId) {
+                const now = new Date()
+                const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+                const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+                
+                const newItem = {
+                    label: `Maintenance Repair: ${current.title}`,
+                    amount: cost,
+                    date: new Date()
+                }
+
+                await db.collection("Payment").updateOne(
+                    {
+                        tenantId: new ObjectId(current.tenantId),
+                        month: { $gte: currentMonthStart, $lt: currentMonthEnd }
+                    },
+                    [
+                        {
+                            $set: {
+                                customDues: { $add: [{ $ifNull: ["$customDues", 0] }, cost] },
+                                customDuesList: {
+                                    $concatArrays: [
+                                        { $cond: { if: { $isArray: "$customDuesList" }, then: "$customDuesList", else: [] } },
+                                        [newItem]
+                                    ]
+                                },
+                                totalDue: { $add: [{ $ifNull: ["$rentDue", 0] }, { $ifNull: ["$maintenanceDue", 0] }, { $ifNull: ["$electricityDue", 0] }, { $add: [{ $ifNull: ["$customDues", 0] }, cost] }, { $ifNull: ["$arrears", 0] }] },
+                                updatedAt: new Date()
+                            }
+                        },
+                        {
+                            $set: {
+                                balance: { $max: [0, { $subtract: ["$totalDue", { $ifNull: ["$amountPaid", 0] }] }] }
+                            }
+                        },
+                        {
+                            $set: {
+                                status: {
+                                    $cond: {
+                                        if: { $lte: ["$balance", 0] }, then: "PAID",
+                                        else: {
+                                            $cond: {
+                                                if: { $gt: [{ $ifNull: ["$amountPaid", 0] }, 0] }, then: "PARTIAL", else: "PENDING"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                )
+                
+                // Note: Ideally we should cascade future balances here, but for now we just update current month.
             }
         }
 

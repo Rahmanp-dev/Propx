@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, RefreshCw, Calendar, Building2, User } from "lucide-react"
 import { createMaintenanceRequest, type CreateMaintenanceInput } from "@/lib/actions/maintenance"
+import { ResolveMaintenanceDialog } from "@/components/dashboard/resolve-maintenance-dialog"
 
 type MaintenanceRequest = {
     id: string
@@ -254,6 +255,8 @@ export function MaintenanceList({ requests }: { requests: MaintenanceRequest[] }
                                     <span>{formatDate(req.createdAt)}</span>
                                 </div>
                             </div>
+                            
+                            <ResolveMaintenanceDialog requestId={req.id} currentStatus={req.status} />
                         </CardContent>
                     </Card>
                 ))}

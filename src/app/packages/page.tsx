@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Check, X, Shield, Zap, Crown, Building2, ArrowLeft, ArrowRight, HelpCircle } from "lucide-react"
+import { Check, X, Shield, Zap, Crown, Building2, ArrowLeft, ArrowRight, HelpCircle, Menu } from "lucide-react"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 
 const PLANS = [
   {
@@ -102,14 +103,14 @@ export default function PackagesPage() {
       <header className="relative z-10 border-b border-white/5 bg-[#030712]/60 backdrop-blur-md sticky top-0">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
-              <Building2 className="h-5 w-5 text-white" />
-            </div>
+            <img src="/logo.png" alt="Company Logo" className="h-9 w-9 rounded-lg object-contain bg-white/5" />
             <span className="text-xl font-bold tracking-tight text-white">
               Prop<span className="text-violet-400">X</span>
             </span>
           </Link>
-          <div className="flex items-center gap-4">
+          
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center gap-4">
             <Link href="/" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
               Home
             </Link>
@@ -119,6 +120,31 @@ export default function PackagesPage() {
             <Link href="/register" className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-semibold bg-violet-600 hover:bg-violet-500 text-white transition-all shadow-lg shadow-violet-500/10">
               Start Free Trial
             </Link>
+          </div>
+
+          {/* Mobile Nav */}
+          <div className="flex md:hidden items-center gap-4">
+            <Link href="/login" className="text-xs font-semibold text-slate-300">
+              Sign In
+            </Link>
+            <Sheet>
+              <SheetTrigger asChild>
+                <button className="text-slate-300 hover:text-white">
+                  <Menu className="h-6 w-6" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="right" className="bg-[#030712] border-l-white/10 text-white">
+                <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
+                <div className="flex flex-col gap-6 mt-8">
+                  <Link href="/" className="text-lg font-medium text-slate-300">Home</Link>
+                  <Link href="/login" className="text-lg font-medium text-slate-300">Sign In</Link>
+                  <div className="h-px bg-white/10 w-full my-2" />
+                  <Link href="/register" className="inline-flex items-center justify-center px-5 py-3 rounded-xl text-base font-bold bg-violet-600 text-white shadow-lg shadow-violet-500/10">
+                    Start Free Trial
+                  </Link>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>

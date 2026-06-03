@@ -1,6 +1,8 @@
 import Link from "next/link"
 import { Building2, Shield, Zap, MessageSquare, CreditCard, ArrowRight, CheckCircle, BarChart3, Users, Wrench, Globe, Smartphone, Lock } from "lucide-react"
 import { auth } from "@/lib/auth"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
+import { Menu } from "lucide-react"
 
 export const dynamic = 'force-dynamic'
 
@@ -48,9 +50,9 @@ export default async function LandingPage() {
   const user = session?.user
 
   return (
-    <div className="dark min-h-screen bg-slate-950 text-white font-sans overflow-x-hidden selection:bg-indigo-500/30 selection:text-white">
+    <div className="relative w-full max-w-[100vw] dark min-h-screen bg-slate-950 text-white font-sans overflow-x-hidden selection:bg-indigo-500/30 selection:text-white">
       {/* Glowing backdrop orbs */}
-      <div className="absolute inset-0 pointer-events-none z-0">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-[-10%] left-[20%] h-[600px] w-[600px] rounded-full bg-violet-600/10 blur-[130px]" />
         <div className="absolute top-[30%] right-[10%] h-[700px] w-[700px] rounded-full bg-indigo-600/10 blur-[160px]" />
         <div className="absolute bottom-[20%] left-[10%] h-[600px] w-[600px] rounded-full bg-blue-600/5 blur-[140px]" />
@@ -60,14 +62,13 @@ export default async function LandingPage() {
       <header className="relative z-10 border-b border-white/5 bg-slate-950/60 backdrop-blur-md sticky top-0">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <Building2 className="h-5 w-5 text-white" />
-            </div>
+            <img src="/logo.png" alt="Company Logo" className="h-9 w-9 rounded-lg object-contain bg-white/5" />
             <span className="text-xl font-bold tracking-tight text-white">
               Prop<span className="text-indigo-400">X</span>
             </span>
           </Link>
 
+          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#workflow" className="hover:text-white transition-colors">Platform</a>
@@ -77,7 +78,8 @@ export default async function LandingPage() {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-4">
+          {/* Desktop Auth Buttons */}
+          <div className="hidden md:flex items-center gap-4">
             {user ? (
               <Link href={(user as any).role === 'SUPER_ADMIN' ? '/super-admin/dashboard' : `/${user.id}/dashboard`} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-lg shadow-indigo-500/20 transition-all">
                 Go to Dashboard <ArrowRight className="h-4 w-4" />
@@ -90,13 +92,45 @@ export default async function LandingPage() {
                 <Link href="/register" className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/10 transition-all">
                   Register Now
                 </Link>
-                <div className="md:hidden">
-                  <Link href="/tenant-portal/login" className="inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-semibold border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 transition-all">
-                    Tenant Portal
-                  </Link>
-                </div>
               </>
             )}
+          </div>
+
+          {/* Mobile Menu */}
+          <div className="flex md:hidden items-center gap-4">
+            {user ? (
+              <Link href={(user as any).role === 'SUPER_ADMIN' ? '/super-admin/dashboard' : `/${user.id}/dashboard`} className="text-xs font-semibold text-indigo-400">
+                Dashboard
+              </Link>
+            ) : (
+              <Link href="/login" className="text-xs font-semibold text-slate-300">
+                Sign In
+              </Link>
+            )}
+            <Sheet>
+              <SheetTrigger asChild>
+                <button className="text-slate-300 hover:text-white">
+                  <Menu className="h-6 w-6" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="right" className="bg-slate-950 border-l-white/10 text-white">
+                <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
+                <div className="flex flex-col gap-6 mt-8">
+                  <a href="#features" className="text-lg font-medium text-slate-300">Features</a>
+                  <a href="#workflow" className="text-lg font-medium text-slate-300">Platform</a>
+                  <Link href="/packages" className="text-lg font-medium text-slate-300">Packages & Pricing</Link>
+                  <Link href="/tenant-portal/login" className="flex items-center gap-2 text-lg text-indigo-400 font-semibold">
+                    <Users className="h-5 w-5" /> Tenant Portal
+                  </Link>
+                  <div className="h-px bg-white/10 w-full my-2" />
+                  {!user && (
+                    <Link href="/register" className="inline-flex items-center justify-center px-5 py-3 rounded-xl text-base font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-500/10">
+                      Register Now
+                    </Link>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>

@@ -4,6 +4,8 @@ import prisma from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
+import clientPromise from "@/lib/mongo"
+import { ObjectId } from "mongodb"
 
 async function getOrgContext() {
     const session = await auth()
@@ -39,6 +41,10 @@ export async function getElectricityDashboard(month: number, year: number) {
                 tenants: {
                     where: { isActive: true },
                     take: 1
+                },
+                payments: {
+                    orderBy: { month: 'desc' },
+                    take: 1
                 }
             },
             orderBy: [
@@ -50,6 +56,7 @@ export async function getElectricityDashboard(month: number, year: number) {
         const data = meteredFlats.map(flat => {
             const currentReading = flat.meterReadings[0]
             const activeTenant = flat.tenants[0]
+            const latestPayment = flat.payments[0]
             return {
                 flatId: flat.id,
                 flatNumber: flat.flatNumber,
@@ -58,6 +65,7 @@ export async function getElectricityDashboard(month: number, year: number) {
                 hasReading: !!currentReading,
                 readingValue: currentReading ? currentReading.reading : null,
                 readingId: currentReading ? currentReading.id : null,
+                pendingAmount: latestPayment ? latestPayment.balance : 0,
             }
         })
 
@@ -87,33 +95,92 @@ export async function bulkRecordMeterReadings(readings: any[]) {
 
         const validReadings = parsed.data
 
-        // Filter only those that don't have existing readings for that month/year, 
-        // or just use upsert
-        for (const r of validReadings) {
-            await prisma.meterReading.upsert({
-                where: {
-                    flatId_month_year: {
-                        flatId: r.flatId,
-                        month: r.month,
-                        year: r.year
-                    }
-                },
-                update: {
-                    reading: r.reading,
-                    readingDate: new Date()
-                },
-                create: {
-                    flatId: r.flatId,
-                    reading: r.reading,
-                    month: r.month,
-                    year: r.year,
-                    readingDate: new Date()
-                }
+        // VERIFY FLAT OWNERSHIP (IDOR Patch)
+        if (!orgCtx.isSuperAdmin) {
+            const flatIds = validReadings.map(r => r.flatId)
+            const flats = await prisma.flat.findMany({
+                where: { id: { in: flatIds }, building: { organizationId: orgCtx.organizationId! } },
+                select: { id: true, building: { select: { ratePerUnit: true } } }
             })
+            const validFlatIds = new Set(flats.map(f => f.id))
+            for (const r of validReadings) {
+                if (!validFlatIds.has(r.flatId)) return { error: "Unauthorized flat ID detected" }
+            }
+        }
+
+        const client = await clientPromise
+        const db = client.db("propx")
+        
+        for (const r of validReadings) {
+            await db.collection("MeterReading").updateOne(
+                { flatId: new ObjectId(r.flatId), month: r.month, year: r.year },
+                {
+                    $set: { reading: r.reading, readingDate: new Date(), updatedAt: new Date() },
+                    $setOnInsert: { createdAt: new Date() }
+                },
+                { upsert: true }
+            )
+
+            // Auto-compute electricity bill if previous month exists
+            const prevMonth = r.month === 1 ? 12 : r.month - 1
+            const prevYear = r.month === 1 ? r.year - 1 : r.year
+
+            const prevReading = await db.collection("MeterReading").findOne({
+                flatId: new ObjectId(r.flatId), month: prevMonth, year: prevYear
+            })
+
+            if (prevReading) {
+                const unitsConsumed = r.reading - (prevReading as any).reading
+                if (unitsConsumed >= 0) {
+                    const flat = await prisma.flat.findUnique({
+                        where: { id: r.flatId }, include: { building: true }
+                    })
+
+                    if (flat) {
+                        const rate = flat.building.ratePerUnit || 10
+                        const electricityDue = unitsConsumed * rate
+                        const monthDate = new Date(r.year, r.month - 1, 1)
+
+                        // Atomic Pipeline Update for Race Condition prevention
+                        await db.collection("Payment").updateOne(
+                            { flatId: new ObjectId(r.flatId), month: monthDate },
+                            [
+                                {
+                                    $set: {
+                                        electricityDue: electricityDue,
+                                        totalDue: { $add: [{ $ifNull: ["$rentDue", 0] }, { $ifNull: ["$maintenanceDue", 0] }, electricityDue, { $ifNull: ["$customDues", 0] }, { $ifNull: ["$arrears", 0] }] },
+                                        updatedAt: new Date()
+                                    }
+                                },
+                                {
+                                    $set: {
+                                        balance: { $max: [0, { $subtract: ["$totalDue", { $ifNull: ["$amountPaid", 0] }] }] }
+                                    }
+                                },
+                                {
+                                    $set: {
+                                        status: {
+                                            $cond: {
+                                                if: { $lte: ["$balance", 0] }, then: "PAID",
+                                                else: {
+                                                    $cond: {
+                                                        if: { $gt: [{ $ifNull: ["$amountPaid", 0] }, 0] }, then: "PARTIAL", else: "PENDING"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        )
+                    }
+                }
+            }
         }
 
         revalidatePath('/dashboard')
         revalidatePath('/[userId]/electricity', 'page')
+        revalidatePath('/finance')
         
         return { success: true }
     } catch (error) {

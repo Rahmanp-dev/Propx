@@ -59,7 +59,9 @@ export function NotificationBell() {
     const dropdownRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        getUnreadCount().then(res => setUnreadCount(res.data ?? 0))
+        getUnreadCount().then(res => {
+            if (res?.data !== undefined) setUnreadCount(res.data)
+        }).catch(err => console.error("Failed to fetch unread count:", err))
     }, [])
 
     useEffect(() => {
@@ -76,16 +78,25 @@ export function NotificationBell() {
         setOpen(!open)
         if (!open) {
             setLoading(true)
-            const res = await getNotifications()
-            setNotifications((res.data ?? []).slice(0, 5))
-            setLoading(false)
+            try {
+                const res = await getNotifications()
+                setNotifications((res?.data ?? []).slice(0, 5))
+            } catch (err) {
+                console.error("Failed to fetch notifications:", err)
+            } finally {
+                setLoading(false)
+            }
         }
     }
 
     async function handleMarkAllRead() {
-        await markAllAsRead()
-        setUnreadCount(0)
-        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+        try {
+            await markAllAsRead()
+            setUnreadCount(0)
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+        } catch (err) {
+            console.error("Failed to mark all as read:", err)
+        }
     }
 
     return (
@@ -104,7 +115,7 @@ export function NotificationBell() {
             </button>
 
             {open && (
-                <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+                <div className="absolute right-0 top-full mt-2 w-[260px] md:w-80 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
                     <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
                         <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Notifications</h3>
                     </div>

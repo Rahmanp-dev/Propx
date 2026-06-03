@@ -3,7 +3,7 @@
 import { Menu } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { Sidebar } from "@/components/layout/sidebar"
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
@@ -25,6 +25,7 @@ export function MobileSidebar({ user }: { user?: any }) {
                 </Button>
             </SheetTrigger>
             <SheetContent side="left" className="p-0 bg-[#111827] border-r-gray-800 text-white w-72 max-w-[288px]">
+                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 <Sidebar user={user} />
             </SheetContent>
         </Sheet>

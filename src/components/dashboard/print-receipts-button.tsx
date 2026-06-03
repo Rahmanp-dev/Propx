@@ -21,12 +21,22 @@ export function PrintReceiptsButton() {
             const originalWidth = container.style.width
             const originalMaxWidth = container.style.maxWidth
             const originalTransform = container.style.transform
+            const originalClassName = container.className
             
-            // Force A4 width for the container so it scales correctly
+            // Force A4 width and 3-column grid for the container so it scales correctly, even on mobile
+            container.className = "grid grid-cols-3 gap-[4mm] w-[210mm] bg-white p-4"
             container.style.width = '210mm'
             container.style.maxWidth = '210mm'
             // Ensure the container renders fully even if off-screen
             container.style.transform = 'none'
+
+            // Hide all whatsapp buttons
+            const pdfHideElements = container.querySelectorAll('.pdf-hide')
+            const originalDisplays: string[] = []
+            pdfHideElements.forEach((el: any) => {
+                originalDisplays.push(el.style.display)
+                el.style.display = 'none'
+            })
 
             // Wait a tick for styles to apply
             await new Promise(resolve => setTimeout(resolve, 100))
@@ -38,9 +48,14 @@ export function PrintReceiptsButton() {
             })
 
             // Restore original styles
+            container.className = originalClassName
             container.style.width = originalWidth
             container.style.maxWidth = originalMaxWidth
             container.style.transform = originalTransform
+            
+            pdfHideElements.forEach((el: any, i) => {
+                el.style.display = originalDisplays[i]
+            })
             
             const pdf = new jsPDF({
                 orientation: 'portrait',

@@ -65,12 +65,18 @@ export async function getUnreadCount() {
 
 export async function markAsRead(id: string) {
     try {
+        const orgId = await getOrgId()
+        
         const existing = await prisma.notification.findUnique({
             where: { id },
         })
 
         if (!existing) {
             return { error: "Notification not found" }
+        }
+
+        if (orgId && existing.organizationId !== orgId) {
+            return { error: "Unauthorized" }
         }
 
         const client = await clientPromise

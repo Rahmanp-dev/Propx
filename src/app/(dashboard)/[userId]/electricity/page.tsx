@@ -121,6 +121,7 @@ export default function ElectricityPage() {
                                         <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Flat</th>
                                         <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Tenant</th>
                                         <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
+                                        <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Pending Dues</th>
                                         <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Reading</th>
                                     </tr>
                                 </thead>
@@ -136,6 +137,11 @@ export default function ElectricityPage() {
                                                 ) : (
                                                     <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">Pending</Badge>
                                                 )}
+                                            </td>
+                                            <td className="p-4 align-middle text-right">
+                                                <span className={`font-semibold ${flat.pendingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                                    ₹{flat.pendingAmount?.toLocaleString() || '0'}
+                                                </span>
                                             </td>
                                             <td className="p-4 align-middle text-right">
                                                 <Input 

@@ -336,3 +336,51 @@ export async function sendBroadcastMessage(message: string, buildingId?: string)
         return { error: `Failed to send broadcast message: ${error.message || String(error)}` }
     }
 }
+export async function sendWhatsAppNotification(paymentId: string, type: 'INVOICE' | 'RECEIPT') {
+    try {
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
+
+        const payment = await prisma.payment.findUnique({
+            where: { id: paymentId },
+            include: { 
+                tenant: { 
+                    include: { flat: { include: { building: { select: { organizationId: true } } } } } 
+                } 
+            }
+        })
+
+        if (!payment || !payment.tenant) {
+            return { error: "Payment or Tenant not found" }
+        }
+
+        if (!orgCtx.isSuperAdmin && payment.tenant.flat?.building?.organizationId !== orgCtx.organizationId) {
+            return { error: "Unauthorized access to payment record" }
+        }
+
+        // Simulating external Meta WhatsApp API Call delay
+        await new Promise(resolve => setTimeout(resolve, 800))
+
+        const messageType = type === 'INVOICE' ? 'RENT_REMINDER' : 'PAYMENT_RECEIPT'
+        const content = type === 'INVOICE' 
+            ? `Reminder: Your rent for this month is due. Pending amount: ₹${payment.balance}` 
+            : `Thank you! Your payment of ₹${payment.amountPaid} has been received.`
+
+        // Log the WhatsApp message
+        await prisma.whatsAppLog.create({
+            data: {
+                tenantId: payment.tenant.id,
+                phone: payment.tenant.phone,
+                messageType: messageType,
+                content: content,
+                status: 'DELIVERED',
+                sentAt: new Date()
+            }
+        })
+
+        return { success: true }
+    } catch (error: any) {
+        console.error("WhatsApp sending error:", error)
+        return { error: "Failed to send WhatsApp message" }
+    }
+}

@@ -22,7 +22,7 @@ async function getOrgContext() {
 const recordReadingSchema = z.object({
     flatId: z.string(),
     reading: z.coerce.number().min(0),
-    month: z.coerce.number().min(0).max(11),
+    month: z.coerce.number().min(1).max(12),
     year: z.coerce.number().min(2024)
 })
 
@@ -74,8 +74,8 @@ export async function recordMeterReading(data: RecordReadingInput) {
 
         // 2. Auto-compute electricity bill
         // Find previous month's reading
-        const prevMonthIndex = month === 0 ? 11 : month - 1
-        const prevYearIndex = month === 0 ? year - 1 : year
+        const prevMonthIndex = month === 1 ? 12 : month - 1
+        const prevYearIndex = month === 1 ? year - 1 : year
 
         const prevReading = await db.collection("MeterReading").findOne({
             flatId: new ObjectId(flatId),
@@ -97,44 +97,39 @@ export async function recordMeterReading(data: RecordReadingInput) {
                     const electricityDue = unitsConsumed * rate
 
                     // Find the payment record for this month and update electricity
-                    const monthDate = new Date(year, month, 1)
-                    const paymentUpdate = await db.collection("Payment").findOneAndUpdate(
-                        {
-                            flatId: new ObjectId(flatId),
-                            month: monthDate
-                        },
-                        {
-                            $set: {
-                                electricityDue: electricityDue,
-                                updatedAt: new Date()
-                            }
-                        },
-                        { returnDocument: 'after' }
-                    )
-
-                    // Recalculate totalDue and balance for this payment
-                    if (paymentUpdate) {
-                        const p = paymentUpdate as any
-                        const newTotalDue = (p.rentDue || 0) + (p.maintenanceDue || 0) + electricityDue + (p.arrears || 0)
-                        const newBalance = newTotalDue - (p.amountPaid || 0)
-
-                        let newStatus = p.status
-                        if (newBalance <= 0) newStatus = "PAID"
-                        else if ((p.amountPaid || 0) > 0) newStatus = "PARTIAL"
-                        else newStatus = "PENDING"
-
-                        await db.collection("Payment").updateOne(
-                            { _id: p._id },
+                    // Find the payment record for this month and update electricity with an atomic pipeline
+                    const monthDate = new Date(year, month - 1, 1)
+                    await db.collection("Payment").updateOne(
+                        { flatId: new ObjectId(flatId), month: monthDate },
+                        [
                             {
                                 $set: {
-                                    totalDue: newTotalDue,
-                                    balance: Math.max(0, newBalance),
-                                    status: newStatus,
+                                    electricityDue: electricityDue,
+                                    totalDue: { $add: [{ $ifNull: ["$rentDue", 0] }, { $ifNull: ["$maintenanceDue", 0] }, electricityDue, { $ifNull: ["$customDues", 0] }, { $ifNull: ["$arrears", 0] }] },
                                     updatedAt: new Date()
                                 }
+                            },
+                            {
+                                $set: {
+                                    balance: { $max: [0, { $subtract: ["$totalDue", { $ifNull: ["$amountPaid", 0] }] }] }
+                                }
+                            },
+                            {
+                                $set: {
+                                    status: {
+                                        $cond: {
+                                            if: { $lte: ["$balance", 0] }, then: "PAID",
+                                            else: {
+                                                $cond: {
+                                                    if: { $gt: [{ $ifNull: ["$amountPaid", 0] }, 0] }, then: "PARTIAL", else: "PENDING"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
-                        )
-                    }
+                        ]
+                    )
                 }
             }
         }

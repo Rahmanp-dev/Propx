@@ -21,20 +21,29 @@ export async function saveSubscription(subscription: any) {
         const userId = session.user.id
 
         // Upsert the subscription using endpoint as unique key
-        await prisma.pushSubscription.upsert({
-            where: { endpoint: subscription.endpoint },
-            update: {
-                p256dh: subscription.keys.p256dh,
-                auth: subscription.keys.auth,
-                userId: userId,
-            },
-            create: {
-                endpoint: subscription.endpoint,
-                p256dh: subscription.keys.p256dh,
-                auth: subscription.keys.auth,
-                userId: userId,
-            }
+        const existing = await prisma.pushSubscription.findUnique({
+            where: { endpoint: subscription.endpoint }
         })
+
+        if (existing) {
+            await prisma.pushSubscription.update({
+                where: { id: existing.id },
+                data: {
+                    p256dh: subscription.keys.p256dh,
+                    auth: subscription.keys.auth,
+                    userId: userId,
+                }
+            })
+        } else {
+            await prisma.pushSubscription.create({
+                data: {
+                    endpoint: subscription.endpoint,
+                    p256dh: subscription.keys.p256dh,
+                    auth: subscription.keys.auth,
+                    userId: userId,
+                }
+            })
+        }
 
         return { success: true }
     } catch (error: any) {

@@ -370,7 +370,18 @@ node seed-production.js
 
 ## 🔄 Changelog
 
-### v2.2 — Production Polish & Scalability (Latest)
+### v3.0 — The Enterprise Operations Update (Latest)
+- 📱 **Mobile Responsiveness Overhaul** — Completely redesigned global overflow structures to eliminate horizontal scrolling. Introduced a sliding hamburger menu and mobile-optimized tables for seamless on-the-go management.
+- 🏢 **Flat-Wise Ledgers** — Pivoted tenant-centric ledgers to **Flat-Wise Ledgers**. Owners now track a flat's financial history seamlessly, regardless of tenant turnover.
+- 📊 **Master Monthly Ledger** — A brand-new aggregation dashboard allowing owners to view total expected, collected, and pending amounts across their entire portfolio for any given month, complete with PDF exports.
+- ⚡ **Bulk Payment Processing** — Introduced a one-click "Mark Month as Paid" feature that allows owners to instantly log full cash payments for all pending invoices in a selected month.
+- 🧾 **Dynamic Invoices vs Receipts** — The system now dynamically labels generated PDFs as **INVOICE** for pending balances, and **RECEIPT** for settled dues.
+- 💬 **WhatsApp Automation** — Integrated a powerful WhatsApp Server Action to instantly fire rent reminders for pending invoices, and payment confirmations for receipts, directly from the finance dashboard.
+- 🔧 **Maintenance Resolution Logic** — Upgraded the maintenance tracker with a new resolution workflow. Owners can now close tickets, append repair costs, and attach resolution notes that sync with the ledger.
+- 📝 **Advanced Payment Logging** — Added custom `remarks/notes` support when logging manual payments, giving owners better financial auditing capabilities.
+- 🌐 **SaaS Landing Page Access** — Reconfigured middleware and auth protections to ensure unauthenticated users can access the Packages and Pricing page seamlessly.
+
+### v2.2 — Production Polish & Scalability
 - 📄 **Real PDF Generation** — Replaced native browser print with a true physical PDF engine (`html-to-image` + `jsPDF`) for downloadable receipts.
 - 🖨️ **9-Grid Density Layout** — Engineered an extreme density 3x3 layout to fit exactly 9 highly detailed receipts on a single A4 PDF page.
 - 🔍 **Global Master Search** — Integrated a fast command-palette search mounted in the top-bar to instantly find any tenant, flat, or building.

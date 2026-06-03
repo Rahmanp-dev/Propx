@@ -1,75 +1,40 @@
-# PropX: The Future of Property Management
-**A Comprehensive White Paper on the PropX SaaS Platform**
+# PropX: The Intelligent Property Management Engine
+**Comprehensive Feature White Paper (v3.0)**
 
----
+## 1. Multi-Tenant Architecture & Data Isolation
+PropX uses a robust multi-tenant architecture with MongoDB. Every user registers an `Organization` (Property Management Firm or Individual Owner). All subsequent resources (Buildings, Flats, Tenants, Payments, Complaints) are strictly isolated by `organizationId`. Owners only see their own data, and Tenants only see data relating to the flat they are assigned to.
 
-## 1. Executive Summary
-PropX is a modern, Next.js 16-powered Software-as-a-Service (SaaS) designed specifically to revolutionize multi-tenant property management for Indian landlords. By streamlining the entire property lifecycle—from tenant onboarding and real-time rent collection to electricity billing and physical PDF receipts—PropX replaces fragmented WhatsApp groups and Excel spreadsheets with a single, unified command center.
+## 2. Advanced Ledger & Financial System
+- **Master Monthly Ledger:** Aggregates all expected, collected, and pending dues across the entire portfolio for any selected month. Timezone-aware date parsing ensures accurate cross-region queries.
+- **Flat-Wise Ledger:** A granular view of individual flat payment histories, showing every invoice, receipt, part-payment, and outstanding balance for a specific unit.
+- **Dynamic Invoices & Receipts:** Automatically generates dynamic PDFs based on payment status. A "Receipt" is issued for paid amounts, while an "Invoice" (with a 'Due Date' watermark) is generated for pending balances.
+- **Bulk Payment Processing:** A one-click "Mark Month as Paid" feature allows owners to instantly log full cash payments for all pending invoices in a selected month.
+- **Automated Dues Generation (Rent Engine):** A scheduled backend engine calculates monthly dues, pulling in rent, maintenance, and arrears.
 
----
+## 3. Integrated Utility Billing (Electricity)
+- **Meter Reading Capture:** Owners can input current meter readings for metered flats.
+- **Automated Consumption Calculation:** The Rent Engine compares the current month's reading to the previous month's reading, calculates the consumed units, and multiplies by the building's defined rate per unit to automatically add the utility charge to the monthly invoice.
+- **Data Integrity:** Resolves 0-indexed month discrepancies to ensure perfectly synchronized billing periods.
 
-## 2. Platform Architecture
+## 4. Payment Gateway & Collection Strategy
+- **Per-Tenant Payment Assignment:** Owners can assign specific payment methods (Cash, Custom UPI, Default Org UPI) to individual tenants based on contractual agreements or convenience.
+- **Automated PWA Payment Verifications:** Tenants can upload UTR transaction numbers or screenshots directly via the Tenant Portal.
+- **Dynamic 9-Grid PDF Generation:** Generates 9-receipts-per-page A4 PDFs perfectly optimized for printing on both desktop and mobile devices.
 
-### Multi-Tenancy & Data Isolation
-PropX employs a robust multi-tenant architecture. The underlying database dynamically scopes all operations via `organizationId`. 
-* **Super Admins** manage platform subscriptions, organization activation, and platform-wide metrics.
-* **Building Owners** operate within strict data silos, ensuring that buildings, flats, and tenant financial data remain 100% private to their organization.
+## 5. WhatsApp Automation Engine
+- **One-Click Dispatch:** WhatsApp buttons are integrated directly into the Ledger and Receipts interfaces, dynamically opening a pre-filled chat with the tenant.
+- **Smart Messaging:** Differentiates between 'Invoice Reminders' for pending balances and 'Payment Receipts' for settled accounts.
 
-### Technology Stack
-* **Framework**: Next.js 16 (App Router)
-* **Language**: TypeScript 5
-* **UI & Styling**: React 19, Tailwind CSS 4, shadcn/ui
-* **Database & ORM**: MongoDB 8, Prisma 5
-* **Authentication**: NextAuth.js v5 (Edge Middleware Protected)
-* **Cloud Infrastructure**: Cloudinary (Image storage with automatic local fallbacks)
+## 6. Tenant Experience & Portal
+- **Dedicated Progressive Web App (PWA):** Tenants have their own dedicated login portal (`/tenant-portal`).
+- **Maintenance Ticketing:** Tenants can raise maintenance issues, attach photos, and track the resolution status (Pending, In Progress, Resolved).
+- **Resolution Tracking:** Owners can close maintenance tickets and add internal resolution remarks for auditing.
 
----
+## 7. Role-Based Access Control (RBAC)
+- **Super Admin:** Can view system-wide analytics, manage all organizations, and oversee platform health.
+- **Owner (Admin):** Full control over their organization's buildings, flats, and financial ledgers.
+- **Tenant:** Restricted access strictly limited to their own flat's dues, payment history, and maintenance requests.
 
-## 3. Core Feature Modules
-
-### 👑 Super Admin & SaaS Platform Management
-PropX enables developers or platform owners to monetize the software through a multi-tier SaaS model (Starter, Builder, Portfolio).
-* **Global Dashboard**: Track active organizations, MRR (Monthly Recurring Revenue), and system health.
-* **Subscription Management**: Approve or reject owner payment proofs to activate or suspend accounts.
-* **User Management**: Full CRUD operations across all platform users and roles.
-
-### 🏢 Building & Flat Management
-* **Hierarchical Structure**: Owners can group flats under distinct buildings, each with its own address and default utility configurations.
-* **Granular Flat Controls**: Define exact configuration (Studio, 1BHK, 3BHK), monthly rent, maintenance baseline, and deposit amounts.
-* **Live Filtering**: Global command palette search and real-time flat filtering by tenant name or flat number.
-
-### 👥 Tenant Onboarding & Portal
-* **Automated Onboarding**: Adding a tenant immediately auto-generates a secure, 4-digit PIN for the Tenant Portal.
-* **Self-Service Portal**: Tenants log in via their Phone Number + PIN to view dues, past receipts, and raise maintenance requests without downloading an app.
-* **Secure Sessions**: Tenant sessions are encrypted using highly secure AES-256-GCM cookies.
-
-### 💰 Financial Command Center
-PropX eliminates manual financial reconciliation:
-* **Rental Engine**: Auto-generate monthly dues for rent, maintenance, and ad-hoc ledger entries across all occupied flats in a single click.
-* **Electricity Auto-Billing**: Record meter readings for each flat; PropX automatically calculates the bill based on the building's rate-per-unit.
-* **Dashboard Analytics**: Visualize revenue trends, pending dues, and collection rates via interactive Recharts.
-
-### 💳 UPI-First Payments
-PropX is heavily optimized for the Indian payment ecosystem:
-* **Zero-Commission UPI**: Tenants pay directly via GPay, PhonePe, or Paytm by scanning the owner's configured UPI QR.
-* **Multi-Account Splitting**: Owners can configure multiple bank accounts and UPI IDs to route payments for tax optimization.
-* **Digital Proof Verification**: Tenants upload payment screenshots directly to Cloudinary, triggering a verification alert on the Owner's dashboard.
-
-### 📄 Real PDF Receipts (9-Grid Extreme Density)
-* **True Physical PDFs**: Moving away from browser-native printing, PropX utilizes a custom `html-to-image` and `jsPDF` pipeline to programmatically generate physical PDF files.
-* **Extreme Density Formatting**: Receipts are automatically mathematically mapped into a 3x3 grid (business card size), fitting 9 high-detail receipts precisely onto a single A4 page for economical printing and distribution.
-
-### 🔧 Operations & Maintenance Tracker
-* **Ticketing System**: Tenants can raise categorized maintenance requests (Plumbing, Electrical, Carpentry).
-* **Lifecycle Management**: Owners track open requests, mark items in-progress, assign costs, and analyze average resolution times.
-
----
-
-## 4. Security & Compliance
-* **Edge Middleware**: Deep route protection prevents unauthorized access across different organization boundaries.
-* **Action Guards**: All Server Actions are validated server-side against role-based access controls (RBAC).
-
----
-
-## 5. Conclusion
-PropX delivers an enterprise-grade experience tailored to the specific operational needs of property managers. By merging high-performance Next.js architectures with deeply localized features like UPI-first payments and offline-ready PWAs, PropX sets a new standard for PropTech software.
+## 8. Seamless SaaS Landing & Registration
+- **Public Packages Page:** A fully responsive, unauthenticated pricing page showcasing Starter, Builder, and Portfolio plans.
+- **Frictionless Onboarding:** Registration seamlessly links the selected pricing plan, organization setup, and initial configuration.

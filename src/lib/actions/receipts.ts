@@ -3,10 +3,40 @@
 import prisma from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 
+async function getOrgContext() {
+    const session = await auth()
+    if (!session?.user) return null
+    const user = session.user as any
+    return {
+        userId: user.id,
+        role: user.role as string,
+        organizationId: user.organizationId as string | null,
+        isSuperAdmin: user.role === 'SUPER_ADMIN',
+    }
+}
+
+import { z } from "zod"
+
+const getMonthlyReceiptsSchema = z.object({
+    buildingId: z.string().min(1),
+    month: z.number().min(1).max(12),
+    year: z.number().min(2000),
+})
+
 export async function getMonthlyReceipts(buildingId: string, month: number, year: number) {
+    const result = getMonthlyReceiptsSchema.safeParse({ buildingId, month, year })
+    if (!result.success) return { error: "Invalid input data" }
+    
     try {
-        const session = await auth()
-        if (!session?.user) return { error: "Not authenticated" }
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
+
+        if (!orgCtx.isSuperAdmin) {
+            const building = await prisma.building.findFirst({
+                where: { id: buildingId, organizationId: orgCtx.organizationId! }
+            })
+            if (!building) return { error: "Building not found or unauthorized" }
+        }
 
         // Determine start and end of the month
         const startDate = new Date(year, month - 1, 1)
@@ -20,9 +50,6 @@ export async function getMonthlyReceipts(buildingId: string, month: number, year
                 month: {
                     gte: startDate,
                     lt: endDate
-                },
-                amountPaid: {
-                    gt: 0
                 }
             },
             include: {

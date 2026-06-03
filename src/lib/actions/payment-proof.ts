@@ -5,6 +5,18 @@ import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { ObjectId } from "mongodb"
 import { auth } from "@/lib/auth"
+import { z } from "zod"
+
+const uploadPaymentProofSchema = z.object({
+    screenshotUrl: z.string().url(),
+    uploadedBy: z.enum(['tenant', 'owner']),
+    upiTransactionId: z.string().optional(),
+})
+
+const verifyPaymentProofSchema = z.object({
+    verified: z.boolean(),
+    notes: z.string().optional(),
+})
 
 // ==========================================
 // ORG CONTEXT HELPER
@@ -31,6 +43,10 @@ export async function uploadPaymentProof(paymentId: string, data: {
     uploadedBy: 'tenant' | 'owner'
     upiTransactionId?: string
 }) {
+    const result = uploadPaymentProofSchema.safeParse(data)
+    if (!result.success) return { error: "Invalid input data" }
+    const parsedData = result.data
+
     try {
         // Validate payment exists
         const payment = await prisma.payment.findUnique({
@@ -55,9 +71,9 @@ export async function uploadPaymentProof(paymentId: string, data: {
         const now = new Date()
         const proofDoc = {
             paymentId: new ObjectId(paymentId),
-            uploadedBy: data.uploadedBy,
-            screenshotUrl: data.screenshotUrl,
-            upiTransactionId: data.upiTransactionId || null,
+            uploadedBy: parsedData.uploadedBy,
+            screenshotUrl: parsedData.screenshotUrl,
+            upiTransactionId: parsedData.upiTransactionId || null,
             isVerified: false,
             verifiedAt: null,
             notes: null,
@@ -92,6 +108,9 @@ export async function uploadPaymentProof(paymentId: string, data: {
 }
 
 export async function verifyPaymentProof(proofId: string, verified: boolean, notes?: string) {
+    const result = verifyPaymentProofSchema.safeParse({ verified, notes })
+    if (!result.success) return { error: "Invalid input data" }
+
     try {
         const orgCtx = await getOrgContext()
         if (!orgCtx) return { error: "Not authenticated" }
@@ -135,22 +154,23 @@ export async function verifyPaymentProof(proofId: string, verified: boolean, not
             }
         )
 
-        // If verified: update the Payment to PAID
+        // If verified: update the Payment to PAID using atomic pipeline
         if (verified) {
-            const payment = proof.payment
             await db.collection("Payment").updateOne(
-                { _id: new ObjectId(payment.id) },
-                {
-                    $set: {
-                        status: "PAID",
-                        amountPaid: payment.totalDue,
-                        balance: 0,
-                        paymentDate: now,
-                        paymentMethod: "UPI",
-                        verifiedByOwner: true,
-                        updatedAt: now,
+                { _id: new ObjectId(proof.payment.id) },
+                [
+                    {
+                        $set: {
+                            status: "PAID",
+                            amountPaid: "$totalDue",
+                            balance: 0,
+                            paymentDate: now,
+                            paymentMethod: "UPI",
+                            verifiedByOwner: true,
+                            updatedAt: now,
+                        }
                     }
-                }
+                ]
             )
         }
 

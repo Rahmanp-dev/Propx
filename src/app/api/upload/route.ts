@@ -6,6 +6,11 @@ import { auth } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth()
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const formData = await request.formData()
     const file = formData.get('file') as File | null
 

@@ -29,16 +29,14 @@ export function MeterReadingDialog({ flatId, flatNumber }: MeterReadingDialogPro
     const [error, setError] = useState("")
     const [reading, setReading] = useState("")
 
-    // Default to current month
+    // Default to current month (1-12)
     const today = new Date()
-    const [month, setMonth] = useState(today.getMonth().toString())
+    const [month, setMonth] = useState((today.getMonth() + 1).toString())
     const [year, setYear] = useState(today.getFullYear().toString())
 
     const [readings, setReadings] = useState<any[]>([])
 
     // Fetch previous readings on mount
-    // Fetch previous readings on mount
-
     useEffect(() => {
         if (open) {
             getFlatReadings(flatId).then(res => {
@@ -50,16 +48,17 @@ export function MeterReadingDialog({ flatId, flatNumber }: MeterReadingDialogPro
     const selectedMonth = parseInt(month)
     const selectedYear = parseInt(year)
 
-    // Calculate Previous Month
-    const prevDate = new Date(selectedYear, selectedMonth - 1)
-    const prevMonth = prevDate.getMonth()
-    const prevYear = prevDate.getFullYear()
+    // Calculate Previous Month (1-12)
+    const prevMonth = selectedMonth === 1 ? 12 : selectedMonth - 1
+    const prevYear = selectedMonth === 1 ? selectedYear - 1 : selectedYear
 
     const previousReading = useMemo(() => {
         return readings.find(r => r.month === prevMonth && r.year === prevYear)
     }, [readings, prevMonth, prevYear])
 
-    const consumption = reading ? (parseFloat(reading) - (previousReading?.reading || 0)).toFixed(2) : "-"
+    const consumption = reading && previousReading 
+        ? (parseFloat(reading) - previousReading.reading).toFixed(2) 
+        : null
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -116,9 +115,9 @@ export function MeterReadingDialog({ flatId, flatNumber }: MeterReadingDialogPro
                                     value={month}
                                     onChange={(e) => setMonth(e.target.value)}
                                 >
-                                    {Array.from({ length: 12 }, (_, i) => (
-                                        <option key={i} value={i}>
-                                            {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                                        <option key={m} value={m}>
+                                            {new Date(0, m - 1).toLocaleString('default', { month: 'long' })}
                                         </option>
                                     ))}
                                 </select>
@@ -149,14 +148,20 @@ export function MeterReadingDialog({ flatId, flatNumber }: MeterReadingDialogPro
                         {/* Comparison Display */}
                         <div className="rounded-md bg-muted p-3 text-sm">
                             <div className="flex justify-between mb-2">
-                                <span className="text-muted-foreground">Previous ({new Date(0, prevMonth).toLocaleString('default', { month: 'short' })} '{prevYear.toString().slice(-2)}):</span>
-                                <span className="font-medium">{previousReading?.reading ?? "0"}</span>
+                                <span className="text-muted-foreground">Previous ({new Date(0, prevMonth - 1).toLocaleString('default', { month: 'short' })} '{prevYear.toString().slice(-2)}):</span>
+                                <span className="font-medium">{previousReading ? previousReading.reading : "No Data (Baseline)"}</span>
                             </div>
                             <div className="flex justify-between border-t pt-2">
                                 <span className="font-semibold">Calculated Consumption:</span>
-                                <span className={`font-bold ${parseFloat(consumption) < 0 ? 'text-red-500' : 'text-green-600'}`}>
-                                    {consumption} Units
-                                </span>
+                                {consumption !== null ? (
+                                    <span className={`font-bold ${parseFloat(consumption) < 0 ? 'text-red-500' : 'text-green-600'}`}>
+                                        {consumption} Units
+                                    </span>
+                                ) : (
+                                    <span className="font-medium italic text-muted-foreground">
+                                        N/A (First Reading)
+                                    </span>
+                                )}
                             </div>
                         </div>
 

@@ -61,16 +61,6 @@ export async function logPayment(data: LogPaymentInput) {
             return { error: "Payment record not found" }
         }
 
-        const newAmountPaid = payment.amountPaid + amount
-        const newBalance = payment.totalDue - newAmountPaid
-
-        let newStatus = payment.status
-        if (newBalance <= 0) {
-            newStatus = "PAID"
-        } else if (newAmountPaid > 0) {
-            newStatus = "PARTIAL"
-        }
-
         const client = await clientPromise
         const db = client.db("propx")
 
@@ -78,21 +68,43 @@ export async function logPayment(data: LogPaymentInput) {
             ? (payment.notes ? `${payment.notes}\n${notes}` : notes)
             : payment.notes
 
-        await db.collection("Payment").updateOne(
+        const updatedDoc = await db.collection("Payment").findOneAndUpdate(
             { _id: new ObjectId(paymentId) },
-            {
-                $set: {
-                    amountPaid: newAmountPaid,
-                    balance: Math.max(0, newBalance),
-                    status: newStatus,
-                    paymentMethod: method,
-                    upiReference: upiReference || payment.upiReference,
-                    paymentDate: new Date(),
-                    notes: updateNotes,
-                    updatedAt: new Date()
+            [
+                {
+                    $set: {
+                        amountPaid: { $add: [{ $ifNull: ["$amountPaid", 0] }, amount] },
+                        paymentMethod: method,
+                        upiReference: upiReference || payment.upiReference || null,
+                        paymentDate: new Date(),
+                        notes: updateNotes,
+                        updatedAt: new Date()
+                    }
+                },
+                {
+                    $set: {
+                        balance: { $max: [0, { $subtract: ["$totalDue", "$amountPaid"] }] }
+                    }
+                },
+                {
+                    $set: {
+                        status: {
+                            $cond: {
+                                if: { $lte: ["$balance", 0] }, then: "PAID",
+                                else: {
+                                    $cond: {
+                                        if: { $gt: ["$amountPaid", 0] }, then: "PARTIAL", else: "PENDING"
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-            }
+            ],
+            { returnDocument: 'after' }
         )
+
+        const finalBalance = updatedDoc ? (updatedDoc as any).balance : 0
 
         // Add Notification
         if (payment.flat.building.organizationId) {
@@ -115,7 +127,7 @@ export async function logPayment(data: LogPaymentInput) {
         }
 
         // Cascade balance updates to future months
-        await updateFutureBalances(payment.tenantId, payment.month, Math.max(0, newBalance))
+        await updateFutureBalances(payment.tenantId, payment.month, Math.max(0, finalBalance))
 
         // Revalidate ALL relevant pages so finance & dashboard reflect instantly
         revalidatePath('/dashboard')
@@ -174,5 +186,47 @@ async function updateFutureBalances(tenantId: string, currentPaymentMonth: Date,
         }
     } catch (error) {
         console.error("Failed to cascade balance updates:", error)
+    }
+}
+
+export async function markAllMonthAsPaid(monthStr: string, method: string = "CASH") {
+    try {
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
+
+        const startDate = new Date(`${monthStr}-01T00:00:00.000Z`)
+        startDate.setHours(startDate.getHours() - 12)
+        const endDate = new Date(startDate)
+        endDate.setMonth(endDate.getMonth() + 1)
+
+        const payments = await prisma.payment.findMany({
+            where: {
+                month: { gte: startDate, lt: endDate },
+                balance: { gt: 0 },
+                ...(orgCtx.isSuperAdmin ? {} : {
+                    flat: { building: { organizationId: orgCtx.organizationId! } }
+                })
+            }
+        })
+
+        let markedCount = 0
+        for (const p of payments) {
+            await logPayment({
+                paymentId: p.id,
+                amount: p.balance,
+                method: method as any,
+                notes: "Bulk marked as paid for the month."
+            })
+            markedCount++
+        }
+
+        revalidatePath('/dashboard')
+        revalidatePath('/finance')
+        revalidatePath(`/[userId]/ledger`, 'page')
+        
+        return { success: true, count: markedCount }
+    } catch (error: any) {
+        console.error("Failed to bulk mark as paid:", error)
+        return { error: `Failed to mark all as paid: ${error.message || String(error)}` }
     }
 }

@@ -5,6 +5,19 @@ import { ObjectId } from "mongodb"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { auth } from "@/lib/auth"
+import prisma from "@/lib/prisma"
+
+async function getOrgContext() {
+    const session = await auth()
+    if (!session?.user) return null
+    const user = session.user as any
+    return {
+        userId: user.id,
+        role: user.role as string,
+        organizationId: user.organizationId as string | null,
+        isSuperAdmin: user.role === 'SUPER_ADMIN',
+    }
+}
 
 const addDueSchema = z.object({
     tenantId: z.string(),
@@ -24,8 +37,16 @@ export async function addCustomDue(data: AddDueInput) {
     const { tenantId, label, amount, month } = result.data
 
     try {
-        const session = await auth()
-        if (!session?.user) return { error: "Unauthorized" }
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Unauthorized" }
+
+        // Verify tenant belongs to user's org
+        if (!orgCtx.isSuperAdmin) {
+            const tenant = await prisma.tenant.findFirst({
+                where: { id: tenantId, flat: { building: { organizationId: orgCtx.organizationId! } } }
+            })
+            if (!tenant) return { error: "Tenant not found or unauthorized" }
+        }
 
         const client = await clientPromise
         const db = client.db("propx")

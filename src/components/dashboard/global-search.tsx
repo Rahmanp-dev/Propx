@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Calculator, Calendar, CreditCard, Settings, Smile, User, Building, MapPin } from "lucide-react"
+import { Calculator, Calendar, CreditCard, Settings, Smile, User, Building, MapPin, Loader2 } from "lucide-react"
 import { useRouter, usePathname } from "next/navigation"
 
 import {
@@ -20,6 +20,7 @@ import { searchGlobal } from "@/lib/actions/search"
 export function GlobalSearch() {
     const [open, setOpen] = React.useState(false)
     const [query, setQuery] = React.useState("")
+    const [loading, setLoading] = React.useState(false)
     const [data, setData] = React.useState<{ tenants: any[], buildings: any[], flats: any[] } | null>(null)
     const router = useRouter()
     const pathname = usePathname()
@@ -44,9 +45,17 @@ export function GlobalSearch() {
         }
 
         const timer = setTimeout(async () => {
-            const res = await searchGlobal(query)
-            // @ts-ignore
-            setData(res.results)
+            setLoading(true)
+            try {
+                const res = await searchGlobal(query)
+                // @ts-ignore
+                setData(res.results)
+            } catch (error) {
+                console.error("Search failed", error)
+                setData(null)
+            } finally {
+                setLoading(false)
+            }
         }, 300)
 
         return () => clearTimeout(timer)
@@ -63,6 +72,7 @@ export function GlobalSearch() {
                 variant="outline"
                 className="relative h-9 w-full justify-start rounded-[0.5rem] bg-background text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-64"
                 onClick={() => setOpen(true)}
+                aria-label="Open global search"
             >
                 <span className="hidden lg:inline-flex">Search...</span>
                 <span className="inline-flex lg:hidden">Search...</span>
@@ -70,10 +80,15 @@ export function GlobalSearch() {
                     <span className="text-xs">⌘</span>K
                 </kbd>
             </Button>
-            <CommandDialog open={open} onOpenChange={setOpen}>
-                <CommandInput placeholder="Type a command or search..." value={query} onValueChange={setQuery} />
+            <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
+                <CommandInput placeholder="Type a command or search..." value={query} onValueChange={setQuery} aria-label="Search query input" />
                 <CommandList>
-                    <CommandEmpty>No results found.</CommandEmpty>
+                    {loading && (
+                        <div className="py-6 text-center text-sm text-muted-foreground flex items-center justify-center">
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Searching...
+                        </div>
+                    )}
+                    {!loading && <CommandEmpty>No results found.</CommandEmpty>}
 
                     {data?.buildings && data.buildings.length > 0 && (
                         <CommandGroup heading="Buildings">
