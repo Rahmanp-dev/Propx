@@ -231,8 +231,8 @@ export default function RegisterPage() {
           {/* Logo & tagline */}
           <div className="mb-14">
             <Link href="/" className="mb-6 flex items-center gap-3 w-fit">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/25">
-                <Building2 className="h-6 w-6 text-white" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl shadow-lg overflow-hidden bg-white/5">
+                <img src="/logo.png" alt="Company Logo" className="h-full w-full object-contain" />
               </div>
               <span className="text-2xl font-bold tracking-tight text-white">
                 Prop<span className="text-indigo-400">X</span>
@@ -284,8 +284,8 @@ export default function RegisterPage() {
           {/* Mobile-only logo */}
           <div className="mb-8 flex items-center justify-center gap-3 lg:hidden mt-6">
             <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/25">
-                <Building2 className="h-5 w-5 text-white" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl shadow-lg overflow-hidden bg-white/5">
+                <img src="/logo.png" alt="Company Logo" className="h-full w-full object-contain" />
               </div>
               <span className="text-xl font-bold tracking-tight text-white">
                 Prop<span className="text-indigo-400">X</span>

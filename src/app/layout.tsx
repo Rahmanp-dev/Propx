@@ -17,8 +17,8 @@ export const metadata: Metadata = {
     title: "PropX",
   },
   icons: {
-    icon: "/icons/icon-192.svg",
-    apple: "/icons/icon-192.svg",
+    icon: "/icons/logo.png",
+    apple: "/icons/logo.png",
   },
 };
 

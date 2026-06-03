@@ -141,10 +141,8 @@ export function Sidebar({ user }: { user?: any }) {
       <div className="relative flex items-center gap-3 px-6 py-6">
         {/* Gradient accent behind the logo */}
         <div className="absolute inset-0 bg-gradient-to-r from-sky-500/10 via-violet-500/8 to-transparent pointer-events-none" />
-        <div className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-violet-600 shadow-lg shadow-sky-500/20">
-          <span className="text-sm font-extrabold tracking-tight text-white">
-            PX
-          </span>
+        <div className="relative flex h-10 w-10 items-center justify-center rounded-lg shadow-lg overflow-hidden bg-white/5">
+          <img src="/logo.png" alt="Company Logo" className="h-full w-full object-contain" />
         </div>
         <div className="relative">
           <h1 className="text-lg font-bold tracking-wide text-white">

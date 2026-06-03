@@ -97,23 +97,23 @@ export default async function LandingPage() {
           </div>
 
           {/* Mobile Menu */}
-          <div className="flex md:hidden items-center gap-4">
+          <div className="flex md:hidden items-center gap-3">
             {user ? (
-              <Link href={(user as any).role === 'SUPER_ADMIN' ? '/super-admin/dashboard' : `/${user.id}/dashboard`} className="text-xs font-semibold text-indigo-400">
+              <Link href={(user as any).role === 'SUPER_ADMIN' ? '/super-admin/dashboard' : `/${user.id}/dashboard`} className="text-xs font-semibold bg-indigo-600 px-3 py-1.5 rounded-lg text-white">
                 Dashboard
               </Link>
             ) : (
-              <Link href="/login" className="text-xs font-semibold text-slate-300">
+              <Link href="/login" className="text-xs font-semibold border border-white/20 bg-white/5 px-3 py-1.5 rounded-lg text-white">
                 Sign In
               </Link>
             )}
             <Sheet>
               <SheetTrigger asChild>
-                <button className="text-slate-300 hover:text-white">
+                <button className="text-slate-300 hover:text-white p-1">
                   <Menu className="h-6 w-6" />
                 </button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-slate-950 border-l-white/10 text-white">
+              <SheetContent side="right" className="bg-slate-950 border-l-white/10 text-white w-[280px]">
                 <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
                 <div className="flex flex-col gap-6 mt-8">
                   <a href="#features" className="text-lg font-medium text-slate-300">Features</a>
@@ -124,9 +124,14 @@ export default async function LandingPage() {
                   </Link>
                   <div className="h-px bg-white/10 w-full my-2" />
                   {!user && (
-                    <Link href="/register" className="inline-flex items-center justify-center px-5 py-3 rounded-xl text-base font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-500/10">
-                      Register Now
-                    </Link>
+                    <div className="flex flex-col gap-3">
+                      <Link href="/login" className="inline-flex items-center justify-center px-5 py-3 rounded-xl text-base font-bold border border-white/20 bg-white/5 text-white">
+                        Sign In
+                      </Link>
+                      <Link href="/register" className="inline-flex items-center justify-center px-5 py-3 rounded-xl text-base font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-500/10">
+                        Register Now
+                      </Link>
+                    </div>
                   )}
                 </div>
               </SheetContent>
