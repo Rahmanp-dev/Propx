@@ -12,45 +12,74 @@ interface PrintLedgerProps {
     totalExpected: number
     totalCollected: number
     totalPending: number
+    selectedBuildingName?: string
 }
 
-export function PrintLedgerButton({ masterData, currentMonth, totalExpected, totalCollected, totalPending }: PrintLedgerProps) {
+export function PrintLedgerButton({ masterData, currentMonth, totalExpected, totalCollected, totalPending, selectedBuildingName }: PrintLedgerProps) {
     const handleDownload = () => {
         if (!masterData || masterData.length === 0) return
 
-        const doc = new jsPDF()
-        const monthName = format(new Date(`${currentMonth}-01`), 'MMMM yyyy')
+        const doc = new jsPDF({ orientation: 'landscape' })
+        
+        let displayMonth = new Date()
+        const parsedDate = new Date(`${currentMonth}-01T00:00:00`)
+        if (!isNaN(parsedDate.getTime())) {
+            displayMonth = parsedDate
+        }
+        const monthName = format(displayMonth, 'MMMM yyyy')
 
         // Title
         doc.setFontSize(20)
         doc.text("PropX - Master Monthly Ledger", 14, 22)
         doc.setFontSize(12)
-        doc.text(`Report for: ${monthName}`, 14, 32)
+        let subtitle = `Report for: ${monthName}`
+        if (selectedBuildingName) {
+            subtitle += ` | Building: ${selectedBuildingName}`
+        }
+        doc.text(subtitle, 14, 32)
         
         // Summary
         doc.setFontSize(10)
         doc.text(`Total Expected: Rs. ${totalExpected.toLocaleString()}`, 14, 42)
-        doc.text(`Total Collected: Rs. ${totalCollected.toLocaleString()}`, 80, 42)
-        doc.text(`Total Pending: Rs. ${totalPending.toLocaleString()}`, 150, 42)
+        doc.text(`Total Collected: Rs. ${totalCollected.toLocaleString()}`, 100, 42)
+        doc.text(`Total Pending: Rs. ${totalPending.toLocaleString()}`, 180, 42)
 
         // Table
-        const tableData = masterData.map(p => [
-            p.flat.building.name,
-            `Flat ${p.flat.flatNumber}`,
-            p.tenant.fullName,
-            `Rs. ${p.totalDue.toLocaleString()}`,
-            p.amountPaid > 0 ? `Rs. ${p.amountPaid.toLocaleString()}` : '-',
-            p.balance > 0 ? `Rs. ${p.balance.toLocaleString()}` : '-',
-            p.status
-        ])
+        const tableData = masterData.map(p => {
+            const flatDisplay = selectedBuildingName 
+                ? `Flat ${p.flat.flatNumber}`
+                : `${p.flat.building.name} - Flat ${p.flat.flatNumber}`
+                
+            const elecReading = p.flat.meterReadings && p.flat.meterReadings.length > 0 
+                ? p.flat.meterReadings[0].reading 
+                : '-'
+                
+            return [
+                flatDisplay,
+                p.tenant.fullName,
+                `Rs. ${p.rentDue?.toLocaleString() || 0}`,
+                `Rs. ${p.maintenanceDue?.toLocaleString() || 0}`,
+                `Rs. ${p.electricityDue?.toLocaleString() || 0}`,
+                elecReading,
+                `Rs. ${p.arrears?.toLocaleString() || 0}`,
+                p.amountPaid > 0 ? `Rs. ${p.amountPaid.toLocaleString()}` : '-',
+                p.balance > 0 ? `Rs. ${p.balance.toLocaleString()}` : '-',
+                p.status
+            ]
+        })
 
         autoTable(doc, {
             startY: 50,
-            head: [['Building', 'Flat', 'Tenant', 'Expected', 'Collected', 'Balance', 'Status']],
+            head: [['Flat', 'Tenant', 'Rent', 'Maint.', 'Elec. Amt', 'Elec. Reading', 'Arrears', 'Collected', 'Balance', 'Status']],
             body: tableData,
             theme: 'grid',
             headStyles: { fillColor: [139, 92, 246] }, // Violet color
-            styles: { fontSize: 9 },
+            styles: { fontSize: 8, cellPadding: 2 },
+            columnStyles: {
+                0: { cellWidth: 30 },
+                1: { cellWidth: 40 },
+                // Allow other columns to auto-size
+            }
         })
 
         doc.save(`PropX_Ledger_${currentMonth}.pdf`)

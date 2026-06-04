@@ -15,10 +15,11 @@ import { FlatSelector } from "@/components/dashboard/flat-selector"
 
 export const dynamic = 'force-dynamic'
 
-export default async function LedgerPage({ params, searchParams }: { params: Promise<{ userId: string }>, searchParams: Promise<{ flatId?: string, month?: string }> }) {
+export default async function LedgerPage({ params, searchParams }: { params: Promise<{ userId: string }>, searchParams: Promise<{ flatId?: string, month?: string, buildingId?: string }> }) {
     const { userId } = await params
     const resolvedSearchParams = await searchParams
     const flatId = resolvedSearchParams.flatId
+    const buildingId = resolvedSearchParams.buildingId
     const currentMonth = resolvedSearchParams.month || format(new Date(), 'yyyy-MM')
     
     let displayMonth = new Date()
@@ -28,7 +29,10 @@ export default async function LedgerPage({ params, searchParams }: { params: Pro
     }
 
     const { data: flats } = await getAllFlats()
-    const { data: masterData } = await getMasterMonthLedger(currentMonth)
+    const { data: masterData } = await getMasterMonthLedger(currentMonth, buildingId)
+    
+    // Extract unique buildings for the filter
+    const uniqueBuildings = Array.from(new Map(flats?.map(f => [f.building.id, f.building])).values())
 
     let ledgerData = null
     let flatDetails = null
@@ -163,7 +167,21 @@ export default async function LedgerPage({ params, searchParams }: { params: Pro
                                 <CardTitle>Master Monthly Ledger</CardTitle>
                                 <CardDescription>Overview of all flat payments for {format(displayMonth, 'MMMM yyyy')}</CardDescription>
                             </div>
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                <form className="flex items-center gap-2">
+                                    <input type="hidden" name="month" value={currentMonth} />
+                                    <select 
+                                        name="buildingId" 
+                                        defaultValue={buildingId || ""} 
+                                        className="h-10 px-3 py-2 rounded-md border border-input bg-background text-sm"
+                                        onChange={(e) => e.target.form?.submit()}
+                                    >
+                                        <option value="">All Buildings</option>
+                                        {uniqueBuildings.map(b => (
+                                            <option key={b.id} value={b.id}>{b.name}</option>
+                                        ))}
+                                    </select>
+                                </form>
                                 <MonthPicker currentMonth={currentMonth} />
                                 <MarkMonthPaidButton currentMonth={currentMonth} />
                                 <PrintLedgerButton 
@@ -172,6 +190,7 @@ export default async function LedgerPage({ params, searchParams }: { params: Pro
                                     totalExpected={totalExpected}
                                     totalCollected={totalCollected}
                                     totalPending={totalPending}
+                                    selectedBuildingName={buildingId ? uniqueBuildings.find(b => b.id === buildingId)?.name : undefined}
                                 />
                             </div>
                         </CardHeader>

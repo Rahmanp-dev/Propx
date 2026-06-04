@@ -16,21 +16,8 @@ export function PrintReceiptsButton() {
             // Dynamically import to avoid Next.js SSR issues
             const htmlToImage = await import('html-to-image')
             const { jsPDF } = await import('jspdf')
-
-            // Temporarily adjust styles for perfect PDF capture
-            const originalWidth = container.style.width
-            const originalMaxWidth = container.style.maxWidth
-            const originalTransform = container.style.transform
-            const originalClassName = container.className
             
-            // Force A4 width and 3-column grid for the container so it scales correctly, even on mobile
-            container.className = "grid grid-cols-3 gap-[4mm] w-[210mm] bg-white p-4"
-            container.style.width = '210mm'
-            container.style.maxWidth = '210mm'
-            // Ensure the container renders fully even if off-screen
-            container.style.transform = 'none'
-
-            // Hide all whatsapp buttons
+            // Hide all whatsapp buttons before cloning
             const pdfHideElements = container.querySelectorAll('.pdf-hide')
             const originalDisplays: string[] = []
             pdfHideElements.forEach((el: any) => {
@@ -38,25 +25,6 @@ export function PrintReceiptsButton() {
                 el.style.display = 'none'
             })
 
-            // Wait a tick for styles to apply
-            await new Promise(resolve => setTimeout(resolve, 100))
-
-            const imgData = await htmlToImage.toJpeg(container, {
-                quality: 1.0,
-                backgroundColor: '#ffffff',
-                pixelRatio: 2 // High quality scaling
-            })
-
-            // Restore original styles
-            container.className = originalClassName
-            container.style.width = originalWidth
-            container.style.maxWidth = originalMaxWidth
-            container.style.transform = originalTransform
-            
-            pdfHideElements.forEach((el: any, i) => {
-                el.style.display = originalDisplays[i]
-            })
-            
             const pdf = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
@@ -64,23 +32,56 @@ export function PrintReceiptsButton() {
             })
             
             const pdfWidth = pdf.internal.pageSize.getWidth()
-            const pdfHeight = pdf.internal.pageSize.getHeight()
-
-            const imgProps = pdf.getImageProperties(imgData)
-            const imgHeight = (imgProps.height * pdfWidth) / imgProps.width
             
-            let heightLeft = imgHeight
-            let position = 0
-
-            pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight)
-            heightLeft -= pdfHeight
-
-            while (heightLeft > 0) {
-                position = heightLeft - imgHeight
-                pdf.addPage()
-                pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight)
-                heightLeft -= pdfHeight
+            const slips = Array.from(container.children)
+            const batches = []
+            for (let i = 0; i < slips.length; i += 9) {
+                batches.push(slips.slice(i, i + 9))
             }
+
+            for (let b = 0; b < batches.length; b++) {
+                const batch = batches[b]
+                
+                // create a temporary container exactly matching the original grid
+                const tempContainer = document.createElement('div')
+                tempContainer.className = "grid grid-cols-3 gap-[4mm] bg-white p-4"
+                tempContainer.style.width = '210mm'
+                // Ensure the container renders fully even if off-screen
+                tempContainer.style.position = 'fixed'
+                tempContainer.style.top = '-9999px'
+                tempContainer.style.left = '0'
+                
+                batch.forEach(slip => {
+                    const clone = slip.cloneNode(true) as HTMLElement
+                    // Remove page break classes for the clone so it renders properly in the image
+                    clone.classList.remove('print:break-after-page')
+                    tempContainer.appendChild(clone)
+                })
+                
+                document.body.appendChild(tempContainer)
+                
+                // Wait a tick for styles to apply
+                await new Promise(resolve => setTimeout(resolve, 100))
+
+                const imgData = await htmlToImage.toJpeg(tempContainer, {
+                    quality: 1.0,
+                    backgroundColor: '#ffffff',
+                    pixelRatio: 2
+                })
+                
+                document.body.removeChild(tempContainer)
+                
+                const imgProps = pdf.getImageProperties(imgData)
+                const imgHeight = (imgProps.height * pdfWidth) / imgProps.width
+                
+                if (b > 0) pdf.addPage()
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeight)
+            }
+            
+            // Restore original styles
+            pdfHideElements.forEach((el: any, i) => {
+                el.style.display = originalDisplays[i]
+            })
 
             pdf.save('Monthly_Receipts.pdf')
         } catch (error: any) {

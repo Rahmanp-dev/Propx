@@ -134,10 +134,7 @@ export async function recordMeterReading(data: RecordReadingInput) {
             }
         }
 
-        revalidatePath(`/flats/${flatId}`)
-        revalidatePath('/dashboard')
-        revalidatePath('/finance')
-        revalidatePath('/')
+        revalidatePath('/', 'layout')
         return { success: true }
     } catch (error: any) {
         console.error("Failed to record meter reading:", error)

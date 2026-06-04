@@ -88,7 +88,7 @@ export async function getAllFlats() {
     }
 }
 
-export async function getMasterMonthLedger(monthStr: string) { // monthStr format: "YYYY-MM"
+export async function getMasterMonthLedger(monthStr: string, buildingId?: string) { // monthStr format: "YYYY-MM"
     try {
         const session = await auth()
         if (!session?.user) return { error: "Not authenticated" }
@@ -106,18 +106,21 @@ export async function getMasterMonthLedger(monthStr: string) { // monthStr forma
                     gte: startDate,
                     lt: endDate
                 },
-                ...(user.role !== 'SUPER_ADMIN' ? {
-                    flat: {
-                        building: {
-                            organizationId: user.organizationId
-                        }
+                flat: {
+                    building: {
+                        id: buildingId || undefined,
+                        organizationId: user.role !== 'SUPER_ADMIN' ? user.organizationId : undefined
                     }
-                } : {})
+                }
             },
             include: {
                 flat: {
                     include: {
-                        building: true
+                        building: true,
+                        meterReadings: {
+                            orderBy: { readingDate: 'desc' },
+                            take: 1
+                        }
                     }
                 },
                 tenant: true
