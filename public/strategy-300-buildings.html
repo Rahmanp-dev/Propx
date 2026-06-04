@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PropX — 300 Building Acquisition Strategy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-card-hover: #1a1a2e;
+            --border: #1e1e30;
+            --accent: #6c5ce7;
+            --accent-light: #a29bfe;
+            --accent-glow: rgba(108, 92, 231, 0.15);
+            --green: #00b894;
+            --green-light: #55efc4;
+            --orange: #e17055;
+            --orange-light: #fab1a0;
+            --blue: #0984e3;
+            --blue-light: #74b9ff;
+            --pink: #fd79a8;
+            --yellow: #fdcb6e;
+            --text: #e8e8f0;
+            --text-muted: #8888a8;
+            --text-dim: #555577;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* === HEADER === */
+        .hero {
+            position: relative;
+            padding: 60px 40px 40px;
+            text-align: center;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -200px; left: 50%; transform: translateX(-50%);
+            width: 800px; height: 800px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(108, 92, 231, 0.12);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            border-radius: 100px;
+            padding: 6px 18px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-light);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 24px;
+        }
+        .hero-badge::before {
+            content: '';
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(108,92,231,0.5); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(108,92,231,0); }
+        }
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 30%, var(--accent-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 18px;
+            color: var(--text-muted);
+            max-width: 650px;
+            margin: 0 auto 16px;
+        }
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+        .hero-stat {
+            text-align: center;
+        }
+        .hero-stat .number {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--accent-light);
+        }
+        .hero-stat .label {
+            font-size: 12px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* === TABS === */
+        .tabs-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px 80px;
+        }
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding-bottom: 0;
+        }
+        .tab-nav::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            position: relative;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 14px 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color 0.25s;
+        }
+        .tab-btn:hover { color: var(--text); }
+        .tab-btn.active {
+            color: var(--accent-light);
+        }
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0; right: 0;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 2px 2px 0 0;
+        }
+        .tab-btn .tab-icon {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === CARDS === */
+        .section-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        .section-subtitle {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-bottom: 32px;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(108, 92, 231, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+        .card-icon.purple { background: rgba(108, 92, 231, 0.15); }
+        .card-icon.green { background: rgba(0, 184, 148, 0.15); }
+        .card-icon.orange { background: rgba(225, 112, 85, 0.15); }
+        .card-icon.blue { background: rgba(9, 132, 227, 0.15); }
+        .card-icon.pink { background: rgba(253, 121, 168, 0.15); }
+        .card-icon.yellow { background: rgba(253, 203, 110, 0.15); }
+
+        .card h3 {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .card p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .card ul {
+            list-style: none;
+            margin-top: 12px;
+        }
+        .card ul li {
+            position: relative;
+            padding-left: 20px;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+        .card ul li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* === FULL WIDTH CARDS === */
+        .full-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        .full-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* === TABLES === */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+        .data-table th {
+            text-align: left;
+            padding: 12px 16px;
+            background: rgba(108, 92, 231, 0.08);
+            color: var(--accent-light);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .data-table th:first-child { border-radius: 8px 0 0 0; }
+        .data-table th:last-child { border-radius: 0 8px 0 0; }
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+        .data-table tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+
+        /* === BADGES === */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge.purple { background: rgba(108,92,231,0.15); color: var(--accent-light); }
+        .badge.green { background: rgba(0,184,148,0.15); color: var(--green-light); }
+        .badge.orange { background: rgba(225,112,85,0.15); color: var(--orange-light); }
+        .badge.blue { background: rgba(9,132,227,0.15); color: var(--blue-light); }
+        .badge.pink { background: rgba(253,121,168,0.15); color: var(--pink); }
+
+        /* === TIMELINE === */
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+            margin-top: 16px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 6px; top: 0; bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--accent), var(--green), var(--orange));
+            border-radius: 2px;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 28px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px; top: 6px;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid var(--bg-dark);
+        }
+        .timeline-item h4 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .timeline-item .time-label {
+            font-size: 11px;
+            color: var(--accent-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .timeline-item p {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        /* === KPI ROW === */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .kpi-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .kpi-box .kpi-value {
+            font-size: 28px;
+            font-weight: 800;
+        }
+        .kpi-box .kpi-value.purple { color: var(--accent-light); }
+        .kpi-box .kpi-value.green { color: var(--green-light); }
+        .kpi-box .kpi-value.orange { color: var(--orange-light); }
+        .kpi-box .kpi-value.blue { color: var(--blue-light); }
+        .kpi-box .kpi-label {
+            font-size: 12px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        /* === CALLOUT === */
+        .callout {
+            border-left: 3px solid var(--accent);
+            background: rgba(108,92,231,0.06);
+            border-radius: 0 10px 10px 0;
+            padding: 20px 24px;
+            margin: 24px 0;
+        }
+        .callout.green { border-left-color: var(--green); background: rgba(0,184,148,0.06); }
+        .callout.orange { border-left-color: var(--orange); background: rgba(225,112,85,0.06); }
+        .callout h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .callout p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* === NUMBERED LIST === */
+        .numbered-list {
+            counter-reset: step;
+            list-style: none;
+            margin-top: 12px;
+        }
+        .numbered-list li {
+            counter-increment: step;
+            position: relative;
+            padding-left: 44px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+        .numbered-list li::before {
+            content: counter(step);
+            position: absolute;
+            left: 0; top: 0;
+            width: 28px; height: 28px;
+            border-radius: 8px;
+            background: rgba(108,92,231,0.15);
+            color: var(--accent-light);
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .numbered-list li strong {
+            color: var(--text);
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 32px; }
+            .hero { padding: 40px 20px 30px; }
+            .card-grid { grid-template-columns: 1fr; }
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+            .tab-btn { font-size: 13px; padding: 12px 14px; }
+        }
+
+        /* === PRINT === */
+        @media print {
+            body { background: #fff; color: #111; }
+            .tab-nav { display: none; }
+            .tab-content { display: block !important; page-break-before: always; }
+            .card, .full-card, .kpi-box { border-color: #ddd; background: #fafafa; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ====== HERO ====== -->
+<div class="hero">
+    <div class="hero-badge">Confidential Strategy Document</div>
+    <h1>300 Building Acquisition Playbook</h1>
+    <p>The complete go-to-market strategy for scaling PropX through field agents, channel partners, social media, and ecosystem cross-selling.</p>
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <div class="number">300</div>
+            <div class="label">Target Buildings</div>
+        </div>
+        <div class="hero-stat">
+            <div class="number">5,000+</div>
+            <div class="label">Tenant Portfolio</div>
+        </div>
+        <div class="hero-stat">
+            <div class="number">20</div>
+            <div class="label">Field Agents</div>
+        </div>
+        <div class="hero-stat">
+            <div class="number">6 Mo</div>
+            <div class="label">Timeline</div>
+        </div>
+    </div>
+</div>
+
+<!-- ====== TABS ====== -->
+<div class="tabs-container">
+    <div class="tab-nav" id="tabNav">
+        <button class="tab-btn active" data-tab="field-agents"><span class="tab-icon">🏃</span>Field Agent Program</button>
+        <button class="tab-btn" data-tab="mass-acquisition"><span class="tab-icon">🚀</span>Mass Acquisition</button>
+        <button class="tab-btn" data-tab="channel-partners"><span class="tab-icon">🤝</span>Channel Partners</button>
+        <button class="tab-btn" data-tab="social-media"><span class="tab-icon">📱</span>Social Media</button>
+        <button class="tab-btn" data-tab="ecosystem"><span class="tab-icon">🌐</span>GWD Ecosystem</button>
+        <button class="tab-btn" data-tab="financials"><span class="tab-icon">💰</span>Financials & Unit Economics</button>
+        <button class="tab-btn" data-tab="roadmap"><span class="tab-icon">🗺️</span>Execution Roadmap</button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 1: FIELD AGENT PROGRAM                 -->
+    <!-- ========================================== -->
+    <div class="tab-content active" id="field-agents">
+        <h2 class="section-title">Field Agent Program — "PropX Scouts"</h2>
+        <p class="section-subtitle">Build a lean army of region-wise scouts who identify, pitch, and onboard building owners at scale.</p>
+
+        <div class="kpi-row">
+            <div class="kpi-box">
+                <div class="kpi-value purple">20</div>
+                <div class="kpi-label">Scouts (Phase 1)</div>
+            </div>
+            <div class="kpi-box">
+                <div class="kpi-value green">15–20</div>
+                <div class="kpi-label">Owners / Scout / Month</div>
+            </div>
+            <div class="kpi-box">
+                <div class="kpi-value orange">₹10–15K</div>
+                <div class="kpi-label">Monthly Stipend</div>
+            </div>
+            <div class="kpi-box">
+                <div class="kpi-value blue">300</div>
+                <div class="kpi-label">Buildings in 6 Months</div>
+            </div>
+        </div>
+
+        <div class="full-card">
+            <h3>👤 Ideal Scout Profile</h3>
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">These are not full-time employees — they are performance-driven interns or micro-contractors working specific regions.</p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Attribute</th>
+                        <th>Criteria</th>
+                        <th>Why It Matters</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Age</strong></td>
+                        <td>19–28 years</td>
+                        <td>Hustle energy, low cost, hungry to prove</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Education</strong></td>
+                        <td>BBA / MBA / B.Com students or recent grads</td>
+                        <td>Understand business, can pitch value props</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Language</strong></td>
+                        <td>Local language + Hindi/English</td>
+                        <td>Owners speak regional languages; trust is local</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Transport</strong></td>
+                        <td>Two-wheeler preferred</td>
+                        <td>Ground-level door-to-door visits</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mindset</strong></td>
+                        <td>Sales-oriented, not shy to cold-visit</td>
+                        <td>Most leads come from direct, unannounced visits</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Local Knowledge</strong></td>
+                        <td>Knows their assigned locality well</td>
+                        <td>Can identify 15+ tenant buildings by sight</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="full-card">
+            <h3>🎯 Where to Recruit Scouts</h3>
+            <div class="card-grid" style="margin-top:16px;">
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-icon purple">🎓</div>
+                    <h3>College Campuses</h3>
+                    <p>Post on placement cells of MBA/BBA colleges. Frame it as a "PropTech Sales Internship" with real stipend + certificate.</p>
+                    <ul>
+                        <li>Partner with 5–10 colleges per city</li>
+                        <li>Offer internship certificates (3-month min)</li>
+                        <li>Conduct campus pitch sessions</li>
+                        <li>Use college WhatsApp groups to share links</li>
+                    </ul>
+                </div>
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-icon green">📱</div>
+                    <h3>LinkedIn & Internshala</h3>
+                    <p>Post "Field Sales Intern — PropTech Startup" roles. Internshala alone has 1M+ active job seekers in Tier-2 cities.</p>
+                    <ul>
+                        <li>Internshala: highest ROI for intern hiring</li>
+                        <li>LinkedIn: attracts slightly more experienced</li>
+                        <li>Instagram job pages in local cities</li>
+                        <li>Telegram job channels (city-specific)</li>
+                    </ul>
+                </div>
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-icon orange">🏘️</div>
+                    <h3>Local Real Estate Networks</h3>
+                    <p>Approach existing property brokers and PG coordinators. They already know every building owner in their zone.</p>
+                    <ul>
+                        <li>Brokers get per-building commission on top</li>
+                        <li>PG coordinators can convert their own owners</li>
+                        <li>Existing security agency contacts</li>
+                        <li>Cable TV / internet guys know every building</li>
+                    </ul>
+                </div>
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-icon blue">📢</div>
+                    <h3>Referral From Existing Owners</h3>
+                    <p>Once you onboard 10 happy owners, each one knows 3–5 more. Launch a referral bonus (₹500–1000 per building referred).</p>
+                    <ul>
+                        <li>Creates a viral loop</li>
+                        <li>Warm intros convert 3x better than cold</li>
+                        <li>Costs less than field agent salary</li>
+                        <li>Build WhatsApp group of happy owners</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="full-card">
+            <h3>💸 Compensation Structure</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tier</th>
+                        <th>Buildings Onboarded / Month</th>
+                        <th>Monthly Stipend</th>
+                        <th>Bonus</th>
+                        <th>Total Potential</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge orange">Probation</span></td>
+                        <td>0–5 (first month)</td>
+                        <td>₹5,000</td>
+                        <td>₹200 per building</td>
+                        <td>₹5,000 – ₹6,000</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge blue">Active Scout</span></td>
+                        <td>6–14</td>
+                        <td>₹10,000</td>
+                        <td>₹300 per building</td>
+                        <td>₹10,000 – ₹14,200</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge purple">Star Scout</span></td>
+                        <td>15–20</td>
+                        <td>₹12,000</td>
+                        <td>₹500 per building + ₹2K bonus</td>
+                        <td>₹12,000 – ₹24,000</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge green">Region Lead</span></td>
+                        <td>20+ (manages 3–5 scouts)</td>
+                        <td>₹15,000</td>
+                        <td>₹200 per team building + own</td>
+                        <td>₹15,000 – ₹35,000</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="callout" style="margin-top:20px;">
+                <h4>💡 Performance-Only Model</h4>
+                <p>After the 1st month probation, stipend is strictly tied to performance. If a scout onboards fewer than 6 buildings, they drop back to probation pay. This keeps the team hungry and filters out non-performers fast — you are NOT carrying dead weight.</p>
+            </div>
+        </div>
+
+        <div class="full-card">
+            <h3>📋 Scout Daily Workflow</h3>
+            <ol class="numbered-list">
+                <li><strong>Morning Briefing (9:00 AM)</strong> — Check assigned region for the day. Review target buildings list on the PropX Scout Dashboard (a simple Google Sheet or Notion board). Pick 10–15 buildings to visit.</li>
+                <li><strong>Field Visits (9:30 AM – 1:00 PM)</strong> — Door-to-door cold visits. Talk to watchmen first to get the owner's number. If owner is present, give a 5-minute live demo of PropX on their phone. Log every visit with status: Interested / Not Interested / Follow-Up / Onboarded.</li>
+                <li><strong>Lunch Break + WhatsApp Follow-ups (1:00 – 2:00 PM)</strong> — Send WhatsApp messages to "Interested" owners from previous days. Share PropX brochure PDF + video link.</li>
+                <li><strong>Afternoon Visits (2:00 – 5:00 PM)</strong> — Continue field visits. Focus on owners who were not available in the morning. Target commercial areas, PGs, hostels, and large apartments.</li>
+                <li><strong>Evening Report (5:00 – 5:30 PM)</strong> — Submit daily report: number of visits, leads generated, demos given, buildings onboarded. Report via WhatsApp to Region Lead.</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: MASS ACQUISITION                    -->
+    <!-- ========================================== -->
+    <div class="tab-content" id="mass-acquisition">
+        <h2 class="section-title">Mass Acquisition — How to Hit 300 Buildings</h2>
+        <p class="section-subtitle">A multi-channel, blitzkrieg approach to building acquisition across cities.</p>
+
+        <div class="kpi-row">
+            <div class="kpi-box">
+                <div class="kpi-value purple">15–20</div>
+                <div class="kpi-label">Tenants Minimum / Building</div>
+            </div>
+            <div class="kpi-box">
+                <div class="kpi-value green">5</div>
+                <div class="kpi-label">Cities (Phase 1)</div>
+            </div>
+            <div class="kpi-box">
+                <div class="kpi-value orange">60/city</div>
+                <div class="kpi-label">Building Target</div>
+            </div>
+            <div class="kpi-box">
+                <div class="kpi-value blue">25%</div>
+                <div class="kpi-label">Expected Conversion Rate</div>
+            </div>
+        </div>
+
+        <div class="full-card">
+            <h3>🗺️ Region Mapping Strategy</h3>
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px;">Before deploying a single scout, you need intelligence. Map every high-density residential zone in your target cities.</p>
+            <div class="card-grid" style="margin-top:0;">
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-icon purple">📍</div>
+                    <h3>Step 1: Identify Hotspots</h3>
+                    <p>Use Google Maps to identify areas with dense apartment buildings (3+ floors, 15+ flats). Mark them on a shared Google My Maps layer.</p>
+                    <ul>
+                        <li>Search for "apartments near [area]"</li>
+                        <li>Cross-reference with 99acres/MagicBricks listings</li>
+                        <li>Look for rental yield areas (near IT parks, colleges, hospitals)</li>
+                        <li>Mark PG clusters — they have the most pain</li>
+                    </ul>
+                </div>
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-icon green">🔲</div>
+                    <h3>Step 2: Grid Assignment</h3>
+                    <p>Divide each city into grids of ~2 km². Assign one scout per grid. Each grid should have a minimum of 50 potential buildings.</p>
+                    <ul>
+                        <li>Scouts "own" their grid — full accountability</li>
+                        <li>No two scouts overlap</li>
+                        <li>Leaderboard by grid (gamification)</li>
+                        <li>Weekly grid review with satellite view</li>
+                    </ul>
+                </div>
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-icon orange">📊</div>
+                    <h3>Step 3: Building Database</h3>
+                    <p>Before visiting, pre-build a database of all buildings in the grid using local intelligence, Google Maps pins, and broker contacts.</p>
+                    <ul>
+                        <li>Building name, address, estimated flats</li>
+                        <li>Owner name (if known), phone number</li>
+                        <li>Visit status: Not Visited → Visited → Demo → Onboarded</li>
+                        <li>Simple Google Sheet per region, shared with team</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="full-card">
+            <h3>⚡ The 7 Acquisition Channels</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Channel</th>
+                        <th>Expected Yield</th>
+                        <th>Cost</th>
+                        <th>Speed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td><strong>Door-to-Door (Scouts)</strong> — Cold visits to buildings</td>
+                        <td>~150 buildings (50%)</td>
+                        <td>Scout stipend</td>
+                        <td><span class="badge green">Fast</span></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td><strong>Owner Referrals</strong> — Existing owners refer peers</td>
+                        <td>~60 buildings (20%)</td>
+                        <td>₹500–1K/referral</td>
+                        <td><span class="badge green">Fast</span></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td><strong>Broker Partnerships</strong> — Local real estate brokers</td>
+                        <td>~30 buildings (10%)</td>
+                        <td>Commission per deal</td>
+                        <td><span class="badge blue">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td><strong>WhatsApp/Social Organic</strong> — Content + word of mouth</td>
+                        <td>~25 buildings (8%)</td>
+                        <td>Free (time cost)</td>
+                        <td><span class="badge blue">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td><strong>Builder/Developer Partnerships</strong> — Pitch to builders who manage multiple buildings</td>
+                        <td>~20 buildings (7%)</td>
+                        <td>Meeting time</td>
+                        <td><span class="badge orange">Slow</span></td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td><strong>Society/Association Meets</strong> — Present at owner association gatherings</td>
+                        <td>~10 buildings (3%)</td>
+                        <td>Event sponsorship</td>
+                        <td><span class="badge orange">Slow</span></td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td><strong>Cold Calling (Owner DBs)</strong> — Purchased/scraped owner lists</td>
+                        <td>~5 buildings (2%)</td>
+                        <td>DB cost + caller</td>
+                        <td><span class="badge purple">Variable</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="full-card">
+            <h3>🎯 The Perfect Pitch — What Scouts Say at the Door</h3>
+            <div class="callout green">
+                <h4>The 60-Second Elevator Pitch</h4>
+                <p><em>"Sir/Madam, I'm from PropX — we are a free property management app that helps building owners like you track rent collection, electricity bills, maintenance, and generate receipts automatically. You have [X] tenants? Right now you're probably tracking everything in a diary or WhatsApp. With PropX, every tenant gets their own portal, payments are tracked in real-time, and you get a full financial dashboard. Thousands of owners across India are already using it. Can I show you a 2-minute demo on my phone?"</em></p>
+            </div>
+            <div class="callout orange" style="margin-top:16px;">
+                <h4>⚠️ Key Rules for Scouts</h4>
+                <p><strong>Never mention pricing upfront.</strong> PropX is free for owners right now — that's your biggest weapon. Lead with "free" and "automatic". Never argue with a reluctant owner — leave your card, follow up in 3 days. The demo sells itself.</p>
+            </div>
+        </div>
+
+        <div class="full-card">
+            <h3>📈 Conversion Funnel Math</h3>
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">To hit 300 buildings, work backwards from realistic conversion rates:</p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Stage</th>
+                        <th>Count</th>
+                        <th>Conversion %</th>
+                        <th>Cumulative</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Buildings Identified (Database)</td>
+                        <td><strong>3,000</strong></td>
+                        <td>—</td>
+                        <td>100%</td>
+                    </tr>
+                    <tr>
+                        <td>Doors Knocked (Visit Attempted)</td>
+                        <td><strong>2,400</strong></td>
+                        <td>80%</td>
+                        <td>80%</td>
+                    </tr>
+                    <tr>
+                        <td>Owner Contacted (Spoke to decision-maker)</td>
+                        <td><strong>1,200</strong></td>
+                        <td>50%</td>
+                        <td>40%</td>
+                    </tr>
+                    <tr>
+                        <td>Demo Given</td>
+                        <td><strong>720</strong></td>
+                        <td>60%</td>
+                        <td>24%</td>
+                    </tr>
+                    <tr>
+                        <td>Interested (Follow-Up)</td>
+                        <td><strong>500</strong></td>
+                        <td>70%</td>
+                        <td>17%</td>
+                    </tr>
+                    <tr>
+                        <td style="color:var(--green-light);font-weight:700;">✅ Onboarded</td>
+                        <td><strong style="color:var(--green-light);">300</strong></td>
+                        <td>60%</td>
+                        <td>10%</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="callout" style="margin-top:20px;">
+                <h4>📌 This means each scout needs to identify ~150 buildings in their grid and visit 120 of them over 6 months to yield ~15 onboarded buildings.</h4>
+                <p>That's roughly 5 visits per working day — very achievable.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: CHANNEL PARTNERS                    -->
+    <!-- ========================================== -->
+    <div class="tab-content" id="channel-partners">
+        <h2 class="section-title">Channel Partner Opportunities</h2>
+        <p class="section-subtitle">Beyond your own scouts — leverage existing distribution networks that already touch building owners daily.</p>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon purple">🏗️</div>
+                <h3>Real Estate Brokers</h3>
+                <p>Every city has 100+ active property brokers who personally know building owners. They can introduce PropX during their regular property dealings.</p>
+                <ul>
+                    <li>Offer ₹500–1,000 per onboarded building</li>
+                    <li>Give them a branded referral link</li>
+                    <li>Monthly leaderboard with prizes</li>
+                    <li>They get a "PropX Certified Partner" badge</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-icon green">🔧</div>
+                <h3>Property Maintenance Companies</h3>
+                <p>AMC providers (lift maintenance, generator, plumbing) visit buildings weekly. They can mention PropX to owners during service calls.</p>
+                <ul>
+                    <li>Leave PropX pamphlets at every serviced building</li>
+                    <li>Co-branded "Smart Building" certification</li>
+                    <li>Revenue share on premium features (future)</li>
+                    <li>They get leads from your owner network too</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-icon orange">📺</div>
+                <h3>Cable TV & Internet Providers</h3>
+                <p>Local cable and broadband operators serve every apartment building. They already have billing relationships with building owners.</p>
+                <ul>
+                    <li>They literally enter every building monthly</li>
+                    <li>Cross-promote: "Use PropX, get 1 month free internet"</li>
+                    <li>Bundle PropX premium with internet plans (future)</li>
+                    <li>Revenue share on cross-sold services</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-icon blue">🏦</div>
+                <h3>Chartered Accountants</h3>
+                <p>CAs handle tax filings for building owners. PropX's ledger/receipt data is exactly what CAs need. Position PropX as a CA's best friend.</p>
+                <ul>
+                    <li>Export-ready financial reports for CAs</li>
+                    <li>CA recommends PropX to all property-owning clients</li>
+                    <li>Partner with CA associations in each city</li>
+                    <li>Offer bulk onboarding sessions</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-icon pink">🏠</div>
+                <h3>Housing Society Federations</h3>
+                <p>Many cities have housing society federations that represent hundreds of buildings. One presentation = access to 50+ buildings.</p>
+                <ul>
+                    <li>Present at federation monthly meetings</li>
+                    <li>Offer free "Digital Property Management" workshop</li>
+                    <li>Federation endorsement = instant trust</li>
+                    <li>Co-host events with federation leadership</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-icon yellow">🏪</div>
+                <h3>Paint / Hardware Shops</h3>
+                <p>Building owners regularly visit local paint and hardware stores. These shopkeepers have direct relationships with 50–100 owners each.</p>
+                <ul>
+                    <li>Place PropX standees in shops</li>
+                    <li>Shopkeeper gets ₹300 per referral</li>
+                    <li>Minimal effort — just hand out cards</li>
+                    <li>Trust-based: owner trusts their local vendor</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="full-card">
+            <h3>🤝 Channel Partner Agreement Template</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Clause</th>
+                        <th>Detail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Referral Commission</strong></td>
+                        <td>₹500 per building onboarded (min 15 tenants). Paid within 15 days of successful onboarding.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Recurring Commission (Future)</strong></td>
+                        <td>10% of any premium subscription revenue from referred owners, for 12 months.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Exclusivity</strong></td>
+                        <td>Non-exclusive. Partner can refer to competing products, but PropX referrals are tracked via unique partner code.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Branding</strong></td>
+                        <td>Partner receives "PropX Certified Partner" digital badge, co-branded pamphlets, and priority support.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Duration</strong></td>
+                        <td>6-month rolling agreement. Either party can exit with 30-day notice.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: SOCIAL MEDIA                        -->
+    <!-- ========================================== -->
+    <div class="tab-content" id="social-media">
+        <h2 class="section-title">Social Media & Content Strategy</h2>
+        <p class="section-subtitle">Build authority, generate inbound leads, and create FOMO among building owners — all organically.</p>
+
+        <div class="callout orange" style="margin-bottom:32px;">
+            <h4>⚠️ Important: Never Reveal Owner Financials</h4>
+            <p>Owners are extremely private about their rent, tenant details, and income. Never show real dashboards with actual numbers. Always use demo/mockup data in any content. Violating this destroys trust instantly.</p>
+        </div>
+
+        <div class="full-card">
+            <h3>🎬 Content Pillars — What to Post</h3>
+            <div class="card-grid" style="margin-top:16px;">
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-icon purple">🎥</div>
+                    <h3>Pillar 1: Founder Journey Reels</h3>
+                    <p>Personal reels of you and co-founders visiting buildings, pitching to owners, celebrating milestones. Raw, authentic, no filters.</p>
+                    <ul>
+                        <li>"Day 1 of visiting 50 buildings" vlog</li>
+                        <li>"Owner said YES in 2 minutes — here's how"</li>
+                        <li>"We just hit 100 buildings!" celebration reel</li>
+                        <li>Behind-the-scenes team huddles</li>
+                    </ul>
+                </div>
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-icon green">💡</div>
+                    <h3>Pillar 2: Owner Pain Point Content</h3>
+                    <p>Educational content that makes owners think: "This is exactly my problem!" — then position PropX as the solution.</p>
+                    <ul>
+                        <li>"5 mistakes landlords make with rent collection"</li>
+                        <li>"Why WhatsApp is killing your rental business"</li>
+                        <li>"How to never chase a tenant for rent again"</li>
+                        <li>"Diary vs Digital: which landlord are you?"</li>
+                    </ul>
+                </div>
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-icon orange">📊</div>
+                    <h3>Pillar 3: Product Demos (With Fake Data)</h3>
+                    <p>Screen recordings of PropX in action using demo accounts. Show the dashboard, receipts, ledger — never real data.</p>
+                    <ul>
+                        <li>"Generate 20 receipts in 10 seconds"</li>
+                        <li>"See who hasn't paid — in one click"</li>
+                        <li>"Send WhatsApp reminders to all tenants"</li>
+                        <li>"Your entire building finances — one screen"</li>
+                    </ul>
+                </div>
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-icon blue">🗣️</div>
+                    <h3>Pillar 4: Owner Testimonials (Careful)</h3>
+                    <p>Only with explicit owner permission. Show their face + quote, but NEVER their dashboard. Focus on their emotional experience.</p>
+                    <ul>
+                        <li>"I used to spend 2 hours on rent — now 2 minutes"</li>
+                        <li>Simple selfie video with the owner (30 sec)</li>
+                        <li>Text-overlay quote cards (if camera-shy)</li>
+                        <li>Google Review screenshots (anonymized)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="full-card">
+            <h3>📅 Weekly Content Calendar</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Platform</th>
+                        <th>Content Type</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Monday</strong></td>
+                        <td>Instagram Reels</td>
+                        <td>Founder Journey</td>
+                        <td>"Week 4 update: 23 buildings onboarded this week 🔥"</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tuesday</strong></td>
+                        <td>LinkedIn Post</td>
+                        <td>Industry Insight</td>
+                        <td>"India has 1.2Cr rental properties. 95% are managed with pen & paper."</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Wednesday</strong></td>
+                        <td>Instagram Story</td>
+                        <td>Product Demo (30s)</td>
+                        <td>Screen recording of receipt generation</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Thursday</strong></td>
+                        <td>Instagram Reels</td>
+                        <td>Pain Point Content</td>
+                        <td>"POV: It's the 5th and 8 tenants haven't paid rent yet"</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Friday</strong></td>
+                        <td>LinkedIn + IG</td>
+                        <td>Milestone / Testimonial</td>
+                        <td>Owner testimonial or team celebration</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Saturday</strong></td>
+                        <td>YouTube Shorts</td>
+                        <td>Tutorial</td>
+                        <td>"How to onboard your building in 3 minutes"</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sunday</strong></td>
+                        <td>WhatsApp Status</td>
+                        <td>Personal Brand</td>
+                        <td>Casual behind-the-scenes + week recap</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="full-card">
+            <h3>📍 Hyperlocal WhatsApp Marketing</h3>
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">The most underrated channel. Building owners live on WhatsApp — not Instagram.</p>
+            <ol class="numbered-list">
+                <li><strong>Create area-wise WhatsApp Channels</strong> — "PropX Owners — Jubilee Hills", "PropX Owners — Gachibowli". Owners join their locality's channel. Post updates, tips, and success stories here.</li>
+                <li><strong>WhatsApp Broadcast Lists</strong> — Every scout builds a broadcast list of owners they've met. Send weekly "PropX Update" messages with new features, tips, and social proof.</li>
+                <li><strong>Owner Community Group</strong> — A single group for your top 50 most engaged owners. They help each other, share experiences, and organically recruit their peers. You moderate.</li>
+                <li><strong>QR Code Stickers</strong> — Print QR code stickers that link to PropX signup. Scouts paste these on building notice boards (with permission). Cost: ₹2 per sticker.</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: GWD ECOSYSTEM                       -->
+    <!-- ========================================== -->
+    <div class="tab-content" id="ecosystem">
+        <h2 class="section-title">GWD Ecosystem Cross-Selling</h2>
+        <p class="section-subtitle">Leverage onboarded buildings as a distribution network for GWD Global, GWD Sports, and future ad revenue.</p>
+
+        <div class="callout" style="margin-bottom:32px;">
+            <h4>🔑 Core Insight</h4>
+            <p>Every building you onboard is not just a PropX customer — it's a <strong>captive audience of 15–50 residents</strong> who live, work, and spend money in that locality. This is an advertising and distribution goldmine for the entire GWD ecosystem.</p>
+        </div>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon purple">🌐</div>
+                <h3>GWD Global — Freelancing Platform</h3>
+                <p>Tenants and owners in onboarded buildings are potential users of GWD Global's freelancing marketplace and skill courses.</p>
+                <ul>
+                    <li>Promote skill courses to young tenants (college students, working professionals)</li>
+                    <li>Offer building owners freelancer access for property-related work (design, accounting, legal)</li>
+                    <li>Cross-promote via PropX tenant portal notifications</li>
+                    <li>Run "Skill Workshop" events in building common areas</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-icon green">🏆</div>
+                <h3>GWD Sports — Academy Management</h3>
+                <p>Building residents are potential sports academy enrollees. Target children and young adults living in PropX buildings.</p>
+                <ul>
+                    <li>Promote sports academies to families in buildings</li>
+                    <li>Offer "PropX Resident" discounts at GWD Sports academies</li>
+                    <li>Host inter-building sports tournaments (visibility + engagement)</li>
+                    <li>Building notice board posters for academy enrollment</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-icon orange">📢</div>
+                <h3>Future: Digital Billboards on Buildings</h3>
+                <p>With owner permission, install small digital display boards in building lobbies or exteriors. Generate ad revenue from local businesses.</p>
+                <ul>
+                    <li>Phase 1: Simple poster boards (₹500/building)</li>
+                    <li>Phase 2: LED screens in lobbies (₹5K–10K/building)</li>
+                    <li>Revenue split: 60% PropX, 40% owner</li>
+                    <li>Advertisers: local restaurants, gyms, coaching centers</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-icon blue">🎓</div>
+                <h3>GWD Global Academy — Courses & Events</h3>
+                <p>Host skill-building events targeting building residents. Position GWD as the ecosystem that powers their entire life — home, career, fitness.</p>
+                <ul>
+                    <li>Free webinars promoted via PropX tenant portal</li>
+                    <li>In-building workshop events (weekend skill camps)</li>
+                    <li>Certificate courses promoted on building WhatsApp groups</li>
+                    <li>"Learn & Earn" freelancing bootcamps for tenants</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="full-card">
+            <h3>🔄 The GWD Flywheel</h3>
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px;">Each vertical feeds the other. PropX is the entry point — the Trojan horse into the building ecosystem.</p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Trigger</th>
+                        <th>Cross-Sell</th>
+                        <th>Revenue Model</th>
+                        <th>Timeline</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Owner onboards on PropX</td>
+                        <td>Offer GWD Global freelancers for property maintenance tasks</td>
+                        <td>Platform commission (15–20%)</td>
+                        <td><span class="badge blue">6 months</span></td>
+                    </tr>
+                    <tr>
+                        <td>Tenant logs into PropX portal</td>
+                        <td>Show GWD Academy course recommendations</td>
+                        <td>Course enrollment revenue</td>
+                        <td><span class="badge blue">6 months</span></td>
+                    </tr>
+                    <tr>
+                        <td>Building reaches 20+ tenants</td>
+                        <td>Propose digital billboard installation to owner</td>
+                        <td>Monthly ad revenue share</td>
+                        <td><span class="badge orange">12 months</span></td>
+                    </tr>
+                    <tr>
+                        <td>Owner has children (ages 6–18)</td>
+                        <td>Invite to GWD Sports academies</td>
+                        <td>Academy enrollment fees</td>
+                        <td><span class="badge orange">12 months</span></td>
+                    </tr>
+                    <tr>
+                        <td>PropX reaches 300 buildings</td>
+                        <td>Aggregate data → pitch to enterprise advertisers</td>
+                        <td>Enterprise ad packages</td>
+                        <td><span class="badge purple">18 months</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 6: FINANCIALS                          -->
+    <!-- ========================================== -->
+    <div class="tab-content" id="financials">
+        <h2 class="section-title">Financial Projections & Unit Economics</h2>
+        <p class="section-subtitle">The cost to acquire 300 buildings and what it means for PropX's future revenue.</p>
+
+        <div class="full-card">
+            <h3>💰 Cost to Acquire 300 Buildings (6-Month Budget)</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Expense Category</th>
+                        <th>Monthly Cost</th>
+                        <th>6-Month Total</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Scout Stipends (20 scouts)</strong></td>
+                        <td>₹2,00,000</td>
+                        <td>₹12,00,000</td>
+                        <td>Average ₹10K/scout/month</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Scout Per-Building Bonuses</strong></td>
+                        <td>₹1,05,000</td>
+                        <td>₹6,30,000</td>
+                        <td>~50 buildings/month × ₹350 avg</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Region Lead Salaries (4)</strong></td>
+                        <td>₹60,000</td>
+                        <td>₹3,60,000</td>
+                        <td>₹15K/lead/month</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Channel Partner Commissions</strong></td>
+                        <td>₹25,000</td>
+                        <td>₹1,50,000</td>
+                        <td>~50 buildings from partners × ₹500</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Marketing Materials</strong></td>
+                        <td>₹15,000</td>
+                        <td>₹90,000</td>
+                        <td>Pamphlets, QR stickers, visiting cards</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Social Media (Organic)</strong></td>
+                        <td>₹0</td>
+                        <td>₹0</td>
+                        <td>Founders create content themselves</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Travel & Miscellaneous</strong></td>
+                        <td>₹20,000</td>
+                        <td>₹1,20,000</td>
+                        <td>Scout transport reimbursements</td>
+                    </tr>
+                    <tr style="background:rgba(0,184,148,0.08);">
+                        <td><strong style="color:var(--green-light);">TOTAL</strong></td>
+                        <td><strong style="color:var(--green-light);">₹4,25,000</strong></td>
+                        <td><strong style="color:var(--green-light);">₹25,50,000</strong></td>
+                        <td><strong>~₹8,500 per building acquired</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="full-card">
+            <h3>📊 Revenue Potential (Once Monetized)</h3>
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">Currently PropX is free. But with 300 buildings (5,000+ tenants), here's the potential:</p>
+            <div class="kpi-row">
+                <div class="kpi-box">
+                    <div class="kpi-value green">₹4.5L</div>
+                    <div class="kpi-label">Monthly (Premium @₹1,500/bldg)</div>
+                </div>
+                <div class="kpi-box">
+                    <div class="kpi-value blue">₹2.5L</div>
+                    <div class="kpi-label">Monthly (Ad Revenue)</div>
+                </div>
+                <div class="kpi-box">
+                    <div class="kpi-value purple">₹1.5L</div>
+                    <div class="kpi-label">Monthly (Cross-Sell GWD)</div>
+                </div>
+                <div class="kpi-box">
+                    <div class="kpi-value orange">₹8.5L</div>
+                    <div class="kpi-label">Total Monthly Potential</div>
+                </div>
+            </div>
+            <div class="callout green">
+                <h4>💎 Key Metric: Customer Acquisition Cost (CAC) = ₹8,500</h4>
+                <p>If a premium subscription is ₹1,500/month and even 30% of owners convert, the LTV:CAC ratio is >6x within 12 months. This is an exceptional SaaS metric, especially for a B2B product in a blue-ocean market.</p>
+            </div>
+        </div>
+
+        <div class="full-card">
+            <h3>🎯 Break-Even Analysis</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Scenario</th>
+                        <th>Buildings Needed</th>
+                        <th>Monthly Revenue</th>
+                        <th>Time to Break-Even</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Conservative (10% premium conversion)</td>
+                        <td>300</td>
+                        <td>₹45,000 (from 30 paying)</td>
+                        <td>56 months</td>
+                    </tr>
+                    <tr>
+                        <td>Moderate (30% premium + ads)</td>
+                        <td>300</td>
+                        <td>₹3,00,000</td>
+                        <td>9 months</td>
+                    </tr>
+                    <tr>
+                        <td style="color:var(--green-light);">Aggressive (50% premium + ads + GWD cross-sell)</td>
+                        <td>300</td>
+                        <td>₹8,50,000</td>
+                        <td><strong>3 months</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 7: EXECUTION ROADMAP                   -->
+    <!-- ========================================== -->
+    <div class="tab-content" id="roadmap">
+        <h2 class="section-title">Execution Roadmap — 6-Month Battle Plan</h2>
+        <p class="section-subtitle">Phase-by-phase execution timeline from Day 1 to hitting 300 buildings.</p>
+
+        <div class="full-card">
+            <h3>📅 Phase-by-Phase Timeline</h3>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="time-label">Month 1 — Foundation</div>
+                    <h4>🏗️ Build the Machine</h4>
+                    <p>
+                        • Founders + sales head personally onboard first 10–15 buildings (learn the pitch, iterate)<br>
+                        • Create the "PropX Scout" job listing on Internshala, LinkedIn, college boards<br>
+                        • Hire first batch of 5 scouts in your home city<br>
+                        • Create scout training deck: pitch script, FAQ sheet, demo video<br>
+                        • Map the first 3 city grids (hotspot identification)<br>
+                        • Set up Google Sheet tracking system for scout daily reports<br>
+                        • Begin personal Instagram/LinkedIn content (3 posts/week)
+                    </p>
+                </div>
+                <div class="timeline-item">
+                    <div class="time-label">Month 2 — First Blood</div>
+                    <h4>⚡ Deploy & Iterate</h4>
+                    <p>
+                        • 5 scouts fully active in the field — target: 30 buildings this month<br>
+                        • Founders do weekly ride-alongs with scouts to coach and refine pitch<br>
+                        • Launch owner referral program (₹500/building)<br>
+                        • Identify top 3 real estate brokers in each area — sign as channel partners<br>
+                        • Start WhatsApp broadcast lists for owners<br>
+                        • Hit <strong>40–50 total buildings</strong> by month end
+                    </p>
+                </div>
+                <div class="timeline-item">
+                    <div class="time-label">Month 3 — Scale</div>
+                    <h4>📈 Double Down</h4>
+                    <p>
+                        • Hire 10 more scouts (total: 15) — expand to 2 cities<br>
+                        • Promote top 2 scouts to Region Leads<br>
+                        • Launch weekly scout leaderboard with prizes<br>
+                        • Activate 5+ channel partners (brokers, CAs, maintenance companies)<br>
+                        • Start hyperlocal WhatsApp channels per area<br>
+                        • First owner testimonial videos published<br>
+                        • Hit <strong>100–120 total buildings</strong>
+                    </p>
+                </div>
+                <div class="timeline-item">
+                    <div class="time-label">Month 4 — Momentum</div>
+                    <h4>🔥 The Flywheel Kicks In</h4>
+                    <p>
+                        • Referrals from existing owners start generating 15–20 buildings/month organically<br>
+                        • Hire 5 more scouts (total: 20) — expand to 3–4 cities<br>
+                        • Present at first housing society federation meeting<br>
+                        • Social media content gets 2–3 inbound leads per week<br>
+                        • Begin GWD Global cross-sell experiments in top 10 buildings<br>
+                        • Hit <strong>170–190 total buildings</strong>
+                    </p>
+                </div>
+                <div class="timeline-item">
+                    <div class="time-label">Month 5 — Acceleration</div>
+                    <h4>🚀 Full Throttle</h4>
+                    <p>
+                        • All 20 scouts operating at full capacity<br>
+                        • Channel partners contributing 20–30 buildings/month<br>
+                        • Launch "PropX Certified Building" badge — owners display it proudly<br>
+                        • Begin premium feature beta testing with select owners<br>
+                        • First digital billboard pilot (5 buildings)<br>
+                        • Hit <strong>240–260 total buildings</strong>
+                    </p>
+                </div>
+                <div class="timeline-item">
+                    <div class="time-label">Month 6 — Victory</div>
+                    <h4>🏆 300 Buildings Achieved</h4>
+                    <p>
+                        • Hit the <strong>300 building milestone</strong><br>
+                        • Celebrate publicly on social media — massive brand moment<br>
+                        • Begin monetization: launch premium subscription tier<br>
+                        • Compile case studies and data for investor pitch deck<br>
+                        • Plan Phase 2: Scale to 1,000 buildings across 10 cities<br>
+                        • Hire full-time city managers to replace founder involvement
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="full-card">
+            <h3>✅ Immediate Next Steps (This Week)</h3>
+            <ol class="numbered-list">
+                <li><strong>Draft the Internshala job listing</strong> — "PropX Scout — Field Sales Intern (PropTech Startup)". Include: ₹10–15K stipend, 3-month internship, certificate, real-world sales experience. Post it today.</li>
+                <li><strong>Create the Scout Training Deck</strong> — 10 slides: What is PropX → Why owners need it → How to pitch → Demo walkthrough → FAQ → Daily workflow → Reporting template. Keep it simple.</li>
+                <li><strong>Map your first 3 city grids</strong> — Open Google Maps, identify 3 high-density apartment areas in your home city. Create a Google My Maps layer with pins on every large building (15+ units).</li>
+                <li><strong>Record your first Instagram Reel</strong> — "We're building the Uber for property management. Here's Day 1." Keep it raw, under 30 seconds. Post on IG + LinkedIn.</li>
+                <li><strong>Contact 3 local real estate brokers</strong> — Meet them in person. Explain PropX, offer ₹500/building referral. Give them 20 visiting cards to distribute to owners they know.</li>
+                <li><strong>Set up the Google Sheet CRM</strong> — Columns: Building Name | Address | Owner Name | Phone | Scout Assigned | Status | Follow-Up Date | Date Onboarded. Share with your team.</li>
+            </ol>
+        </div>
+
+        <div class="callout green" style="margin-top:24px;">
+            <h4>🎯 Remember: The goal is not perfection — it's VELOCITY.</h4>
+            <p>Don't wait for the perfect pitch, the perfect pamphlet, or the perfect app feature. Get scouts on the ground NOW. Every day you delay, a competitor might be knocking on those same doors. The first PropTech to capture a building owner's trust wins — because owners almost never switch once they're set up. <strong>Speed is your moat.</strong></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tab switching logic
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.tab).classList.add('active');
+            window.scrollTo({ top: document.getElementById('tabNav').offsetTop - 20, behavior: 'smooth' });
+        });
+    });
+</script>
+
+</body>
+</html>
