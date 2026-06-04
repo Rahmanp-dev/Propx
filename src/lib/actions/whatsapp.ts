@@ -231,8 +231,7 @@ export async function sendRentReminders(buildingId?: string) {
             }
         }
 
-        revalidatePath('/whatsapp')
-        revalidatePath('/dashboard')
+        revalidatePath('/', 'layout')
 
         return { success: true, data: { count: logs.length, sent, queued } }
     } catch (error: any) {
@@ -328,7 +327,7 @@ export async function sendBroadcastMessage(message: string, buildingId?: string)
             }
         }
 
-        revalidatePath('/whatsapp')
+        revalidatePath('/', 'layout')
 
         return { success: true, data: { count: logs.length, sent, queued } }
     } catch (error: any) {

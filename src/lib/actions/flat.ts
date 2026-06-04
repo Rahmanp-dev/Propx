@@ -84,9 +84,7 @@ export async function createFlat(data: CreateFlatInput) {
             { $inc: { flatsCount: 1 } }
         )
 
-        revalidatePath(`/buildings/${buildingId}`)
-        revalidatePath('/dashboard')
-        revalidatePath('/')
+        revalidatePath('/', 'layout')
         return { success: true }
     } catch (error: any) {
         console.error("Failed to create flat:", error)
@@ -136,9 +134,7 @@ export async function deleteFlat(flatId: string) {
             { $inc: { flatsCount: -1 } }
         )
 
-        revalidatePath(`/buildings/${flat.buildingId}`)
-        revalidatePath('/dashboard')
-        revalidatePath('/flats')
+        revalidatePath('/', 'layout')
         
         return { success: true }
     } catch (error: any) {

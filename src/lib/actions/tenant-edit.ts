@@ -67,10 +67,9 @@ export async function updateTenantDetails(data: EditTenantInput) {
             }
         })
 
-        revalidatePath('/dashboard')
-        revalidatePath('/[userId]/tenants', 'page')
+        revalidatePath('/', 'layout')
         if (existingTenant.assignedFlatId) {
-            revalidatePath(`/[userId]/flats/${existingTenant.assignedFlatId}`, 'page')
+            revalidatePath('/', 'layout')
         }
 
         return { success: true }

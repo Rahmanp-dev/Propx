@@ -106,8 +106,7 @@ export async function POST(request: NextRequest) {
 
           await db.collection('Notification').insertOne(notifDoc)
 
-          revalidatePath('/dashboard')
-          revalidatePath('/(dashboard)/finance', 'page')
+          revalidatePath('/', 'layout')
           revalidatePath(`/pay/${paymentId}`)
         }
       } catch (err: any) {

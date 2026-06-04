@@ -312,10 +312,7 @@ export async function verifySubscriptionPayment(
             createdAt: new Date(),
         })
 
-        revalidatePath('/super-admin/dashboard')
-        revalidatePath('/super-admin/payments')
-        revalidatePath('/super-admin/organizations')
-        revalidatePath(`/super-admin/organizations/${payment.organizationId}`)
+        revalidatePath('/', 'layout')
 
         return { success: true }
     } catch (error: any) {
@@ -370,9 +367,7 @@ export async function toggleOrgStatus(orgId: string, action: 'activate' | 'suspe
             createdAt: new Date(),
         })
 
-        revalidatePath('/super-admin/organizations')
-        revalidatePath(`/super-admin/organizations/${orgId}`)
-        revalidatePath('/super-admin/dashboard')
+        revalidatePath('/', 'layout')
 
         return { success: true }
     } catch (error: any) {
@@ -451,7 +446,7 @@ export async function updatePlatformSettings(data: { upiId: string }) {
             { upsert: true }
         )
 
-        revalidatePath('/super-admin/settings')
+        revalidatePath('/', 'layout')
 
         return { success: true }
     } catch (error: any) {
@@ -550,8 +545,7 @@ export async function updateUser(
             data: updateData,
         })
 
-        revalidatePath('/super-admin/users')
-        revalidatePath(`/super-admin/users/${userId}`)
+        revalidatePath('/', 'layout')
 
         return { success: true }
     } catch (error: any) {
@@ -571,8 +565,7 @@ export async function resetUserPassword(userId: string, newPassword: string) {
             data: { password: hashedPassword },
         })
 
-        revalidatePath('/super-admin/users')
-        revalidatePath(`/super-admin/users/${userId}`)
+        revalidatePath('/', 'layout')
 
         return { success: true }
     } catch (error: any) {
@@ -591,7 +584,7 @@ export async function deleteUser(userId: string) {
 
         await prisma.user.delete({ where: { id: userId } })
 
-        revalidatePath('/super-admin/users')
+        revalidatePath('/', 'layout')
 
         return { success: true }
     } catch (error: any) {

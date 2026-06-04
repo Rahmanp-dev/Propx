@@ -234,9 +234,7 @@ export async function createMaintenanceRequest(data: CreateMaintenanceInput) {
             }).catch(console.error)
         }
 
-        revalidatePath('/dashboard')
-        revalidatePath('/maintenance')
-        revalidatePath(`/buildings/${buildingId}`)
+        revalidatePath('/', 'layout')
 
         return { success: true, data: { id: insertResult.insertedId.toString() } }
     } catch (error: any) {
@@ -380,9 +378,7 @@ export async function updateMaintenanceStatus(
             { $set: updateFields }
         )
 
-        revalidatePath('/dashboard')
-        revalidatePath('/maintenance')
-        revalidatePath(`/buildings/${current.buildingId}`)
+        revalidatePath('/', 'layout')
 
         return { success: true }
     } catch (error: any) {

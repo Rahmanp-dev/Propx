@@ -130,11 +130,7 @@ export async function logPayment(data: LogPaymentInput) {
         await updateFutureBalances(payment.tenantId, payment.month, Math.max(0, finalBalance))
 
         // Revalidate ALL relevant pages so finance & dashboard reflect instantly
-        revalidatePath('/dashboard')
-        revalidatePath('/finance')
-        revalidatePath(`/flats/${payment.flatId}`)
-        revalidatePath(`/buildings/${payment.flat.buildingId}`)
-        revalidatePath('/')
+        revalidatePath('/', 'layout')
 
         return { success: true }
     } catch (error: any) {
@@ -220,9 +216,7 @@ export async function markAllMonthAsPaid(monthStr: string, method: string = "CAS
             markedCount++
         }
 
-        revalidatePath('/dashboard')
-        revalidatePath('/finance')
-        revalidatePath(`/[userId]/ledger`, 'page')
+        revalidatePath('/', 'layout')
         
         return { success: true, count: markedCount }
     } catch (error: any) {

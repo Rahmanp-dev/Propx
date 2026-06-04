@@ -113,12 +113,7 @@ export async function onboardTenant(data: OnboardTenantInput) {
             }
         )
 
-        revalidatePath(`/flats/${flatId}`)
-        if (flat) revalidatePath(`/buildings/${flat.buildingId.toString()}`)
-        revalidatePath('/dashboard')
-        revalidatePath('/tenants')
-        revalidatePath('/finance')
-        revalidatePath('/')
+        revalidatePath('/', 'layout')
         return { success: true }
     } catch (error: any) {
         console.error("Failed to onboard tenant:", error)
@@ -181,11 +176,7 @@ export async function offboardTenant(flatId: string) {
             }
         )
 
-        revalidatePath(`/flats/${flatId}`)
-        revalidatePath(`/buildings/${flat.buildingId.toString()}`)
-        revalidatePath('/dashboard')
-        revalidatePath('/tenants')
-        revalidatePath('/')
+        revalidatePath('/', 'layout')
         return { success: true }
     } catch (error: any) {
         console.error("Failed to offboard tenant:", error)

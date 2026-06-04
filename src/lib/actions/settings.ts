@@ -96,7 +96,7 @@ export async function updateOwnerPaymentConfig(data: {
             }
         )
 
-        revalidatePath('/settings')
+        revalidatePath('/', 'layout')
         return { success: true }
     } catch (error: any) {
         return { error: error.message }
@@ -187,7 +187,7 @@ export async function addPaymentMethod(data: Omit<PaymentMethodEntry, 'id' | 'is
             { $set: legacyUpdate }
         )
 
-        revalidatePath('/settings')
+        revalidatePath('/', 'layout')
         return { success: true }
     } catch (error: any) {
         return { error: error.message }
@@ -243,7 +243,7 @@ export async function removePaymentMethod(methodId: string): Promise<{ error?: s
             { $set: legacyUpdate }
         )
 
-        revalidatePath('/settings')
+        revalidatePath('/', 'layout')
         return { success: true }
     } catch (error: any) {
         return { error: error.message }
@@ -291,7 +291,7 @@ export async function setDefaultPaymentMethod(methodId: string): Promise<{ error
             { $set: legacyUpdate }
         )
 
-        revalidatePath('/settings')
+        revalidatePath('/', 'layout')
         return { success: true }
     } catch (error: any) {
         return { error: error.message }
@@ -316,7 +316,7 @@ export async function updatePaymentInstructions(instructions: string): Promise<{
             }
         )
 
-        revalidatePath('/settings')
+        revalidatePath('/', 'layout')
         return { success: true }
     } catch (error: any) {
         return { error: error.message }

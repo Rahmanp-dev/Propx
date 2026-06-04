@@ -8,6 +8,9 @@ import { auth } from "@/lib/auth"
 import { CopyPortalLink } from "@/components/dashboard/copy-portal-link"
 import { EditTenantDialog } from "@/components/dashboard/edit-tenant-dialog"
 
+export const dynamic = 'force-dynamic'
+
+
 export default async function TenantsPage() {
     const session = await auth()
     const userId = session?.user?.id || 'user'

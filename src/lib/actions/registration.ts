@@ -105,7 +105,7 @@ export async function registerOrganization(data: {
       updatedAt: now,
     })
 
-    revalidatePath('/super-admin')
+    revalidatePath('/', 'layout')
 
     return {
       success: true,
@@ -170,7 +170,7 @@ export async function uploadSubscriptionProof(
       createdAt: new Date(),
     })
 
-    revalidatePath('/super-admin')
+    revalidatePath('/', 'layout')
 
     return { success: true }
   } catch (error) {

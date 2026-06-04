@@ -49,6 +49,9 @@ export async function POST(req: NextRequest) {
                             }
                         }
                     )
+                    
+                    const { revalidatePath } = require('next/cache')
+                    revalidatePath('/', 'layout')
                 }
             }
         }

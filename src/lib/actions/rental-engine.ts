@@ -113,25 +113,34 @@ export async function generateMonthlyDues() {
             const maintenanceDue = tenant.flat.maintenanceAmount
             const totalDue = rentDue + maintenanceDue + electricityDue + arrears
 
-            // Create Payment Record
+            // Create Payment Record safely via atomic upsert
             const now = new Date()
-            await db.collection("Payment").insertOne({
-                tenantId: new ObjectId(tenant.id),
-                flatId: new ObjectId(tenant.assignedFlatId),
-                month: currentMonth,
-                rentDue,
-                maintenanceDue,
-                electricityDue,
-                arrears,
-                totalDue,
-                balance: totalDue,
-                status: 'PENDING',
-                amountPaid: 0.0,
-                createdAt: now,
-                updatedAt: now
-            })
+            const result = await db.collection("Payment").updateOne(
+                {
+                    tenantId: new ObjectId(tenant.id),
+                    month: currentMonth
+                },
+                {
+                    $setOnInsert: {
+                        flatId: new ObjectId(tenant.assignedFlatId),
+                        rentDue,
+                        maintenanceDue,
+                        electricityDue,
+                        arrears,
+                        totalDue,
+                        balance: totalDue,
+                        status: 'PENDING',
+                        amountPaid: 0.0,
+                        createdAt: now,
+                        updatedAt: now
+                    }
+                },
+                { upsert: true }
+            )
 
-            generatedCount++
+            if (result.upsertedCount > 0) {
+                generatedCount++
+            }
         }
 
         // Add notification for the organization
@@ -155,10 +164,7 @@ export async function generateMonthlyDues() {
         }
 
         // Revalidate all relevant pages
-        revalidatePath('/dashboard')
-        revalidatePath('/finance')
-        revalidatePath('/tenants')
-        revalidatePath('/')
+        revalidatePath('/', 'layout')
         return { success: true, count: generatedCount }
 
     } catch (error: any) {

@@ -183,8 +183,7 @@ export async function createInquiry(data: CreateInquiryInput) {
             }).catch(console.error)
         }
 
-        revalidatePath('/inquiries')
-        revalidatePath('/dashboard')
+        revalidatePath('/', 'layout')
 
         return { success: true, data: { id: insertResult.insertedId.toString() } }
     } catch (error: any) {
@@ -235,8 +234,7 @@ export async function updateInquiryStatus(id: string, status: string, notes?: st
             { $set: updateFields }
         )
 
-        revalidatePath('/inquiries')
-        revalidatePath('/dashboard')
+        revalidatePath('/', 'layout')
 
         return { success: true }
     } catch (error: any) {

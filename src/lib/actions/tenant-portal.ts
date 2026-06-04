@@ -244,8 +244,7 @@ export async function submitMaintenanceRequest(
 
         await db.collection('Notification').insertOne(notifDoc)
 
-        revalidatePath('/maintenance')
-        revalidatePath('/tenant-portal/maintenance')
+        revalidatePath('/', 'layout')
 
         return { success: true, requestId: result.insertedId.toString() }
     } catch (error: any) {

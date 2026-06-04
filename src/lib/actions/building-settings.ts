@@ -103,9 +103,7 @@ export async function updateBuildingSettings(data: UpdateBuildingInput) {
             { $set: updateFields }
         )
 
-        revalidatePath(`/buildings/${buildingId}`)
-        revalidatePath('/dashboard')
-        revalidatePath('/')
+        revalidatePath('/', 'layout')
         return { success: true }
     } catch (error: any) {
         console.error("Failed to update building:", error)

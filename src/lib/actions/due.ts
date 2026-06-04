@@ -66,42 +66,60 @@ export async function addCustomDue(data: AddDueInput) {
             return { error: "No payment record found for this month to attach due." }
         }
 
-        const newCustomDues = (payment.customDues || 0) + amount
-        const newCustomDuesList = payment.customDuesList || []
-        newCustomDuesList.push({ label, amount, date: new Date() })
-
-        const newTotalDue = (payment.rentDue || 0) + (payment.maintenanceDue || 0) + (payment.electricityDue || 0) + newCustomDues + (payment.arrears || 0)
-        const newBalance = newTotalDue - (payment.amountPaid || 0)
-
-        let newStatus = payment.status
-        if (newBalance <= 0) {
-            newStatus = "PAID"
-        } else if ((payment.amountPaid || 0) > 0) {
-            newStatus = "PARTIAL"
-        } else {
-            newStatus = "PENDING"
-        }
-
+        // We can safely push to customDuesList array natively, and use a pipeline for the math calculations.
+        // Wait, MongoDB doesn't allow mixing $push (standard update) with pipeline updates.
+        // But we can just use $set with $concatArrays if we are in a pipeline!
+        
         await db.collection("Payment").updateOne(
             { _id: payment._id },
-            {
-                $set: {
-                    customDues: newCustomDues,
-                    customDuesList: newCustomDuesList,
-                    totalDue: newTotalDue,
-                    balance: Math.max(0, newBalance),
-                    status: newStatus,
-                    updatedAt: new Date()
+            [
+                {
+                    $set: {
+                        customDues: { $add: [{ $ifNull: ["$customDues", 0] }, amount] },
+                        customDuesList: {
+                            $concatArrays: [
+                                { $ifNull: ["$customDuesList", []] },
+                                [{ label, amount, date: new Date() }]
+                            ]
+                        }
+                    }
+                },
+                {
+                    $set: {
+                        totalDue: { $add: [{ $ifNull: ["$rentDue", 0] }, { $ifNull: ["$maintenanceDue", 0] }, { $ifNull: ["$electricityDue", 0] }, "$customDues", { $ifNull: ["$arrears", 0] }] },
+                        updatedAt: new Date()
+                    }
+                },
+                {
+                    $set: {
+                        balance: { $max: [0, { $subtract: ["$totalDue", { $ifNull: ["$amountPaid", 0] }] }] }
+                    }
+                },
+                {
+                    $set: {
+                        status: {
+                            $cond: {
+                                if: { $lte: ["$balance", 0] }, then: "PAID",
+                                else: {
+                                    $cond: {
+                                        if: { $gt: [{ $ifNull: ["$amountPaid", 0] }, 0] }, then: "PARTIAL", else: "PENDING"
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-            }
+            ]
         )
 
-        // We should cascade balance updates to future months since we added a due, and the current month balance changed
-        await updateFutureBalances(tenantId, payment.month, Math.max(0, newBalance))
+        // Refetch the updated document to pass the exact new balance to the cascader
+        const updatedPayment = await db.collection("Payment").findOne({ _id: payment._id })
+        const finalBalance = updatedPayment ? (updatedPayment as any).balance : 0
 
-        revalidatePath('/dashboard')
-        revalidatePath('/finance')
-        revalidatePath(`/flats/${payment.flatId.toString()}`)
+        // We should cascade balance updates to future months since we added a due, and the current month balance changed
+        await updateFutureBalances(tenantId, payment.month, finalBalance)
+
+        revalidatePath('/', 'layout')
 
         return { success: true }
     } catch (error: any) {

@@ -96,9 +96,7 @@ export async function uploadPaymentProof(paymentId: string, data: {
             })
         }
 
-        revalidatePath('/dashboard')
-        revalidatePath('/finance')
-        revalidatePath(`/pay/${paymentId}`)
+        revalidatePath('/', 'layout')
 
         return { success: true, data: { id: insertResult.insertedId.toString() } }
     } catch (error: any) {
@@ -174,9 +172,7 @@ export async function verifyPaymentProof(proofId: string, verified: boolean, not
             )
         }
 
-        revalidatePath('/dashboard')
-        revalidatePath('/finance')
-        revalidatePath(`/pay/${proof.paymentId}`)
+        revalidatePath('/', 'layout')
 
         return { success: true }
     } catch (error: any) {

@@ -77,7 +77,7 @@ export async function createPaymentLink(paymentId: string) {
       },
     })
 
-    revalidatePath('/pay/[id]', 'page')
+    revalidatePath('/', 'layout')
 
     return {
       success: true,

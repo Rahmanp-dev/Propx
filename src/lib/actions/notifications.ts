@@ -87,7 +87,7 @@ export async function markAsRead(id: string) {
             { $set: { isRead: true } }
         )
 
-        revalidatePath('/dashboard')
+        revalidatePath('/', 'layout')
 
         return { success: true }
     } catch (error: any) {
@@ -112,7 +112,7 @@ export async function markAllAsRead() {
             { $set: { isRead: true } }
         )
 
-        revalidatePath('/dashboard')
+        revalidatePath('/', 'layout')
 
         return { success: true }
     } catch (error: any) {

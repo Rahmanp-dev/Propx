@@ -77,9 +77,7 @@ export async function createBuilding(data: CreateBuildingInput) {
             await db.collection("Floor").insertMany(floorsData)
         }
 
-        revalidatePath('/dashboard')
-        revalidatePath('/buildings')
-        revalidatePath('/')
+        revalidatePath('/', 'layout')
         return { success: true, data: { ...buildingDoc, id: buildingId } }
     } catch (error: any) {
         console.error("Failed to create building:", error)
@@ -170,8 +168,7 @@ export async function deleteBuilding(buildingId: string) {
         // 4. Delete Building
         await db.collection("Building").deleteOne({ _id: new ObjectId(buildingId) })
 
-        revalidatePath('/dashboard')
-        revalidatePath('/buildings')
+        revalidatePath('/', 'layout')
         
         return { success: true }
     } catch (error: any) {

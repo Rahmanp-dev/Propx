@@ -10,6 +10,9 @@ import { toast } from 'sonner'
 import { Loader2, Zap, MoreVertical } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
+export const dynamic = 'force-dynamic'
+
+
 export default function ElectricityPage() {
     const [month, setMonth] = useState(new Date().getMonth() + 1)
     const [year, setYear] = useState(new Date().getFullYear())
