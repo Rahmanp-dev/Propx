@@ -66,7 +66,7 @@ export async function getElectricityDashboard(month: number, year: number) {
             const activeTenant = flat.tenants[0]
             
             let calcAmount = 0
-            if (currentReading && previousReading && !currentReading.isInitial) {
+            if (currentReading && previousReading && !(currentReading as any).isInitial) {
                 const units = currentReading.reading - previousReading.reading
                 if (units > 0) {
                     calcAmount = units * (flat.building?.ratePerUnit || 10)
