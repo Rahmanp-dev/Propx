@@ -94,6 +94,11 @@ export async function getTenantDashboard(tenantId: string) {
                 ? {
                     id: currentPayment.id,
                     month: currentPayment.month,
+                    rentDue: currentPayment.rentDue,
+                    maintenanceDue: currentPayment.maintenanceDue,
+                    electricityDue: currentPayment.electricityDue,
+                    customDues: currentPayment.customDues,
+                    arrears: (currentPayment as any).arrears || 0,
                     totalDue: currentPayment.totalDue,
                     amountPaid: currentPayment.amountPaid,
                     balance: currentPayment.balance,
