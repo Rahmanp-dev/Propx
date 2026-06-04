@@ -36,17 +36,18 @@ export function PrintLedgerButton({ masterData, currentMonth, totalExpected, tot
                 img.onload = resolve
                 img.onerror = reject
             })
-            doc.addImage(img, 'PNG', 14, 12, 12, 12)
+            // Make logo bigger (x:14, y:12, w:25, h:25)
+            doc.addImage(img, 'PNG', 14, 12, 25, 25)
             
-            // Title next to logo
-            doc.setFontSize(20)
-            doc.text("PropX - Master Monthly Ledger", 30, 21)
+            // Title next to the larger logo
+            doc.setFontSize(22)
+            doc.text("PropX - Master Monthly Ledger", 44, 24)
             doc.setFontSize(12)
             let subtitle = `Report for: ${monthName}`
             if (selectedBuildingName) {
                 subtitle += ` | Building: ${selectedBuildingName}`
             }
-            doc.text(subtitle, 30, 28)
+            doc.text(subtitle, 44, 32)
         } catch (e) {
             // Fallback if logo fails to load
             doc.setFontSize(20)
