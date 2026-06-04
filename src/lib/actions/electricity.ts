@@ -28,22 +28,29 @@ export async function getElectricityDashboard(month: number, year: number) {
             ? { electricityType: 'METERED' as const }
             : { electricityType: 'METERED' as const, building: { organizationId: orgCtx.organizationId! } }
 
+        const prevMonth = month === 1 ? 12 : month - 1
+        const prevYear = month === 1 ? year - 1 : year
+
         const meteredFlats = await prisma.flat.findMany({
             where,
             include: {
                 building: {
-                    select: { name: true }
+                    select: { name: true, ratePerUnit: true }
                 },
                 meterReadings: {
-                    where: { month, year },
-                    take: 1
+                    where: {
+                        OR: [
+                            { month, year },
+                            { month: prevMonth, year: prevYear }
+                        ]
+                    },
+                    orderBy: [
+                        { year: 'desc' },
+                        { month: 'desc' }
+                    ]
                 },
                 tenants: {
                     where: { isActive: true },
-                    take: 1
-                },
-                payments: {
-                    orderBy: { month: 'desc' },
                     take: 1
                 }
             },
@@ -54,9 +61,18 @@ export async function getElectricityDashboard(month: number, year: number) {
         })
 
         const data = meteredFlats.map(flat => {
-            const currentReading = flat.meterReadings[0]
+            const currentReading = flat.meterReadings.find(r => r.month === month && r.year === year)
+            const previousReading = flat.meterReadings.find(r => r.month === prevMonth && r.year === prevYear)
             const activeTenant = flat.tenants[0]
-            const latestPayment = flat.payments[0]
+            
+            let calcAmount = 0
+            if (currentReading && previousReading && !currentReading.isInitial) {
+                const units = currentReading.reading - previousReading.reading
+                if (units > 0) {
+                    calcAmount = units * (flat.building?.ratePerUnit || 10)
+                }
+            }
+
             return {
                 flatId: flat.id,
                 flatNumber: flat.flatNumber,
@@ -65,7 +81,7 @@ export async function getElectricityDashboard(month: number, year: number) {
                 hasReading: !!currentReading,
                 readingValue: currentReading ? currentReading.reading : null,
                 readingId: currentReading ? currentReading.id : null,
-                pendingAmount: latestPayment ? (latestPayment.electricityDue || 0) : 0,
+                pendingAmount: calcAmount,
             }
         })
 
