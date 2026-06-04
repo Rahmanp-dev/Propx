@@ -20,6 +20,22 @@ export const metadata: Metadata = {
     icon: "/icons/logo.png",
     apple: "/icons/logo.png",
   },
+  openGraph: {
+    title: "PropX — Smart Property Management",
+    description: "Manage your rental properties, collect rent, track maintenance, and communicate with tenants — all in one place.",
+    url: "https://propx.gwdglobal.in",
+    siteName: "PropX",
+    images: [
+      {
+        url: "https://propx.gwdglobal.in/redlogo.png",
+        width: 1200,
+        height: 630,
+        alt: "PropX Logo",
+      }
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {
