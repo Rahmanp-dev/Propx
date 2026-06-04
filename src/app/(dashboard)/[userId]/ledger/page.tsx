@@ -20,6 +20,12 @@ export default async function LedgerPage({ params, searchParams }: { params: Pro
     const resolvedSearchParams = await searchParams
     const flatId = resolvedSearchParams.flatId
     const currentMonth = resolvedSearchParams.month || format(new Date(), 'yyyy-MM')
+    
+    let displayMonth = new Date()
+    const parsedDate = new Date(`${currentMonth}-01T00:00:00`)
+    if (!isNaN(parsedDate.getTime())) {
+        displayMonth = parsedDate
+    }
 
     const { data: flats } = await getAllFlats()
     const { data: masterData } = await getMasterMonthLedger(currentMonth)
@@ -155,7 +161,7 @@ export default async function LedgerPage({ params, searchParams }: { params: Pro
                         <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             <div>
                                 <CardTitle>Master Monthly Ledger</CardTitle>
-                                <CardDescription>Overview of all flat payments for {format(new Date(`${currentMonth}-01`), 'MMMM yyyy')}</CardDescription>
+                                <CardDescription>Overview of all flat payments for {format(displayMonth, 'MMMM yyyy')}</CardDescription>
                             </div>
                             <div className="flex items-center gap-4">
                                 <MonthPicker currentMonth={currentMonth} />
