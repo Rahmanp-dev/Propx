@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     siteName: "PropX",
     images: [
       {
-        url: "https://propx.gwdglobal.in/redlogo.png",
+        url: "/redlogo.png",
         width: 1200,
         height: 630,
         alt: "PropX Logo",

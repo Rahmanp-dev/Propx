@@ -53,7 +53,7 @@ export async function getDashboardStats() {
             occupiedFlats,
             vacantFlats,
             totalTenants,
-            currentMonthPayments,
+            activeTenantsWithLatestPayment,
             overduePayments,
             expiringLeases,
             pendingMaintenanceCount,
@@ -75,20 +75,19 @@ export async function getDashboardStats() {
             // 5. Total active tenants
             prisma.tenant.count({ where: { ...tenantWhere, isActive: true } }),
 
-            // 6. ALL-TIME outstanding payment aggregation (portfolio health)
-            prisma.payment.aggregate({
-                where: {
-                    balance: { gt: 0 },
-                    ...paymentWhere,
-                },
-                _sum: {
-                    totalDue: true,
-                    amountPaid: true,
-                    balance: true,
+            // 6. Active Tenants with their latest payment to calculate revenue
+            prisma.tenant.findMany({
+                where: { isActive: true, ...tenantWhere },
+                select: {
+                    payments: {
+                        orderBy: { month: 'desc' },
+                        take: 1,
+                        select: { totalDue: true, amountPaid: true, balance: true }
+                    }
                 }
             }),
 
-            // 7. Overdue/Pending Payments (top 10)
+            // 7. Overdue/Pending Payments (all)
             prisma.payment.findMany({
                 where: {
                     status: { in: ['OVERDUE', 'PENDING', 'PARTIAL'] },
@@ -105,8 +104,7 @@ export async function getDashboardStats() {
                         }
                     }
                 },
-                orderBy: { balance: 'desc' },
-                take: 10
+                orderBy: { balance: 'desc' }
             }),
 
             // 8. Expiring Leases (next 30 days)
@@ -158,9 +156,18 @@ export async function getDashboardStats() {
             }),
         ])
 
-        const expectedRevenue = currentMonthPayments._sum.totalDue || 0
-        const collectedRevenue = currentMonthPayments._sum.amountPaid || 0
-        const outstandingRevenue = currentMonthPayments._sum.balance || 0
+        let expectedRevenue = 0
+        let collectedRevenue = 0
+        let outstandingRevenue = 0
+        
+        for (const t of activeTenantsWithLatestPayment as any) {
+            if (t.payments.length > 0) {
+                expectedRevenue += t.payments[0].totalDue
+                collectedRevenue += t.payments[0].amountPaid
+                outstandingRevenue += t.payments[0].balance
+            }
+        }
+
         const collectionRate = expectedRevenue > 0
             ? Math.round((collectedRevenue / expectedRevenue) * 100)
             : 0

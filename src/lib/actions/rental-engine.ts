@@ -19,7 +19,7 @@ async function getOrgContext() {
     }
 }
 
-export async function generateMonthlyDues() {
+export async function generateMonthlyDues(monthOffset: number = 0) {
     try {
         const orgCtx = await getOrgContext()
         if (!orgCtx) return { error: "Not authenticated" }
@@ -28,10 +28,13 @@ export async function generateMonthlyDues() {
         const db = client.db("propx")
 
         const today = new Date()
-        const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+        
+        // Offset the month calculation
+        const targetDate = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1)
+        const currentMonth = targetDate
 
-        const readingMonth = today.getMonth() + 1
-        const readingYear = today.getFullYear()
+        const readingMonth = targetDate.getMonth() + 1
+        const readingYear = targetDate.getFullYear()
         const prevMonthIndex = readingMonth === 1 ? 12 : readingMonth - 1
         const prevYearIndex = readingMonth === 1 ? readingYear - 1 : readingYear
 
