@@ -80,7 +80,8 @@ const bulkReadingSchema = z.array(z.object({
     flatId: z.string(),
     reading: z.number().min(0),
     month: z.number(),
-    year: z.number()
+    year: z.number(),
+    isInitial: z.boolean().optional().default(false)
 }))
 
 export async function bulkRecordMeterReadings(readings: any[]) {
@@ -115,11 +116,16 @@ export async function bulkRecordMeterReadings(readings: any[]) {
             await db.collection("MeterReading").updateOne(
                 { flatId: new ObjectId(r.flatId), month: r.month, year: r.year },
                 {
-                    $set: { reading: r.reading, readingDate: new Date(), updatedAt: new Date() },
+                    $set: { reading: r.reading, isInitial: r.isInitial || false, readingDate: new Date(), updatedAt: new Date() },
                     $setOnInsert: { createdAt: new Date() }
                 },
                 { upsert: true }
             )
+
+            // Skip bill generation for initial/baseline readings
+            if (r.isInitial) {
+                continue
+            }
 
             // Auto-compute electricity bill if previous month exists
             const prevMonth = r.month === 1 ? 12 : r.month - 1

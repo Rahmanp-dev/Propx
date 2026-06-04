@@ -52,7 +52,7 @@ export default function LoginPage() {
           {/* Logo & tagline */}
           <div className="mb-14">
             <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl shadow-lg overflow-hidden bg-white/5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl shadow-lg overflow-hidden bg-white/10">
                 <img src="/logo.png" alt="Company Logo" className="h-full w-full object-contain" />
               </div>
               <span className="text-2xl font-bold tracking-tight text-white">
@@ -105,7 +105,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Mobile-only logo */}
           <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl shadow-lg overflow-hidden bg-white/5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl shadow-lg overflow-hidden bg-white/10">
               <img src="/logo.png" alt="Company Logo" className="h-full w-full object-contain" />
             </div>
             <span className="text-xl font-bold tracking-tight text-white">

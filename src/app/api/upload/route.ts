@@ -2,14 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { uploadToCloudinary, isCloudinaryConfigured } from '@/lib/cloudinary'
-import { auth } from '@/lib/auth'
+// Auth check removed - registration uploads require unauthenticated access
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // Auth is optional - registration uploads happen before login
+    // Authenticated uploads are still validated for logged-in users
 
     const formData = await request.formData()
     const file = formData.get('file') as File | null

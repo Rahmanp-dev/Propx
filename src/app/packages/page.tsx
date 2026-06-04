@@ -103,7 +103,7 @@ export default function PackagesPage() {
       <header className="relative z-10 border-b border-white/5 bg-[#030712]/60 backdrop-blur-md sticky top-0">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-            <img src="/logo.png" alt="Company Logo" className="h-9 w-9 rounded-lg object-contain bg-white/5" />
+            <img src="/logo.png" alt="Company Logo" className="h-11 w-11 rounded-lg object-contain bg-white/10 p-0.5" />
             <span className="text-xl font-bold tracking-tight text-white">
               Prop<span className="text-violet-400">X</span>
             </span>

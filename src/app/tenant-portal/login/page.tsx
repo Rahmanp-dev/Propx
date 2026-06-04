@@ -17,7 +17,12 @@ export default function TenantLoginPage() {
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white p-4">
             <Card className="w-full max-w-sm shadow-xl">
                 <CardHeader className="text-center space-y-2">
-                    <div className="text-3xl font-bold text-gray-900">PropX</div>
+                    <div className="flex items-center justify-center gap-3">
+                        <div className="h-12 w-12 rounded-xl shadow-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                            <img src="/logo.png" alt="Company Logo" className="h-full w-full object-contain" />
+                        </div>
+                        <span className="text-3xl font-bold text-gray-900">PropX</span>
+                    </div>
                     <CardTitle className="text-lg font-normal text-muted-foreground">
                         Tenant Portal
                     </CardTitle>

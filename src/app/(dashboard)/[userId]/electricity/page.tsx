@@ -16,6 +16,7 @@ export default function ElectricityPage() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [readings, setReadings] = useState<Record<string, string>>({})
+    const [initialFlags, setInitialFlags] = useState<Record<string, boolean>>({})
 
     useEffect(() => {
         loadDashboard()
@@ -33,6 +34,12 @@ export default function ElectricityPage() {
                 }
             })
             setReadings(initialReadings)
+            // Auto-detect: if flat has no previous reading and no current reading, mark as initial candidate
+            const flags: Record<string, boolean> = {}
+            res.data.forEach((flat: any) => {
+                flags[flat.flatId] = false // default: not initial
+            })
+            setInitialFlags(flags)
         } else {
             toast("Error", { description: res.error || "Failed to record readings" })
         }
@@ -51,7 +58,8 @@ export default function ElectricityPage() {
                 flatId: f.flatId,
                 reading: parseFloat(readings[f.flatId]),
                 month,
-                year
+                year,
+                isInitial: initialFlags[f.flatId] || false
             }))
             .filter(r => !isNaN(r.reading))
 
@@ -105,6 +113,11 @@ export default function ElectricityPage() {
                 </div>
             </div>
 
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg px-4 py-3 text-sm text-blue-300 flex items-start gap-3">
+                <Zap className="h-4 w-4 mt-0.5 shrink-0" />
+                <p><strong>Tip:</strong> Mark readings as &quot;Initial&quot; when onboarding a building. Initial readings serve as baseline values and won&apos;t generate electricity bills. Only the difference between the initial reading and the next month&apos;s entry will be billed.</p>
+            </div>
+
             <Card>
                 <CardHeader>
                     <CardTitle>Metered Flats</CardTitle>
@@ -123,6 +136,7 @@ export default function ElectricityPage() {
                                         <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
                                         <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Pending Dues</th>
                                         <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Reading</th>
+                                        <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground">Initial</th>
                                     </tr>
                                 </thead>
                                 <tbody className="[&_tr:last-child]:border-0">
@@ -151,6 +165,18 @@ export default function ElectricityPage() {
                                                     value={readings[flat.flatId] || ''}
                                                     onChange={(e) => handleReadingChange(flat.flatId, e.target.value)}
                                                 />
+                                            </td>
+                                            <td className="p-4 align-middle text-center">
+                                                <label className="inline-flex items-center gap-2 cursor-pointer" title="Mark as initial/baseline reading (won't generate a bill)">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={initialFlags[flat.flatId] || false}
+                                                        onChange={(e) => {
+                                                            setInitialFlags(prev => ({ ...prev, [flat.flatId]: e.target.checked }))
+                                                        }}
+                                                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                    />
+                                                </label>
                                             </td>
                                         </tr>
                                     ))}

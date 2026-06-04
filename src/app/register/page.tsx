@@ -231,7 +231,7 @@ export default function RegisterPage() {
           {/* Logo & tagline */}
           <div className="mb-14">
             <Link href="/" className="mb-6 flex items-center gap-3 w-fit">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl shadow-lg overflow-hidden bg-white/5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl shadow-lg overflow-hidden bg-white/10">
                 <img src="/logo.png" alt="Company Logo" className="h-full w-full object-contain" />
               </div>
               <span className="text-2xl font-bold tracking-tight text-white">
@@ -284,7 +284,7 @@ export default function RegisterPage() {
           {/* Mobile-only logo */}
           <div className="mb-8 flex items-center justify-center gap-3 lg:hidden mt-6">
             <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl shadow-lg overflow-hidden bg-white/5">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl shadow-lg overflow-hidden bg-white/10">
                 <img src="/logo.png" alt="Company Logo" className="h-full w-full object-contain" />
               </div>
               <span className="text-xl font-bold tracking-tight text-white">
@@ -587,6 +587,17 @@ export default function RegisterPage() {
                       Send exactly <strong className="text-indigo-300">₹{amount.toLocaleString()}</strong> to the UPI ID above using any UPI app (GPay, PhonePe, Paytm), and take a screenshot of the successful transaction.
                     </p>
                   </div>
+                </div>
+
+                {/* Direct UPI Payment Button */}
+                <div className="flex justify-center">
+                  <a
+                    href={`upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent('PropX')}&am=${amount}&cu=INR&tn=${encodeURIComponent('PropX Subscription Payment')}`}
+                    className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-semibold shadow-lg shadow-emerald-500/25 transition-all text-sm"
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    Pay ₹{amount.toLocaleString()} via UPI App
+                  </a>
                 </div>
 
                 {/* Upload Screenshot */}

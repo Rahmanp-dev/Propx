@@ -54,8 +54,8 @@ export function SuperAdminSidebar({ user }: { user?: any }) {
             {/* Logo */}
             <div className="px-6 py-6 border-b border-white/5">
                 <Link href="/super-admin/dashboard" className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-                        <Shield className="h-5 w-5 text-white" />
+                    <div className="h-10 w-10 rounded-lg shadow-lg overflow-hidden bg-white/10 flex items-center justify-center">
+                        <img src="/logo.png" alt="Company Logo" className="h-full w-full object-contain" />
                     </div>
                     <div>
                         <h1 className="text-lg font-bold tracking-tight">PropX</h1>
