@@ -102,11 +102,8 @@ export async function getBuildings() {
                 flats: {
                     include: {
                         payments: {
-                            where: {
-                                month: {
-                                    gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-                                }
-                            }
+                            orderBy: { month: 'desc' },
+                            take: 1
                         }
                     }
                 }

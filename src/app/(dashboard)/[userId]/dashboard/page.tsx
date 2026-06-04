@@ -162,11 +162,20 @@ export default async function DashboardPage() {
             <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {buildings.map((building) => {
                     const occupiedFlats = building.flats.filter((f: any) => f.status === 'OCCUPIED').length
-                    const totalRevenue = building.flats.reduce((sum: number, f: any) => sum + f.rentAmount, 0)
-                    const collectedRevenue = building.flats.reduce((sum: number, f: any) => {
+                    
+                    let totalRevenue = 0
+                    let collectedRevenue = 0
+                    
+                    for (const f of building.flats) {
                         const monthPayment = f.payments?.[0]
-                        return sum + (monthPayment?.amountPaid || 0)
-                    }, 0)
+                        if (monthPayment) {
+                            totalRevenue += monthPayment.totalDue || 0
+                            collectedRevenue += monthPayment.amountPaid || 0
+                        } else if (f.status === 'OCCUPIED') {
+                            // Fallback if no payment generated yet but occupied
+                            totalRevenue += (f.rentAmount || 0) + (f.maintenanceAmount || 0)
+                        }
+                    }
 
                     return (
                         <BuildingCard
