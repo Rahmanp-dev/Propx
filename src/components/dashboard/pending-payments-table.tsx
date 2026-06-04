@@ -55,7 +55,7 @@ export function PendingPaymentsTable({ payments, userId }: PendingPaymentsTableP
                                 {new Date(payment.month).toLocaleDateString('default', { month: 'short', year: 'numeric' })}
                             </TableCell>
                             <TableCell className="text-red-600 font-bold">
-                                ₹{payment.balance.toLocaleString()}
+                                ₹{payment.balance.toLocaleString('en-IN')}
                             </TableCell>
                             <TableCell>
                                 <Badge variant="destructive">

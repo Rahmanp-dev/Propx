@@ -139,36 +139,36 @@ export default async function ReceiptsPage({ params, searchParams }: { params: P
                                             <tbody className="divide-y divide-gray-50">
                                                 <tr>
                                                     <td className="py-1 px-1.5">Rent</td>
-                                                    <td className="py-1 px-1.5 text-right">₹{payment.rentDue.toLocaleString()}</td>
+                                                    <td className="py-1 px-1.5 text-right">₹{payment.rentDue.toLocaleString('en-IN')}</td>
                                                 </tr>
                                                 {(payment.maintenanceDue || 0) > 0 && (
                                                     <tr>
                                                         <td className="py-1 px-1.5">Maint.</td>
-                                                        <td className="py-1 px-1.5 text-right">₹{payment.maintenanceDue.toLocaleString()}</td>
+                                                        <td className="py-1 px-1.5 text-right">₹{payment.maintenanceDue.toLocaleString('en-IN')}</td>
                                                     </tr>
                                                 )}
                                                 {(payment.electricityDue || 0) > 0 && (
                                                     <tr>
                                                         <td className="py-1 px-1.5">Elec.</td>
-                                                        <td className="py-1 px-1.5 text-right">₹{payment.electricityDue.toLocaleString()}</td>
+                                                        <td className="py-1 px-1.5 text-right">₹{payment.electricityDue.toLocaleString('en-IN')}</td>
                                                     </tr>
                                                 )}
                                                 {(payment.customDues || 0) > 0 && (
                                                     <tr>
                                                         <td className="py-1 px-1.5">Other</td>
-                                                        <td className="py-1 px-1.5 text-right">₹{payment.customDues.toLocaleString()}</td>
+                                                        <td className="py-1 px-1.5 text-right">₹{payment.customDues.toLocaleString('en-IN')}</td>
                                                     </tr>
                                                 )}
                                             </tbody>
                                             <tfoot className="bg-gray-50 font-medium border-t border-gray-100">
                                                 <tr>
                                                     <td className="py-1 px-1.5 text-[8px] text-green-700">Paid</td>
-                                                    <td className="py-1 px-1.5 text-right text-[8px] text-green-700">₹{payment.amountPaid.toLocaleString()}</td>
+                                                    <td className="py-1 px-1.5 text-right text-[8px] text-green-700">₹{payment.amountPaid.toLocaleString('en-IN')}</td>
                                                 </tr>
                                                 {payment.balance > 0 && (
                                                     <tr>
                                                         <td className="py-1 px-1.5 text-[9px] text-amber-600 font-bold">Pending</td>
-                                                        <td className="py-1 px-1.5 text-right text-[9px] text-amber-600 font-bold">₹{payment.balance.toLocaleString()}</td>
+                                                        <td className="py-1 px-1.5 text-right text-[9px] text-amber-600 font-bold">₹{payment.balance.toLocaleString('en-IN')}</td>
                                                     </tr>
                                                 )}
                                             </tfoot>

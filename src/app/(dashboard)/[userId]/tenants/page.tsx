@@ -63,7 +63,7 @@ export default async function TenantsPage() {
                                         <div className="flex justify-between items-center bg-muted/50 p-2 rounded-md mb-2">
                                             <span className="font-medium">Current Balance</span>
                                             <span className={`font-bold ${tenant.currentBalance > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                                ₹{tenant.currentBalance?.toLocaleString() || 0}
+                                                ₹{tenant.currentBalance?.toLocaleString('en-IN') || 0}
                                             </span>
                                         </div>
                                         <div className="flex justify-between">

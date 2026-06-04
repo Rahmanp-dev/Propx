@@ -99,15 +99,15 @@ export default async function BuildingPage({ params }: { params: Promise<{ id: s
                     <div className="grid grid-cols-3 gap-4 text-center">
                         <div className="p-3 bg-blue-50 rounded-lg">
                             <div className="text-xs text-muted-foreground">1 BHK</div>
-                            <div className="text-lg font-bold">₹{defaultRents.BHK1.toLocaleString()}</div>
+                            <div className="text-lg font-bold">₹{defaultRents.BHK1.toLocaleString('en-IN')}</div>
                         </div>
                         <div className="p-3 bg-violet-50 rounded-lg">
                             <div className="text-xs text-muted-foreground">2 BHK</div>
-                            <div className="text-lg font-bold">₹{defaultRents.BHK2.toLocaleString()}</div>
+                            <div className="text-lg font-bold">₹{defaultRents.BHK2.toLocaleString('en-IN')}</div>
                         </div>
                         <div className="p-3 bg-emerald-50 rounded-lg">
                             <div className="text-xs text-muted-foreground">3 BHK</div>
-                            <div className="text-lg font-bold">₹{defaultRents.BHK3.toLocaleString()}</div>
+                            <div className="text-lg font-bold">₹{defaultRents.BHK3.toLocaleString('en-IN')}</div>
                         </div>
                     </div>
                 </CardContent>

@@ -145,40 +145,57 @@ export async function bulkRecordMeterReadings(readings: any[]) {
                     if (flat) {
                         const rate = flat.building.ratePerUnit || 10
                         const electricityDue = unitsConsumed * rate
-                        const monthDate = new Date(r.year, r.month - 1, 1)
+                        const monthStr = r.month.toString().padStart(2, '0')
+                        const startDate = new Date(`${r.year}-${monthStr}-01T00:00:00.000Z`)
+                        startDate.setHours(startDate.getHours() - 12)
+                        
+                        const endDate = new Date(startDate)
+                        endDate.setMonth(endDate.getMonth() + 1)
 
-                        // Atomic Pipeline Update for Race Condition prevention
-                        await db.collection("Payment").updateOne(
-                            { flatId: new ObjectId(r.flatId), month: monthDate },
-                            [
-                                {
-                                    $set: {
-                                        electricityDue: electricityDue,
-                                        totalDue: { $add: [{ $ifNull: ["$rentDue", 0] }, { $ifNull: ["$maintenanceDue", 0] }, electricityDue, { $ifNull: ["$customDues", 0] }, { $ifNull: ["$arrears", 0] }] },
-                                        updatedAt: new Date()
-                                    }
-                                },
-                                {
-                                    $set: {
-                                        balance: { $max: [0, { $subtract: ["$totalDue", { $ifNull: ["$amountPaid", 0] }] }] }
-                                    }
-                                },
-                                {
-                                    $set: {
-                                        status: {
-                                            $cond: {
-                                                if: { $lte: ["$balance", 0] }, then: "PAID",
-                                                else: {
-                                                    $cond: {
-                                                        if: { $gt: [{ $ifNull: ["$amountPaid", 0] }, 0] }, then: "PARTIAL", else: "PENDING"
+                        const targetPayment = await prisma.payment.findFirst({
+                            where: {
+                                flatId: r.flatId,
+                                month: {
+                                    gte: startDate,
+                                    lt: endDate
+                                }
+                            }
+                        })
+
+                        if (targetPayment) {
+                            // Atomic Pipeline Update for Race Condition prevention
+                            await db.collection("Payment").updateOne(
+                                { _id: new ObjectId(targetPayment.id) },
+                                [
+                                    {
+                                        $set: {
+                                            electricityDue: electricityDue,
+                                            totalDue: { $add: [{ $ifNull: ["$rentDue", 0] }, { $ifNull: ["$maintenanceDue", 0] }, electricityDue, { $ifNull: ["$customDues", 0] }, { $ifNull: ["$arrears", 0] }] },
+                                            updatedAt: new Date()
+                                        }
+                                    },
+                                    {
+                                        $set: {
+                                            balance: { $max: [0, { $subtract: ["$totalDue", { $ifNull: ["$amountPaid", 0] }] }] }
+                                        }
+                                    },
+                                    {
+                                        $set: {
+                                            status: {
+                                                $cond: {
+                                                    if: { $lte: ["$balance", 0] }, then: "PAID",
+                                                    else: {
+                                                        $cond: {
+                                                            if: { $gt: [{ $ifNull: ["$amountPaid", 0] }, 0] }, then: "PARTIAL", else: "PENDING"
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
                                     }
-                                }
-                            ]
-                        )
+                                ]
+                            )
+                        }
                     }
                 }
             }

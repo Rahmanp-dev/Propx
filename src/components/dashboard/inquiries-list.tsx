@@ -280,7 +280,7 @@ export function InquiriesList({ inquiries }: { inquiries: InquiryItem[] }) {
                                 {inq.budget != null && inq.budget > 0 && (
                                     <div className="flex items-center gap-1.5">
                                         <IndianRupee className="h-3 w-3 shrink-0" />
-                                        <span>₹{inq.budget.toLocaleString()}/month</span>
+                                        <span>₹{inq.budget.toLocaleString('en-IN')}/month</span>
                                     </div>
                                 )}
                                 <div className="flex items-center gap-1.5">

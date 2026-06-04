@@ -40,9 +40,9 @@ export function PrintLedgerButton({ masterData, currentMonth, totalExpected, tot
         
         // Summary
         doc.setFontSize(10)
-        doc.text(`Total Expected: Rs. ${totalExpected.toLocaleString()}`, 14, 42)
-        doc.text(`Total Collected: Rs. ${totalCollected.toLocaleString()}`, 100, 42)
-        doc.text(`Total Pending: Rs. ${totalPending.toLocaleString()}`, 180, 42)
+        doc.text(`Total Expected: Rs. ${totalExpected.toLocaleString('en-IN')}`, 14, 42)
+        doc.text(`Total Collected: Rs. ${totalCollected.toLocaleString('en-IN')}`, 100, 42)
+        doc.text(`Total Pending: Rs. ${totalPending.toLocaleString('en-IN')}`, 180, 42)
 
         // Table
         const tableData = masterData.map(p => {
@@ -57,13 +57,13 @@ export function PrintLedgerButton({ masterData, currentMonth, totalExpected, tot
             return [
                 flatDisplay,
                 p.tenant.fullName,
-                `Rs. ${p.rentDue?.toLocaleString() || 0}`,
-                `Rs. ${p.maintenanceDue?.toLocaleString() || 0}`,
-                `Rs. ${p.electricityDue?.toLocaleString() || 0}`,
+                `Rs. ${p.rentDue?.toLocaleString('en-IN') || 0}`,
+                `Rs. ${p.maintenanceDue?.toLocaleString('en-IN') || 0}`,
+                `Rs. ${p.electricityDue?.toLocaleString('en-IN') || 0}`,
                 elecReading,
-                `Rs. ${p.arrears?.toLocaleString() || 0}`,
-                p.amountPaid > 0 ? `Rs. ${p.amountPaid.toLocaleString()}` : '-',
-                p.balance > 0 ? `Rs. ${p.balance.toLocaleString()}` : '-',
+                `Rs. ${p.arrears?.toLocaleString('en-IN') || 0}`,
+                p.amountPaid > 0 ? `Rs. ${p.amountPaid.toLocaleString('en-IN')}` : '-',
+                p.balance > 0 ? `Rs. ${p.balance.toLocaleString('en-IN')}` : '-',
                 p.status
             ]
         })

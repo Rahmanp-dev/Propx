@@ -61,7 +61,7 @@ export default async function DashboardPage() {
                         <TrendingUp className="h-4 w-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">₹{revenue.expected.toLocaleString()}</div>
+                        <div className="text-2xl font-bold">₹{revenue.expected.toLocaleString('en-IN')}</div>
                         <p className="text-xs text-muted-foreground">Current Month</p>
                     </CardContent>
                 </Card>
@@ -72,7 +72,7 @@ export default async function DashboardPage() {
                         <Wallet className="h-4 w-4 text-blue-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">₹{revenue.collected.toLocaleString()}</div>
+                        <div className="text-2xl font-bold">₹{revenue.collected.toLocaleString('en-IN')}</div>
                         <div className="flex items-center gap-2 mt-1">
                             <div className="h-2 flex-1 bg-gray-100 rounded-full overflow-hidden">
                                 <div
@@ -91,7 +91,7 @@ export default async function DashboardPage() {
                         <BarChart3 className="h-4 w-4 text-red-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-red-600">₹{revenue.outstanding.toLocaleString()}</div>
+                        <div className="text-2xl font-bold text-red-600">₹{revenue.outstanding.toLocaleString('en-IN')}</div>
                         <p className="text-xs text-muted-foreground">Pending collection</p>
                     </CardContent>
                 </Card>

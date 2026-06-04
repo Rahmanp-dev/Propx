@@ -73,7 +73,7 @@ export function FinanceCharts({ data }: { data: FinanceData }) {
                         <TrendingUp className="h-4 w-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-emerald-700">₹{data.totalRevenue.toLocaleString()}</div>
+                        <div className="text-2xl font-bold text-emerald-700">₹{data.totalRevenue.toLocaleString('en-IN')}</div>
                         <p className="text-xs text-muted-foreground mt-1">All-time collections</p>
                     </CardContent>
                 </Card>
@@ -83,7 +83,7 @@ export function FinanceCharts({ data }: { data: FinanceData }) {
                         <AlertTriangle className="h-4 w-4 text-red-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-red-600">₹{data.totalOutstanding.toLocaleString()}</div>
+                        <div className="text-2xl font-bold text-red-600">₹{data.totalOutstanding.toLocaleString('en-IN')}</div>
                         <p className="text-xs text-muted-foreground mt-1">Needs collection</p>
                     </CardContent>
                 </Card>
@@ -93,7 +93,7 @@ export function FinanceCharts({ data }: { data: FinanceData }) {
                         <Wallet className="h-4 w-4 text-blue-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">₹{data.currentMonth.collected.toLocaleString()}</div>
+                        <div className="text-2xl font-bold">₹{data.currentMonth.collected.toLocaleString('en-IN')}</div>
                         <div className="flex items-center gap-2 mt-1">
                             <div className="h-2 flex-1 bg-gray-100 rounded-full overflow-hidden">
                                 <div
@@ -103,7 +103,7 @@ export function FinanceCharts({ data }: { data: FinanceData }) {
                             </div>
                             <span className="text-xs font-medium">{data.currentMonth.collectionRate}%</span>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">of ₹{data.currentMonth.expected.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground mt-1">of ₹{data.currentMonth.expected.toLocaleString('en-IN')}</p>
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-violet-500">
@@ -127,7 +127,7 @@ export function FinanceCharts({ data }: { data: FinanceData }) {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-xl font-bold">₹{data.breakdownTotals.rent.toLocaleString()}</div>
+                        <div className="text-xl font-bold">₹{data.breakdownTotals.rent.toLocaleString('en-IN')}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -137,7 +137,7 @@ export function FinanceCharts({ data }: { data: FinanceData }) {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-xl font-bold">₹{data.breakdownTotals.maintenance.toLocaleString()}</div>
+                        <div className="text-xl font-bold">₹{data.breakdownTotals.maintenance.toLocaleString('en-IN')}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -147,7 +147,7 @@ export function FinanceCharts({ data }: { data: FinanceData }) {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-xl font-bold">₹{data.breakdownTotals.electricity.toLocaleString()}</div>
+                        <div className="text-xl font-bold">₹{data.breakdownTotals.electricity.toLocaleString('en-IN')}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -165,7 +165,7 @@ export function FinanceCharts({ data }: { data: FinanceData }) {
                                 <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                                 <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false}
                                     tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`} />
-                                <Tooltip formatter={(value) => `₹${Number(value).toLocaleString()}`} />
+                                <Tooltip formatter={(value) => `₹${Number(value).toLocaleString('en-IN')}`} />
                                 <Legend />
                                 <Bar dataKey="expected" fill="#e2e8f0" name="Expected" radius={[4, 4, 0, 0]} />
                                 <Bar dataKey="collected" fill="#22c55e" name="Collected" radius={[4, 4, 0, 0]} />
@@ -221,7 +221,7 @@ export function FinanceCharts({ data }: { data: FinanceData }) {
                                     </div>
                                     <div className="w-16 text-right text-sm font-bold">{b.collectionRate}%</div>
                                     <div className="w-32 text-right text-sm text-muted-foreground">
-                                        ₹{b.totalCollected.toLocaleString()} / ₹{b.totalDue.toLocaleString()}
+                                        ₹{b.totalCollected.toLocaleString('en-IN')} / ₹{b.totalDue.toLocaleString('en-IN')}
                                     </div>
                                     <div className="flex gap-1">
                                         <Badge variant="outline" className="text-green-600 text-xs">{b.paidCount} paid</Badge>
@@ -256,7 +256,7 @@ export function FinanceCharts({ data }: { data: FinanceData }) {
                                         <Badge variant={tx.status === "PAID" ? "default" : tx.status === "PARTIAL" ? "secondary" : "destructive"} className="text-xs">
                                             {tx.status}
                                         </Badge>
-                                        <div className="font-bold text-green-600">+₹{tx.amountPaid.toLocaleString()}</div>
+                                        <div className="font-bold text-green-600">+₹{tx.amountPaid.toLocaleString('en-IN')}</div>
                                     </div>
                                 </div>
                             ))

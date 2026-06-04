@@ -117,12 +117,12 @@ export default async function LedgerPage({ params, searchParams }: { params: Pro
                                                         <TableCell className="text-xs">
                                                             {payment.tenant.fullName}
                                                         </TableCell>
-                                                        <TableCell className="text-right">₹{payment.totalDue.toLocaleString()}</TableCell>
+                                                        <TableCell className="text-right">₹{payment.totalDue.toLocaleString('en-IN')}</TableCell>
                                                         <TableCell className="text-right text-green-600">
-                                                            {payment.amountPaid > 0 ? `₹${payment.amountPaid.toLocaleString()}` : '-'}
+                                                            {payment.amountPaid > 0 ? `₹${payment.amountPaid.toLocaleString('en-IN')}` : '-'}
                                                         </TableCell>
                                                         <TableCell className="text-right text-red-600">
-                                                            {payment.balance > 0 ? `₹${payment.balance.toLocaleString()}` : '-'}
+                                                            {payment.balance > 0 ? `₹${payment.balance.toLocaleString('en-IN')}` : '-'}
                                                         </TableCell>
                                                         <TableCell>
                                                             <Badge variant={payment.status === "PAID" ? "default" : (payment.status === "PARTIAL" ? "secondary" : "destructive")}>
@@ -200,15 +200,15 @@ export default async function LedgerPage({ params, searchParams }: { params: Pro
                             <div className="grid grid-cols-3 gap-4 mb-6">
                                 <div className="p-4 border rounded-xl bg-gray-50/50">
                                     <p className="text-sm font-medium text-gray-500">Total Expected</p>
-                                    <p className="text-2xl font-bold">₹{totalExpected.toLocaleString()}</p>
+                                    <p className="text-2xl font-bold">₹{totalExpected.toLocaleString('en-IN')}</p>
                                 </div>
                                 <div className="p-4 border rounded-xl bg-green-50/50">
                                     <p className="text-sm font-medium text-green-600">Total Collected</p>
-                                    <p className="text-2xl font-bold text-green-700">₹{totalCollected.toLocaleString()}</p>
+                                    <p className="text-2xl font-bold text-green-700">₹{totalCollected.toLocaleString('en-IN')}</p>
                                 </div>
                                 <div className="p-4 border rounded-xl bg-red-50/50">
                                     <p className="text-sm font-medium text-red-600">Total Pending</p>
-                                    <p className="text-2xl font-bold text-red-700">₹{totalPending.toLocaleString()}</p>
+                                    <p className="text-2xl font-bold text-red-700">₹{totalPending.toLocaleString('en-IN')}</p>
                                 </div>
                             </div>
 
@@ -219,7 +219,11 @@ export default async function LedgerPage({ params, searchParams }: { params: Pro
                                             <TableHead>Building</TableHead>
                                             <TableHead>Flat</TableHead>
                                             <TableHead>Tenant</TableHead>
-                                            <TableHead className="text-right">Expected</TableHead>
+                                            <TableHead className="text-right">Rent</TableHead>
+                                            <TableHead className="text-right">Maint.</TableHead>
+                                            <TableHead className="text-right">Elec. Amt</TableHead>
+                                            <TableHead className="text-right">Elec. Reading</TableHead>
+                                            <TableHead className="text-right">Arrears</TableHead>
                                             <TableHead className="text-right">Collected</TableHead>
                                             <TableHead className="text-right">Balance</TableHead>
                                             <TableHead>Status</TableHead>
@@ -231,12 +235,16 @@ export default async function LedgerPage({ params, searchParams }: { params: Pro
                                                 <TableCell className="font-medium">{payment.flat.building.name}</TableCell>
                                                 <TableCell>Flat {payment.flat.flatNumber}</TableCell>
                                                 <TableCell>{payment.tenant.fullName}</TableCell>
-                                                <TableCell className="text-right">₹{payment.totalDue.toLocaleString()}</TableCell>
+                                                <TableCell className="text-right">₹{(payment.rentDue || 0).toLocaleString('en-IN')}</TableCell>
+                                                <TableCell className="text-right">₹{(payment.maintenanceDue || 0).toLocaleString('en-IN')}</TableCell>
+                                                <TableCell className="text-right">₹{(payment.electricityDue || 0).toLocaleString('en-IN')}</TableCell>
+                                                <TableCell className="text-right">{payment.flat.meterReadings?.[0]?.reading || '-'}</TableCell>
+                                                <TableCell className="text-right">₹{(payment.arrears || 0).toLocaleString('en-IN')}</TableCell>
                                                 <TableCell className="text-right text-green-600">
-                                                    {payment.amountPaid > 0 ? `₹${payment.amountPaid.toLocaleString()}` : '-'}
+                                                    {payment.amountPaid > 0 ? `₹${payment.amountPaid.toLocaleString('en-IN')}` : '-'}
                                                 </TableCell>
                                                 <TableCell className="text-right text-red-600">
-                                                    {payment.balance > 0 ? `₹${payment.balance.toLocaleString()}` : '-'}
+                                                    {payment.balance > 0 ? `₹${payment.balance.toLocaleString('en-IN')}` : '-'}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Badge variant={payment.status === "PAID" ? "default" : (payment.status === "PARTIAL" ? "secondary" : "destructive")}>

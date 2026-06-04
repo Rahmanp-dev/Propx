@@ -155,7 +155,7 @@ export default function ElectricityPage() {
                                             </td>
                                             <td className="p-4 align-middle text-right">
                                                 <span className={`font-semibold ${flat.pendingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                                    ₹{flat.pendingAmount?.toLocaleString() || '0'}
+                                                    ₹{flat.pendingAmount?.toLocaleString('en-IN') || '0'}
                                                 </span>
                                             </td>
                                             <td className="p-4 align-middle text-right">

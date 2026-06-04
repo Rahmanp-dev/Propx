@@ -112,7 +112,7 @@ export async function logPayment(data: LogPaymentInput) {
                 organizationId: new ObjectId(payment.flat.building.organizationId),
                 type: "PAYMENT_RECEIVED",
                 title: "Payment Received",
-                message: `Received ₹${amount.toLocaleString()} via ${method} for Flat ${payment.flat.flatNumber}.`,
+                message: `Received ₹${amount.toLocaleString('en-IN')} via ${method} for Flat ${payment.flat.flatNumber}.`,
                 isRead: false,
                 data: JSON.stringify({ paymentId, amount, method }),
                 createdAt: new Date(),
@@ -121,7 +121,7 @@ export async function logPayment(data: LogPaymentInput) {
             // Fire and forget push notification
             sendPushToOrganization(payment.flat.building.organizationId, {
                 title: "Payment Received",
-                message: `Received ₹${amount.toLocaleString()} via ${method} for Flat ${payment.flat.flatNumber}.`,
+                message: `Received ₹${amount.toLocaleString('en-IN')} via ${method} for Flat ${payment.flat.flatNumber}.`,
                 url: `/finance`
             }).catch(console.error)
         }

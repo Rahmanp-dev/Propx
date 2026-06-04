@@ -56,12 +56,12 @@ export default async function TenantDashboardPage() {
                                 <div>
                                     <p className="text-xs text-muted-foreground">Balance Due</p>
                                     <p className={`text-2xl font-bold ${currentPayment.balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                        ₹{currentPayment.balance.toLocaleString()}
+                                        ₹{currentPayment.balance.toLocaleString('en-IN')}
                                     </p>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-xs text-muted-foreground">Total Due</p>
-                                    <p className="text-sm font-medium">₹{currentPayment.totalDue.toLocaleString()}</p>
+                                    <p className="text-sm font-medium">₹{currentPayment.totalDue.toLocaleString('en-IN')}</p>
                                 </div>
                             </div>
                             {currentPayment.balance > 0 && (

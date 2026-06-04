@@ -239,14 +239,14 @@ export default function PackagesPage() {
                 <div className="flex-1 flex flex-col justify-between mt-4 space-y-6">
                   <div className="space-y-1">
                     <div className="flex items-baseline">
-                      <span className="text-4xl font-extrabold">₹{price.toLocaleString()}</span>
+                      <span className="text-4xl font-extrabold">₹{price.toLocaleString('en-IN')}</span>
                       <span className="text-slate-400 text-sm ml-2">
                         /{billingCycle === "MONTHLY" ? "month" : "year"}
                       </span>
                     </div>
                     {billingCycle === "ANNUAL" && (
                       <p className="text-xs text-emerald-400 font-medium">
-                        Equivalent to ₹{monthlyEquivalent.toLocaleString()}/month
+                        Equivalent to ₹{monthlyEquivalent.toLocaleString('en-IN')}/month
                       </p>
                     )}
                   </div>

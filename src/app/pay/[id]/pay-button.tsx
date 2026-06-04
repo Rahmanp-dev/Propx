@@ -35,7 +35,7 @@ export function PayButton({ paymentId, amount }: { paymentId: string; amount: nu
             ) : (
                 <IndianRupee className="mr-2 h-5 w-5" />
             )}
-            Pay ₹{amount.toLocaleString()} Now
+            Pay ₹{amount.toLocaleString('en-IN')} Now
         </Button>
     )
 }

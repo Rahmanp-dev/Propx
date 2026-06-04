@@ -125,11 +125,11 @@ export default async function FlatPage({ params }: { params: Promise<{ id: strin
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <span className="text-sm text-muted-foreground">Rent</span>
-                                    <div className="text-xl font-bold">₹{flat.rentAmount.toLocaleString()}</div>
+                                    <div className="text-xl font-bold">₹{flat.rentAmount.toLocaleString('en-IN')}</div>
                                 </div>
                                 <div>
                                     <span className="text-sm text-muted-foreground">Maintenance</span>
-                                    <div className="text-xl font-bold">₹{flat.maintenanceAmount.toLocaleString()}</div>
+                                    <div className="text-xl font-bold">₹{flat.maintenanceAmount.toLocaleString('en-IN')}</div>
                                 </div>
                             </div>
 
@@ -138,35 +138,35 @@ export default async function FlatPage({ params }: { params: Promise<{ id: strin
                                     <div className="font-medium text-muted-foreground mb-2">Current Bill Breakdown</div>
                                     <div className="flex justify-between">
                                         <span>Rent</span>
-                                        <span>₹{currentPayment.rentDue.toLocaleString()}</span>
+                                        <span>₹{currentPayment.rentDue.toLocaleString('en-IN')}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span>Maintenance</span>
-                                        <span>₹{currentPayment.maintenanceDue.toLocaleString()}</span>
+                                        <span>₹{currentPayment.maintenanceDue.toLocaleString('en-IN')}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="flex items-center gap-1"><Zap className="h-3 w-3" /> Electricity</span>
-                                        <span>₹{(currentPayment.electricityDue || 0).toLocaleString()}</span>
+                                        <span>₹{(currentPayment.electricityDue || 0).toLocaleString('en-IN')}</span>
                                     </div>
                                     <div className="flex justify-between text-red-600">
                                         <span>Arrears</span>
-                                        <span>₹{((currentPayment as any).arrears || 0).toLocaleString()}</span>
+                                        <span>₹{((currentPayment as any).arrears || 0).toLocaleString('en-IN')}</span>
                                     </div>
                                     {(currentPayment.customDues || 0) > 0 && (
                                         <div className="flex justify-between text-amber-600">
                                             <span>Custom Dues</span>
-                                            <span>₹{currentPayment.customDues.toLocaleString()}</span>
+                                            <span>₹{currentPayment.customDues.toLocaleString('en-IN')}</span>
                                         </div>
                                     )}
                                     <Separator className="my-1" />
                                     <div className="flex justify-between font-bold">
                                         <span>Total Due</span>
-                                        <span>₹{currentPayment.totalDue.toLocaleString()}</span>
+                                        <span>₹{currentPayment.totalDue.toLocaleString('en-IN')}</span>
                                     </div>
                                     {currentPayment.amountPaid > 0 && (
                                         <div className="flex justify-between text-green-600 font-medium">
                                             <span>Paid</span>
-                                            <span>₹{currentPayment.amountPaid.toLocaleString()}</span>
+                                            <span>₹{currentPayment.amountPaid.toLocaleString('en-IN')}</span>
                                         </div>
                                     )}
                                 </div>
@@ -181,7 +181,7 @@ export default async function FlatPage({ params }: { params: Promise<{ id: strin
                                             currentPayment.status === "PAID" ? (
                                                 <Badge className="bg-green-600">Paid - No Dues</Badge>
                                             ) : (
-                                                <Badge variant="destructive">Due: ₹{currentPayment.balance.toLocaleString()}</Badge>
+                                                <Badge variant="destructive">Due: ₹{currentPayment.balance.toLocaleString('en-IN')}</Badge>
                                             )
                                         ) : (
                                             <span className="text-sm text-gray-500">No dues generated</span>

@@ -522,7 +522,7 @@ export default function RegisterPage() {
                           <p className="text-xs text-indigo-200/50 mt-0.5 leading-snug">{plan.description}</p>
                         </div>
                         <div className="text-right">
-                          <span className="text-lg font-extrabold text-white">₹{price.toLocaleString()}</span>
+                          <span className="text-lg font-extrabold text-white">₹{price.toLocaleString('en-IN')}</span>
                           <p className="text-[10px] text-indigo-300/40">/{billingCycle === 'MONTHLY' ? 'mo' : 'yr'}</p>
                         </div>
                       </div>
@@ -565,7 +565,7 @@ export default function RegisterPage() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-white">₹{amount.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-white">₹{amount.toLocaleString('en-IN')}</p>
                   </div>
                 </div>
 
@@ -584,7 +584,7 @@ export default function RegisterPage() {
                       </button>
                     </div>
                     <p className="text-xs text-indigo-200/50 leading-relaxed">
-                      Send exactly <strong className="text-indigo-300">₹{amount.toLocaleString()}</strong> to the UPI ID above using any UPI app (GPay, PhonePe, Paytm), and take a screenshot of the successful transaction.
+                      Send exactly <strong className="text-indigo-300">₹{amount.toLocaleString('en-IN')}</strong> to the UPI ID above using any UPI app (GPay, PhonePe, Paytm), and take a screenshot of the successful transaction.
                     </p>
                   </div>
                 </div>
@@ -596,7 +596,7 @@ export default function RegisterPage() {
                     className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-semibold shadow-lg shadow-emerald-500/25 transition-all text-sm"
                   >
                     <CreditCard className="h-4 w-4" />
-                    Pay ₹{amount.toLocaleString()} via UPI App
+                    Pay ₹{amount.toLocaleString('en-IN')} via UPI App
                   </a>
                 </div>
 

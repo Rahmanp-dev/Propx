@@ -50,16 +50,16 @@ export default async function TenantPaymentsPage() {
                                     <div className="grid grid-cols-3 gap-2 text-center">
                                         <div>
                                             <p className="text-[10px] text-muted-foreground uppercase">Due</p>
-                                            <p className="text-sm font-semibold">₹{p.totalDue.toLocaleString()}</p>
+                                            <p className="text-sm font-semibold">₹{p.totalDue.toLocaleString('en-IN')}</p>
                                         </div>
                                         <div>
                                             <p className="text-[10px] text-muted-foreground uppercase">Paid</p>
-                                            <p className="text-sm font-semibold text-green-600">₹{p.amountPaid.toLocaleString()}</p>
+                                            <p className="text-sm font-semibold text-green-600">₹{p.amountPaid.toLocaleString('en-IN')}</p>
                                         </div>
                                         <div>
                                             <p className="text-[10px] text-muted-foreground uppercase">Balance</p>
                                             <p className={`text-sm font-semibold ${p.balance > 0 ? 'text-red-600' : 'text-gray-400'}`}>
-                                                ₹{p.balance.toLocaleString()}
+                                                ₹{p.balance.toLocaleString('en-IN')}
                                             </p>
                                         </div>
                                     </div>
@@ -69,7 +69,7 @@ export default async function TenantPaymentsPage() {
                                             className="mt-3 flex items-center justify-center gap-1.5 w-full py-2 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition"
                                         >
                                             <IndianRupee className="h-3.5 w-3.5" />
-                                            Pay ₹{p.balance.toLocaleString()}
+                                            Pay ₹{p.balance.toLocaleString('en-IN')}
                                         </Link>
                                     )}
                                     {p.receiptNumber && (

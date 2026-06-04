@@ -43,9 +43,9 @@ export function BuildingCard({ building, userId }: { building: BuildingStats; us
                         </div>
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">Revenue</p>
-                            <div className="text-2xl font-bold">₹{building.collectedRevenue.toLocaleString()}</div>
+                            <div className="text-2xl font-bold">₹{building.collectedRevenue.toLocaleString('en-IN')}</div>
                             <p className="text-xs text-muted-foreground mt-1">
-                                of ₹{building.totalRevenue.toLocaleString()}
+                                of ₹{building.totalRevenue.toLocaleString('en-IN')}
                             </p>
                         </div>
                     </div>
@@ -53,7 +53,7 @@ export function BuildingCard({ building, userId }: { building: BuildingStats; us
                     {outstanding > 0 && (
                         <div className="flex items-center text-red-500 bg-red-50 p-2 rounded-md">
                             <AlertTriangle className="h-4 w-4 mr-2" />
-                            <span className="text-sm font-bold">₹{outstanding.toLocaleString()} Pending</span>
+                            <span className="text-sm font-bold">₹{outstanding.toLocaleString('en-IN')} Pending</span>
                         </div>
                     )}
                     {outstanding === 0 && (
