@@ -46,12 +46,12 @@ export default async function BuildingPage({ params }: { params: Promise<{ id: s
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">{building.name}</h1>
-                    <p className="text-muted-foreground">{building.address}</p>
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{building.name}</h1>
+                    <p className="text-sm md:text-base text-muted-foreground">{building.address}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     <UpdateBuildingDialog
                         buildingId={id}
                         currentRate={bld.ratePerUnit || 10}
