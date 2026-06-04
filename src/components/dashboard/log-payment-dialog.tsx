@@ -50,6 +50,7 @@ export function LogPaymentDialog({ payment, asIcon }: LogPaymentDialogProps) {
     const [method, setMethod] = useState("CASH")
     const [upiReference, setUpiReference] = useState("")
     const [notes, setNotes] = useState("")
+    const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0])
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault()
@@ -62,7 +63,8 @@ export function LogPaymentDialog({ payment, asIcon }: LogPaymentDialogProps) {
                 amount: Number(amount),
                 method: method as any,
                 ...(method === "UPI" && upiReference ? { upiReference } : {}),
-                ...(notes.trim() ? { notes: notes.trim() } : {})
+                ...(notes.trim() ? { notes: notes.trim() } : {}),
+                paymentDate: paymentDate
             })
 
             setLoading(false)
@@ -112,6 +114,16 @@ export function LogPaymentDialog({ payment, asIcon }: LogPaymentDialogProps) {
                             type="number"
                             value={amount}
                             onChange={(e) => setAmount(Number(e.target.value))}
+                        />
+                    </div>
+
+                    <div className="grid w-full items-center gap-1.5">
+                        <Label htmlFor="paymentDate">Collection Date</Label>
+                        <Input
+                            id="paymentDate"
+                            type="date"
+                            value={paymentDate}
+                            onChange={(e) => setPaymentDate(e.target.value)}
                         />
                     </div>
 

@@ -227,6 +227,7 @@ export default async function LedgerPage({ params, searchParams }: { params: Pro
                                             <TableHead className="text-right">Collected</TableHead>
                                             <TableHead className="text-right">Balance</TableHead>
                                             <TableHead>Status</TableHead>
+                                            <TableHead>Date & Method</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -250,6 +251,15 @@ export default async function LedgerPage({ params, searchParams }: { params: Pro
                                                     <Badge variant={payment.status === "PAID" ? "default" : (payment.status === "PARTIAL" ? "secondary" : "destructive")}>
                                                         {payment.status}
                                                     </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-xs">
+                                                    {payment.paymentDate ? (
+                                                        <>
+                                                            {format(new Date(payment.paymentDate), "dd MMM yy")}
+                                                            <br />
+                                                            <span className="text-muted-foreground">{payment.paymentMethod}</span>
+                                                        </>
+                                                    ) : '-'}
                                                 </TableCell>
                                             </TableRow>
                                         ))}

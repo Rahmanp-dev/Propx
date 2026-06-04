@@ -32,6 +32,7 @@ export function PaymentHistoryList({ payments }: PaymentHistoryListProps) {
                         <TableHead>Month</TableHead>
                         <TableHead>Total Due</TableHead>
                         <TableHead>Paid</TableHead>
+                        <TableHead>Collection Date</TableHead>
                         <TableHead>Method</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Action</TableHead>
@@ -46,6 +47,9 @@ export function PaymentHistoryList({ payments }: PaymentHistoryListProps) {
                             <TableCell>₹{payment.totalDue.toLocaleString('en-IN')}</TableCell>
                             <TableCell className="text-green-600">
                                 {payment.amountPaid > 0 ? `₹${payment.amountPaid.toLocaleString('en-IN')}` : '-'}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground text-sm">
+                                {payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString() : '-'}
                             </TableCell>
                             <TableCell>
                                 {payment.paymentMethod ? (
