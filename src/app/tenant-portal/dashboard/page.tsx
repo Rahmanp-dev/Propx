@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import { TenantNav } from "../tenant-nav"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Building2, IndianRupee, Wrench, Calendar, ChevronRight } from "lucide-react"
+import { Building2, IndianRupee, Wrench, Calendar, ChevronRight, Zap } from "lucide-react"
 import Link from "next/link"
 
 export const dynamic = 'force-dynamic'
@@ -52,7 +52,7 @@ export default async function TenantDashboardPage() {
                                     {currentPayment.status}
                                 </Badge>
                             </div>
-                            <div className="flex items-end justify-between">
+                            <div className="flex items-end justify-between mb-4">
                                 <div>
                                     <p className="text-xs text-muted-foreground">Balance Due</p>
                                     <p className={`text-2xl font-bold ${currentPayment.balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
@@ -60,9 +60,41 @@ export default async function TenantDashboardPage() {
                                     </p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-xs text-muted-foreground">Total Due</p>
+                                    <p className="text-xs text-muted-foreground">Total Billed</p>
                                     <p className="text-sm font-medium">₹{currentPayment.totalDue.toLocaleString('en-IN')}</p>
                                 </div>
+                            </div>
+
+                            {/* Itemized Breakdown */}
+                            <div className="bg-white/50 rounded-lg p-3 space-y-2 text-sm mb-2 border border-gray-100">
+                                <div className="flex justify-between text-muted-foreground">
+                                    <span>Rent</span>
+                                    <span className="font-medium text-gray-900">₹{currentPayment.rentDue.toLocaleString('en-IN')}</span>
+                                </div>
+                                {currentPayment.maintenanceDue > 0 && (
+                                    <div className="flex justify-between text-muted-foreground">
+                                        <span>Maintenance</span>
+                                        <span className="font-medium text-gray-900">₹{currentPayment.maintenanceDue.toLocaleString('en-IN')}</span>
+                                    </div>
+                                )}
+                                {(currentPayment.electricityDue || 0) > 0 && (
+                                    <div className="flex justify-between text-muted-foreground">
+                                        <span className="flex items-center gap-1"><Zap className="h-3.5 w-3.5" /> Electricity</span>
+                                        <span className="font-medium text-gray-900">₹{currentPayment.electricityDue.toLocaleString('en-IN')}</span>
+                                    </div>
+                                )}
+                                {((currentPayment as any).arrears || 0) > 0 && (
+                                    <div className="flex justify-between text-red-600">
+                                        <span>Previous Arrears</span>
+                                        <span className="font-medium">₹{((currentPayment as any).arrears || 0).toLocaleString('en-IN')}</span>
+                                    </div>
+                                )}
+                                {(currentPayment.customDues || 0) > 0 && (
+                                    <div className="flex justify-between text-amber-600">
+                                        <span>Custom Dues</span>
+                                        <span className="font-medium">₹{currentPayment.customDues.toLocaleString('en-IN')}</span>
+                                    </div>
+                                )}
                             </div>
                             {currentPayment.balance > 0 && (
                                 <Link
