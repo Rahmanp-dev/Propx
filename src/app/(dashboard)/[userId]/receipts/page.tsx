@@ -184,7 +184,16 @@ export default async function ReceiptsPage({ params, searchParams }: { params: P
                                         </div>
                                         <div className="text-center">
                                             <div className="w-16 border-b border-gray-400 mb-0.5 h-4"></div>
-                                            <p className="text-[7px] text-gray-500">{isPending ? 'Due Date: 5th' : 'Signature'}</p>
+                                            <p className="text-[7px] text-gray-500">
+                                                {isPending 
+                                                    ? `Due Date: ${(() => {
+                                                        const d = new Date(payment.tenant.leaseStartDate || payment.month).getDate();
+                                                        const s = ["th", "st", "nd", "rd"];
+                                                        const v = d % 100;
+                                                        return d + (s[(v - 20) % 10] || s[v] || s[0]);
+                                                    })()}` 
+                                                    : 'Signature'}
+                                            </p>
                                         </div>
                                     </div>
                                     <div className="pdf-hide">
