@@ -174,13 +174,15 @@ export default async function LedgerPage({ params, searchParams }: { params: Pro
                                         name="buildingId" 
                                         defaultValue={buildingId || ""} 
                                         className="h-10 px-3 py-2 rounded-md border border-input bg-background text-sm"
-                                        onChange={(e) => e.target.form?.submit()}
                                     >
                                         <option value="">All Buildings</option>
                                         {uniqueBuildings.map(b => (
                                             <option key={b.id} value={b.id}>{b.name}</option>
                                         ))}
                                     </select>
+                                    <button type="submit" className="h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors">
+                                        Filter
+                                    </button>
                                 </form>
                                 <MonthPicker currentMonth={currentMonth} />
                                 <MarkMonthPaidButton currentMonth={currentMonth} />
