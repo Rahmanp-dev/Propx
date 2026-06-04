@@ -184,9 +184,7 @@ export async function bulkRecordMeterReadings(readings: any[]) {
             }
         }
 
-        revalidatePath('/dashboard')
-        revalidatePath('/[userId]/electricity', 'page')
-        revalidatePath('/finance')
+        revalidatePath('/', 'layout')
         
         return { success: true }
     } catch (error) {

@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { Loader2, Zap } from 'lucide-react'
+import { Loader2, Zap, MoreVertical } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 export default function ElectricityPage() {
     const [month, setMonth] = useState(new Date().getMonth() + 1)
@@ -136,7 +137,7 @@ export default function ElectricityPage() {
                                         <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
                                         <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Pending Dues</th>
                                         <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Reading</th>
-                                        <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground">Initial</th>
+                                        <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground w-[50px]"></th>
                                     </tr>
                                 </thead>
                                 <tbody className="[&_tr:last-child]:border-0">
@@ -167,16 +168,30 @@ export default function ElectricityPage() {
                                                 />
                                             </td>
                                             <td className="p-4 align-middle text-center">
-                                                <label className="inline-flex items-center gap-2 cursor-pointer" title="Mark as initial/baseline reading (won't generate a bill)">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={initialFlags[flat.flatId] || false}
-                                                        onChange={(e) => {
-                                                            setInitialFlags(prev => ({ ...prev, [flat.flatId]: e.target.checked }))
-                                                        }}
-                                                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                    />
-                                                </label>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 relative">
+                                                            <MoreVertical className="h-4 w-4" />
+                                                            {initialFlags[flat.flatId] && (
+                                                                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-blue-500 border border-[#030712]" />
+                                                            )}
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-48 bg-[#030712] border-white/10 text-white">
+                                                        <DropdownMenuItem 
+                                                            className="flex items-center gap-2 cursor-pointer focus:bg-white/10"
+                                                            onClick={() => setInitialFlags(prev => ({ ...prev, [flat.flatId]: !prev[flat.flatId] }))}
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={initialFlags[flat.flatId] || false}
+                                                                readOnly
+                                                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 pointer-events-none"
+                                                            />
+                                                            Mark as Initial Reading
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </td>
                                         </tr>
                                     ))}
