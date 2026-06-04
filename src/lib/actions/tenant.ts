@@ -98,9 +98,10 @@ export async function onboardTenant(data: OnboardTenantInput) {
             updatedAt: now
         }
 
-        await db.collection("Tenant").insertOne(tenantDoc)
+        const insertResult = await db.collection("Tenant").insertOne(tenantDoc)
+        const newTenantId = insertResult.insertedId
 
-        // 3. Native Update Flat
+        // 4. Native Update Flat
         await db.collection("Flat").updateOne(
             { _id: new ObjectId(flatId) },
             {
@@ -112,6 +113,32 @@ export async function onboardTenant(data: OnboardTenantInput) {
                 }
             }
         )
+
+        // 5. Generate Initial Payment Record for the first month
+        const leaseMonthDate = new Date(leaseStartDate)
+        const monthStr = (leaseMonthDate.getMonth() + 1).toString().padStart(2, '0')
+        const paymentMonthDate = new Date(`${leaseMonthDate.getFullYear()}-${monthStr}-01T00:00:00.000Z`)
+        paymentMonthDate.setHours(paymentMonthDate.getHours() - 12) // Vercel UTC alignment
+
+        const maintenanceAmount = flat.maintenanceAmount || 0
+        const initialTotalDue = rentAmount + maintenanceAmount
+
+        await db.collection("Payment").insertOne({
+            tenantId: newTenantId,
+            flatId: new ObjectId(flatId),
+            month: paymentMonthDate,
+            rentDue: rentAmount,
+            maintenanceDue: maintenanceAmount,
+            electricityDue: 0,
+            customDues: 0,
+            arrears: 0,
+            totalDue: initialTotalDue,
+            balance: initialTotalDue,
+            amountPaid: 0,
+            status: "PENDING",
+            createdAt: now,
+            updatedAt: now
+        })
 
         revalidatePath('/', 'layout')
         return { success: true }

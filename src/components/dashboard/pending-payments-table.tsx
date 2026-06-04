@@ -28,9 +28,9 @@ export function PendingPaymentsTable({ payments, userId }: PendingPaymentsTableP
     }
 
     return (
-        <div className="rounded-md border overflow-x-auto">
-            <Table>
-                <TableHeader>
+        <div className="rounded-md border overflow-x-auto overflow-y-auto max-h-[400px]">
+            <Table className="relative">
+                <TableHeader className="sticky top-0 bg-white z-10 shadow-sm">
                     <TableRow>
                         <TableHead>Tenant</TableHead>
                         <TableHead>Flat</TableHead>
