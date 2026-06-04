@@ -16,7 +16,7 @@ interface PrintLedgerProps {
 }
 
 export function PrintLedgerButton({ masterData, currentMonth, totalExpected, totalCollected, totalPending, selectedBuildingName }: PrintLedgerProps) {
-    const handleDownload = () => {
+    const handleDownload = async () => {
         if (!masterData || masterData.length === 0) return
 
         const doc = new jsPDF({ orientation: 'landscape' })
@@ -28,15 +28,36 @@ export function PrintLedgerButton({ masterData, currentMonth, totalExpected, tot
         }
         const monthName = format(displayMonth, 'MMMM yyyy')
 
-        // Title
-        doc.setFontSize(20)
-        doc.text("PropX - Master Monthly Ledger", 14, 22)
-        doc.setFontSize(12)
-        let subtitle = `Report for: ${monthName}`
-        if (selectedBuildingName) {
-            subtitle += ` | Building: ${selectedBuildingName}`
+        // Try to load and add the logo
+        try {
+            const img = new Image()
+            img.src = '/redlogo.png'
+            await new Promise((resolve, reject) => {
+                img.onload = resolve
+                img.onerror = reject
+            })
+            doc.addImage(img, 'PNG', 14, 12, 12, 12)
+            
+            // Title next to logo
+            doc.setFontSize(20)
+            doc.text("PropX - Master Monthly Ledger", 30, 21)
+            doc.setFontSize(12)
+            let subtitle = `Report for: ${monthName}`
+            if (selectedBuildingName) {
+                subtitle += ` | Building: ${selectedBuildingName}`
+            }
+            doc.text(subtitle, 30, 28)
+        } catch (e) {
+            // Fallback if logo fails to load
+            doc.setFontSize(20)
+            doc.text("PropX - Master Monthly Ledger", 14, 22)
+            doc.setFontSize(12)
+            let subtitle = `Report for: ${monthName}`
+            if (selectedBuildingName) {
+                subtitle += ` | Building: ${selectedBuildingName}`
+            }
+            doc.text(subtitle, 14, 32)
         }
-        doc.text(subtitle, 14, 32)
         
         // Summary
         doc.setFontSize(10)

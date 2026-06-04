@@ -109,9 +109,12 @@ export default async function ReceiptsPage({ params, searchParams }: { params: P
                             >
                                 <div>
                                     <div className="flex justify-between items-start border-b border-gray-200 pb-2 mb-2">
-                                        <div className="overflow-hidden">
-                                            <h2 className="text-xs font-bold uppercase truncate">{org?.name || "Property Mgmt"}</h2>
-                                            <p className="text-[9px] text-gray-500 truncate">{payment.flat.building.name}</p>
+                                        <div className="overflow-hidden flex items-center gap-1.5">
+                                            <img src="/redlogo.png" alt="Logo" className="h-5 w-auto object-contain" />
+                                            <div>
+                                                <h2 className="text-[10px] font-bold uppercase truncate">{org?.name || "Property Mgmt"}</h2>
+                                                <p className="text-[8px] text-gray-500 truncate">{payment.flat.building.name}</p>
+                                            </div>
                                         </div>
                                         <div className="text-right whitespace-nowrap pl-2">
                                             <h3 className={`font-bold text-[10px] ${isPending ? 'text-amber-600' : 'text-green-600'}`}>
