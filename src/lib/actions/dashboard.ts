@@ -15,7 +15,7 @@ async function getOrgContext() {
     }
 }
 
-export async function getDashboardStats() {
+export async function getDashboardStats(monthFilter?: string) {
     try {
         const orgCtx = await getOrgContext()
         if (!orgCtx) return { error: "Not authenticated" }
@@ -24,6 +24,21 @@ export async function getDashboardStats() {
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
         const thirtyDaysFromNow = new Date()
         thirtyDaysFromNow.setDate(today.getDate() + 30)
+
+        // Parse monthFilter
+        let paymentMonthWhere: any = undefined
+        if (monthFilter && monthFilter !== 'all') {
+            const [yStr, mStr] = monthFilter.split('-')
+            const y = parseInt(yStr)
+            const m = parseInt(mStr) - 1 // JS months are 0-indexed
+            // Use a wide 20-day window around the 1st of the month to avoid timezone shifts 
+            const safeStart = new Date(y, m, -5)
+            const safeEnd = new Date(y, m, 15)
+            paymentMonthWhere = {
+                gte: safeStart,
+                lt: safeEnd
+            }
+        }
 
         // Build org-scoped filters
         const buildingWhere = orgCtx.isSuperAdmin
@@ -75,11 +90,12 @@ export async function getDashboardStats() {
             // 5. Total active tenants
             prisma.tenant.count({ where: { ...tenantWhere, isActive: true } }),
 
-            // 6. Active Tenants with their latest payment to calculate revenue
+            // 6. Active Tenants with their targeted payment to calculate revenue
             prisma.tenant.findMany({
                 where: { isActive: true, ...tenantWhere },
                 select: {
                     payments: {
+                        where: paymentMonthWhere ? { month: paymentMonthWhere } : undefined,
                         orderBy: { month: 'desc' },
                         take: 1,
                         select: { totalDue: true, amountPaid: true, balance: true }

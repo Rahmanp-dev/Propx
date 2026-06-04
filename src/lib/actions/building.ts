@@ -85,10 +85,24 @@ export async function createBuilding(data: CreateBuildingInput) {
     }
 }
 
-export async function getBuildings() {
+export async function getBuildings(monthFilter?: string) {
     try {
         const orgCtx = await getOrgContext()
         if (!orgCtx) return { error: "Not authenticated" }
+
+        // Parse monthFilter
+        let paymentMonthWhere: any = undefined
+        if (monthFilter && monthFilter !== 'all') {
+            const [yStr, mStr] = monthFilter.split('-')
+            const y = parseInt(yStr)
+            const m = parseInt(mStr) - 1
+            const safeStart = new Date(y, m, -5)
+            const safeEnd = new Date(y, m, 15)
+            paymentMonthWhere = {
+                gte: safeStart,
+                lt: safeEnd
+            }
+        }
 
         // Scope by organization (super admin sees all)
         const where = orgCtx.isSuperAdmin
@@ -102,6 +116,7 @@ export async function getBuildings() {
                 flats: {
                     include: {
                         payments: {
+                            where: paymentMonthWhere ? { month: paymentMonthWhere } : undefined,
                             orderBy: { month: 'desc' },
                             take: 1
                         }

@@ -8,16 +8,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PendingPaymentsTable } from "@/components/dashboard/pending-payments-table"
 import { GenerateDuesButton } from "@/components/dashboard/generate-dues-button"
 import { CopyPortalLink } from "@/components/dashboard/copy-portal-link"
+import { MonthFilter } from "@/components/dashboard/month-filter"
 
 export const dynamic = 'force-dynamic'
 
-export default async function DashboardPage() {
+interface DashboardPageProps {
+    searchParams: {
+        month?: string
+    }
+}
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
     const session = await auth()
     const userId = session?.user?.id || 'user'
+    
+    const monthFilter = searchParams.month || 'all'
 
     const [bRes, sRes] = await Promise.all([
-        getBuildings(),
-        getDashboardStats()
+        getBuildings(monthFilter),
+        getDashboardStats(monthFilter)
     ])
 
     const buildings = bRes.data
@@ -42,12 +51,13 @@ export default async function DashboardPage() {
     return (
         <div className="space-y-4 md:space-y-8">
             {/* Page Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
                     <p className="text-muted-foreground">Overview of your property portfolio</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    <MonthFilter />
                     <CopyPortalLink />
                     <GenerateDuesButton />
                 </div>
