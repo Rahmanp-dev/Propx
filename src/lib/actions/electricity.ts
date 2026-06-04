@@ -65,7 +65,7 @@ export async function getElectricityDashboard(month: number, year: number) {
                 hasReading: !!currentReading,
                 readingValue: currentReading ? currentReading.reading : null,
                 readingId: currentReading ? currentReading.id : null,
-                pendingAmount: latestPayment ? latestPayment.balance : 0,
+                pendingAmount: latestPayment ? (latestPayment.electricityDue || 0) : 0,
             }
         })
 

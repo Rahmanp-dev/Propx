@@ -135,7 +135,7 @@ export default function ElectricityPage() {
                                         <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Flat</th>
                                         <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Tenant</th>
                                         <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
-                                        <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Pending Dues</th>
+                                        <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Electricity Due</th>
                                         <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Reading</th>
                                         <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground w-[50px]"></th>
                                     </tr>
