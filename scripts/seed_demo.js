@@ -64,6 +64,15 @@ async function main() {
   console.log('Clearing old data for this organization...');
   const oldBuildings = await prisma.building.findMany({ where: { organizationId: orgId } });
   for (const b of oldBuildings) {
+    const flats = await prisma.flat.findMany({ where: { buildingId: b.id } });
+    const flatIds = flats.map(f => f.id);
+    if (flatIds.length > 0) {
+      await prisma.payment.deleteMany({ where: { flatId: { in: flatIds } } });
+      await prisma.meterReading.deleteMany({ where: { flatId: { in: flatIds } } });
+      await prisma.tenant.deleteMany({ where: { assignedFlatId: { in: flatIds } } });
+    }
+    await prisma.flat.deleteMany({ where: { buildingId: b.id } });
+    await prisma.floor.deleteMany({ where: { buildingId: b.id } });
     await prisma.building.delete({ where: { id: b.id } });
   }
 
