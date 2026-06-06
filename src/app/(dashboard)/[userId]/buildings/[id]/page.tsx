@@ -8,7 +8,7 @@ import { UpdateBuildingDialog } from "@/components/dashboard/update-building-dia
 import { DeleteBuildingDialog } from "@/components/dashboard/delete-building-dialog"
 import { BuildingFlatsClient } from "@/components/dashboard/building-flats-client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Zap, IndianRupee } from "lucide-react"
+import { Zap, IndianRupee, Shield, Eye } from "lucide-react"
 
 export const dynamic = 'force-dynamic'
 
@@ -52,6 +52,21 @@ export default async function BuildingPage({ params }: { params: Promise<{ id: s
                     <p className="text-sm md:text-base text-muted-foreground">{building.address}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                        href={`/${userId}/buildings/${id}/clauses`}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 text-sm font-semibold hover:bg-indigo-100 transition-colors"
+                    >
+                        <Shield className="h-4 w-4" />
+                        Clauses
+                    </Link>
+                    <Link
+                        href={`/discover/${id}`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
+                    >
+                        <Eye className="h-4 w-4" />
+                        Discover
+                    </Link>
                     <UpdateBuildingDialog
                         buildingId={id}
                         currentRate={bld.ratePerUnit || 10}
@@ -61,6 +76,9 @@ export default async function BuildingPage({ params }: { params: Promise<{ id: s
                         currentLongitude={bld.longitude}
                         totalFloors={building.totalFloors}
                         defaultRents={defaultRents}
+                        discoverEnabled={building.discoverEnabled}
+                        discoverBio={building.discoverBio}
+                        contactWhatsApp={building.contactWhatsApp}
                     />
                     <DeleteBuildingDialog buildingId={id} buildingName={building.name} />
                     <AddFlatDialog buildingId={id} floors={floorsForDialog} defaultRents={defaultRents} />

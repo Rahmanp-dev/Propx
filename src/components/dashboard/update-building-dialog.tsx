@@ -28,6 +28,9 @@ interface UpdateBuildingDialogProps {
     currentLongitude?: number | null
     totalFloors: number
     defaultRents?: { BHK1: number; BHK2: number; BHK3: number }
+    discoverEnabled?: boolean
+    discoverBio?: string | null
+    contactWhatsApp?: string | null
 }
 
 export function UpdateBuildingDialog({
@@ -39,6 +42,9 @@ export function UpdateBuildingDialog({
     currentLongitude = null,
     totalFloors,
     defaultRents,
+    discoverEnabled = false,
+    discoverBio = "",
+    contactWhatsApp = "",
 }: UpdateBuildingDialogProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -51,6 +57,9 @@ export function UpdateBuildingDialog({
     const [rent1, setRent1] = useState((defaultRents?.BHK1 ?? 8000).toString())
     const [rent2, setRent2] = useState((defaultRents?.BHK2 ?? 12000).toString())
     const [rent3, setRent3] = useState((defaultRents?.BHK3 ?? 16000).toString())
+    const [isDiscoverEnabled, setIsDiscoverEnabled] = useState(discoverEnabled)
+    const [bio, setBio] = useState(discoverBio || "")
+    const [whatsapp, setWhatsapp] = useState(contactWhatsApp || "")
     const [error, setError] = useState("")
     const router = useRouter()
 
@@ -71,6 +80,9 @@ export function UpdateBuildingDialog({
                 defaultRentBHK1: parseFloat(rent1),
                 defaultRentBHK2: parseFloat(rent2),
                 defaultRentBHK3: parseFloat(rent3),
+                discoverEnabled: isDiscoverEnabled,
+                discoverBio: bio,
+                contactWhatsApp: whatsapp,
             })
 
             setLoading(false)
@@ -154,6 +166,46 @@ export function UpdateBuildingDialog({
                         </div>
 
                         <Separator />
+
+                        <p className="text-sm font-medium text-slate-700">PropX Discover (Marketing)</p>
+                        
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                id="discoverEnabled"
+                                checked={isDiscoverEnabled}
+                                onChange={(e) => setIsDiscoverEnabled(e.target.checked)}
+                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                            />
+                            <Label htmlFor="discoverEnabled" className="font-semibold text-orange-600">
+                                Show building on PropX Discover
+                            </Label>
+                        </div>
+
+                        {isDiscoverEnabled && (
+                            <div className="grid gap-3 bg-orange-50/50 p-3 rounded-lg border border-orange-100">
+                                <div>
+                                    <Label htmlFor="bio" className="text-xs">Building Bio / Description</Label>
+                                    <textarea
+                                        id="bio"
+                                        value={bio}
+                                        onChange={(e) => setBio(e.target.value)}
+                                        className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1"
+                                        placeholder="E.g. A premium family-friendly apartment building..."
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="whatsapp" className="text-xs">Contact WhatsApp (optional)</Label>
+                                    <Input
+                                        id="whatsapp"
+                                        value={whatsapp}
+                                        onChange={(e) => setWhatsapp(e.target.value)}
+                                        className="h-8 text-xs mt-1"
+                                        placeholder="e.g. +919876543210"
+                                    />
+                                </div>
+                            </div>
+                        )}
 
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="rate" className="text-right">

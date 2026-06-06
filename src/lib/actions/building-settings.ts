@@ -29,6 +29,10 @@ const updateBuildingSchema = z.object({
     defaultRentBHK1: z.coerce.number().min(0).optional(),
     defaultRentBHK2: z.coerce.number().min(0).optional(),
     defaultRentBHK3: z.coerce.number().min(0).optional(),
+    discoverEnabled: z.boolean().optional(),
+    discoverBio: z.string().optional().nullable(),
+    contactWhatsApp: z.string().optional().nullable(),
+    amenities: z.array(z.string()).optional(),
 })
 
 export type UpdateBuildingInput = z.infer<typeof updateBuildingSchema>
@@ -43,7 +47,11 @@ export async function updateBuildingSettings(data: UpdateBuildingInput) {
         return { error: "Invalid input" }
     }
 
-    const { buildingId, name, address, latitude, longitude, ratePerUnit, totalFloors, defaultRentBHK1, defaultRentBHK2, defaultRentBHK3 } = result.data
+    const { 
+        buildingId, name, address, latitude, longitude, ratePerUnit, 
+        totalFloors, defaultRentBHK1, defaultRentBHK2, defaultRentBHK3,
+        discoverEnabled, discoverBio, contactWhatsApp, amenities
+    } = result.data
 
     try {
         const client = await clientPromise
@@ -105,6 +113,10 @@ export async function updateBuildingSettings(data: UpdateBuildingInput) {
         if (defaultRentBHK1 !== undefined) updateFields.defaultRentBHK1 = defaultRentBHK1
         if (defaultRentBHK2 !== undefined) updateFields.defaultRentBHK2 = defaultRentBHK2
         if (defaultRentBHK3 !== undefined) updateFields.defaultRentBHK3 = defaultRentBHK3
+        if (discoverEnabled !== undefined) updateFields.discoverEnabled = discoverEnabled
+        if (discoverBio !== undefined) updateFields.discoverBio = discoverBio
+        if (contactWhatsApp !== undefined) updateFields.contactWhatsApp = contactWhatsApp
+        if (amenities !== undefined) updateFields.amenities = amenities
 
         await db.collection("Building").updateOne(
             { _id: bId },
@@ -113,8 +125,8 @@ export async function updateBuildingSettings(data: UpdateBuildingInput) {
 
         revalidatePath('/', 'layout')
         return { success: true }
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Failed to update building:", error)
-        return { error: `Failed to update building: ${error.message || String(error)}` }
+        return { error: `Failed to update building: ${error instanceof Error ? error.message : String(error)}` }
     }
 }

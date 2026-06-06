@@ -73,6 +73,9 @@ export default async function LandingPage() {
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#workflow" className="hover:text-white transition-colors">Platform</a>
             <Link href="/packages" className="hover:text-white transition-colors">Packages & Pricing</Link>
+            <Link href="/discover" className="flex items-center gap-1.5 text-orange-400 hover:text-orange-300 font-semibold transition-colors">
+              <Globe className="h-4 w-4" /> Discover
+            </Link>
             <Link href="/tenant-portal/login" className="flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">
               <Users className="h-4 w-4" /> Tenant Portal
             </Link>
@@ -119,6 +122,9 @@ export default async function LandingPage() {
                   <a href="#features" className="text-lg font-medium text-slate-300">Features</a>
                   <a href="#workflow" className="text-lg font-medium text-slate-300">Platform</a>
                   <Link href="/packages" className="text-lg font-medium text-slate-300">Packages & Pricing</Link>
+                  <Link href="/discover" className="flex items-center gap-2 text-lg text-orange-400 font-semibold">
+                    <Globe className="h-5 w-5" /> Discover Flats
+                  </Link>
                   <Link href="/tenant-portal/login" className="flex items-center gap-2 text-lg text-indigo-400 font-semibold">
                     <Users className="h-5 w-5" /> Tenant Portal
                   </Link>
