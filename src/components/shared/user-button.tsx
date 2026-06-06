@@ -1,7 +1,7 @@
 "use client"
 
 import { LogOut } from "lucide-react"
-import { signOut } from "next-auth/react"
+import { handleSignOut } from "@/lib/actions/auth"
 
 interface UserButtonProps {
     user?: {
@@ -29,7 +29,7 @@ export function UserButton({ user }: UserButtonProps) {
             </div>
             
             <button 
-                onClick={() => signOut({ callbackUrl: '/login' })}
+                onClick={() => handleSignOut('/login')}
                 className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:text-white hover:bg-red-500/20 border border-transparent hover:border-red-500/30 transition-colors"
             >
                 <LogOut className="h-4 w-4" />

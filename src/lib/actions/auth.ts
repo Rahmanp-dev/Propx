@@ -25,6 +25,6 @@ export async function authenticate(
 
 import { signOut } from "@/lib/auth"
 
-export async function handleSignOut() {
-    await signOut({ redirectTo: '/login' })
+export async function handleSignOut(redirectTo: string = '/login') {
+    await signOut({ redirectTo })
 }

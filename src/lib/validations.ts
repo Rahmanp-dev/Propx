@@ -55,7 +55,7 @@ export const tenantInquirySchema = z.object({
     flatType: z.string().optional(),
     budget: z.coerce.number().min(0).optional(),
     message: z.string().optional(),
-    source: z.enum(["WHATSAPP", "WEBSITE", "WALK_IN", "REFERRAL", "PHONE"]).default("WHATSAPP"),
+    source: z.enum(["WHATSAPP", "WEBSITE", "WALK_IN", "REFERRAL", "PHONE", "DISCOVER", "QR_SCAN"]).default("WHATSAPP"),
 })
 
 export type TenantInquiryInput = z.infer<typeof tenantInquirySchema>

@@ -154,11 +154,19 @@ model Building {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  // PropX Discover fields
+  discoverEnabled  Boolean  @default(true)    // Owner can opt-out of Discover
+  discoverBio      String?                     // Short description for Discover page
+  amenities        String[]                    // ["Parking", "CCTV", "Generator", etc.]
+  photos           String[]                    // Building exterior/interior photo URLs
+  contactWhatsApp  String?                     // WhatsApp number for tenant inquiries
+
   organization        Organization?         @relation(fields: [organizationId], references: [id])
   floors              Floor[]
   flats               Flat[]
   maintenanceRequests MaintenanceRequest[]
   tenantInquiries     TenantInquiry[]
+  clauses             BuildingClause[]
 
   @@index([organizationId])
 }
@@ -234,10 +242,11 @@ model Tenant {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  flat                Flat?              @relation(fields: [assignedFlatId], references: [id])
-  payments            Payment[]
-  maintenanceRequests MaintenanceRequest[]
-  whatsappMessages    WhatsAppLog[]
+  flat                    Flat?                  @relation(fields: [assignedFlatId], references: [id])
+  payments                Payment[]
+  maintenanceRequests     MaintenanceRequest[]
+  whatsappMessages        WhatsAppLog[]
+  clauseAcknowledgments   ClauseAcknowledgment[]
 
   @@index([assignedFlatId])
 }
@@ -429,6 +438,8 @@ enum InquirySource {
   WALK_IN
   REFERRAL
   PHONE
+  DISCOVER
+  QR_SCAN
 }
 
 enum InquiryStatus {
@@ -440,19 +451,24 @@ enum InquiryStatus {
 }
 
 model TenantInquiry {
-  id          String        @id @default(auto()) @map("_id") @db.ObjectId
-  buildingId  String?       @db.ObjectId
-  name        String
-  phone       String
-  email       String?
-  flatType    String?
-  budget      Float?
-  message     String?
-  source      InquirySource @default(WHATSAPP)
-  status      InquiryStatus @default(NEW)
-  notes       String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  buildingId      String?       @db.ObjectId
+  name            String
+  phone           String
+  email           String?
+  flatType        String?
+  budget          Float?
+  message         String?
+  source          InquirySource @default(WHATSAPP)
+  status          InquiryStatus @default(NEW)
+  notes           String?
+  preferredBHK    String?                       // Preferred flat type from Discover
+  moveInDate      DateTime?                     // When tenant wants to move in
+  utmSource       String?                       // "banner", "map", "organic"
+  utmBuildingId   String?                       // Track which building's QR was scanned
+  clausesAccepted Boolean       @default(false) // Tenant saw and accepted building rules
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   building Building? @relation(fields: [buildingId], references: [id])
 
@@ -504,4 +520,77 @@ model PushSubscription {
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// ==========================================
+// PROPX DISCOVER — BUILDING CLAUSES
+// ==========================================
+
+enum ClauseCategory {
+  OCCUPANCY
+  ELECTRICITY
+  LOCK_IN
+  STRUCTURAL
+  PETS
+  NOISE
+  GUESTS
+  PARKING
+  WASTE
+  POLICE_VERIFICATION
+  CUSTOM
+}
+
+enum ClauseSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model BuildingClause {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  buildingId  String          @db.ObjectId
+  category    ClauseCategory  @default(CUSTOM)
+  title       String
+  description String
+  severity    ClauseSeverity  @default(MEDIUM)
+  isActive    Boolean         @default(true)
+  sortOrder   Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  building        Building              @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  acknowledgments ClauseAcknowledgment[]
+
+  @@index([buildingId])
+}
+
+model ClauseAcknowledgment {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String   @db.ObjectId
+  clauseId       String   @db.ObjectId
+  buildingId     String   @db.ObjectId
+  acknowledgedAt DateTime @default(now())
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id])
+  clause BuildingClause @relation(fields: [clauseId], references: [id])
+
+  @@unique([tenantId, clauseId])
+  @@index([tenantId])
+  @@index([buildingId])
+}
+
+// ==========================================
+// PROPX DISCOVER — QR SCAN ANALYTICS
+// ==========================================
+
+model QRScanLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  buildingId  String   @db.ObjectId
+  scannedAt   DateTime @default(now())
+  userAgent   String?
+  referrer    String?
+
+  @@index([buildingId])
+  @@index([scannedAt])
 }

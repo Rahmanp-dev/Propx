@@ -35,7 +35,7 @@ const createInquirySchema = z.object({
     flatType: z.string().optional(),
     budget: z.coerce.number().min(0).optional(),
     message: z.string().optional(),
-    source: z.enum(["WHATSAPP", "WEBSITE", "WALK_IN", "REFERRAL", "PHONE"]).default("PHONE"),
+    source: z.enum(["WHATSAPP", "WEBSITE", "WALK_IN", "REFERRAL", "PHONE", "DISCOVER", "QR_SCAN"]).default("PHONE"),
     buildingId: z.string().optional(),
     notes: z.string().optional(),
 })
