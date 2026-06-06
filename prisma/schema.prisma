@@ -57,6 +57,7 @@ enum BillingCycle {
   QUARTERLY
   HALF_YEARLY
   YEARLY
+  ANNUAL
 }
 
 model Organization {

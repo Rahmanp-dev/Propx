@@ -47,24 +47,28 @@ export const PRICING: Record<string, Record<string, { amount: number; maxUnits: 
     QUARTERLY:   { amount: 0, maxUnits: 10 },
     HALF_YEARLY: { amount: 0, maxUnits: 10 },
     YEARLY:      { amount: 0, maxUnits: 10 },
+    ANNUAL:      { amount: 0, maxUnits: 10 },
   },
   STARTER: {
     MONTHLY:     { amount: 499,  maxUnits: 25 },
     QUARTERLY:   { amount: 1349, maxUnits: 25 },
     HALF_YEARLY: { amount: 2549, maxUnits: 25 },
     YEARLY:      { amount: 4999, maxUnits: 25 },
+    ANNUAL:      { amount: 4999, maxUnits: 25 },
   },
   BUILDER: {
     MONTHLY:     { amount: 1199,  maxUnits: 60 },
     QUARTERLY:   { amount: 3249,  maxUnits: 60 },
     HALF_YEARLY: { amount: 6149,  maxUnits: 60 },
     YEARLY:      { amount: 11999, maxUnits: 60 },
+    ANNUAL:      { amount: 11999, maxUnits: 60 },
   },
   PORTFOLIO: {
     MONTHLY:     { amount: 2499,  maxUnits: 99999 },
     QUARTERLY:   { amount: 6749,  maxUnits: 99999 },
     HALF_YEARLY: { amount: 12749, maxUnits: 99999 },
     YEARLY:      { amount: 24999, maxUnits: 99999 },
+    ANNUAL:      { amount: 24999, maxUnits: 99999 },
   },
 }
 
@@ -77,6 +81,7 @@ export const BILLING_CYCLE_MONTHS: Record<string, number> = {
   QUARTERLY: 3,
   HALF_YEARLY: 6,
   YEARLY: 12,
+  ANNUAL: 12,
 }
 
 export const BILLING_CYCLE_LABELS: Record<string, string> = {
@@ -84,6 +89,7 @@ export const BILLING_CYCLE_LABELS: Record<string, string> = {
   QUARTERLY: 'Quarterly',
   HALF_YEARLY: 'Half-Yearly',
   YEARLY: 'Yearly',
+  ANNUAL: 'Yearly',
 }
 
 export function calculatePeriodEnd(startDate: Date, billingCycle: string): Date {
