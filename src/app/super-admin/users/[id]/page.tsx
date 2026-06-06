@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { getUserDetail, updateUser, resetUserPassword } from "@/lib/actions/super-admin"
+import { getUserDetail, updateUser, resetUserPassword, manualActivateOrganization } from "@/lib/actions/super-admin"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, User, Building2, RefreshCw, Save, KeyRound, Shield } from "lucide-react"
+import { ArrowLeft, User, Building2, RefreshCw, Save, KeyRound, Shield, CheckCircle } from "lucide-react"
 
 export default function UserDetailPage() {
     const params = useParams()
@@ -38,6 +38,11 @@ export default function UserDetailPage() {
     const [newPassword, setNewPassword] = useState("")
     const [resetLoading, setResetLoading] = useState(false)
     const [resetMessage, setResetMessage] = useState("")
+
+    // Manual Activation
+    const [billingCycle, setBillingCycle] = useState("MONTHLY")
+    const [activating, setActivating] = useState(false)
+    const [activationMessage, setActivationMessage] = useState("")
 
     useEffect(() => {
         async function load() {
@@ -79,6 +84,22 @@ export default function UserDetailPage() {
             setResetMessage(result.error || "Failed to reset password")
         }
         setResetLoading(false)
+    }
+
+    async function handleManualActivate() {
+        if (!user?.organization?.id) return
+        setActivating(true)
+        setActivationMessage("")
+        const result = await manualActivateOrganization(user.organization.id, billingCycle)
+        if (result.success) {
+            setActivationMessage("Organization activated successfully!")
+            // Refresh user data
+            const refreshed = await getUserDetail(userId)
+            if (refreshed.success && refreshed.data) setUser(refreshed.data)
+        } else {
+            setActivationMessage(result.error || "Failed to activate organization")
+        }
+        setActivating(false)
     }
 
     if (loading) {
@@ -212,13 +233,67 @@ export default function UserDetailPage() {
                                 <span className="text-muted-foreground block">Status</span>
                                 {user.organization.isSuspended ? (
                                     <Badge variant="destructive">Suspended</Badge>
-                                ) : user.organization.isActive ? (
+                                ) : user.organization.planStatus === 'ACTIVE' ? (
                                     <Badge className="bg-green-600">Active</Badge>
+                                ) : user.organization.planStatus === 'PENDING_PAYMENT' ? (
+                                    <Badge className="bg-amber-500 hover:bg-amber-600">Pending Payment</Badge>
+                                ) : user.organization.planStatus === 'EXPIRED' ? (
+                                    <Badge variant="destructive">Expired</Badge>
                                 ) : (
                                     <Badge variant="secondary">Inactive</Badge>
                                 )}
                             </div>
                         </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Manual Verification Control Panel */}
+            {user.organization && (user.organization.planStatus === 'PENDING_PAYMENT' || user.organization.planStatus === 'EXPIRED') && (
+                <Card className="border-indigo-200 shadow-sm overflow-hidden">
+                    <CardHeader className="bg-indigo-50/50 pb-4 border-b border-indigo-100">
+                        <CardTitle className="text-lg flex items-center gap-2 text-indigo-800">
+                            <Shield className="h-5 w-5" />
+                            Manual Verification & Activation
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4 bg-indigo-50/10">
+                        <p className="text-sm text-muted-foreground">
+                            This overrides the automated payment process. Explicitly grant access for the following tenure:
+                        </p>
+                        <div className="flex gap-3 items-end">
+                            <div className="flex-1 space-y-2">
+                                <Label htmlFor="billing-cycle" className="text-indigo-900">Granted Tenure</Label>
+                                <Select value={billingCycle} onValueChange={setBillingCycle}>
+                                    <SelectTrigger className="h-10 border-indigo-200 focus:ring-indigo-500">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="MONTHLY">Monthly</SelectItem>
+                                        <SelectItem value="QUARTERLY">Quarterly</SelectItem>
+                                        <SelectItem value="HALF_YEARLY">Half-Yearly</SelectItem>
+                                        <SelectItem value="YEARLY">Yearly</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <Button 
+                                onClick={handleManualActivate} 
+                                disabled={activating}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                            >
+                                {activating ? (
+                                    <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                                ) : (
+                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                )}
+                                Verify Payment & Grant Access
+                            </Button>
+                        </div>
+                        {activationMessage && (
+                            <div className={`text-sm p-3 rounded-lg ${activationMessage.includes('success') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-600'}`}>
+                                {activationMessage}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             )}

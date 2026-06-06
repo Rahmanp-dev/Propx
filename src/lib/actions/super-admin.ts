@@ -381,7 +381,7 @@ export async function toggleOrgStatus(orgId: string, action: 'activate' | 'suspe
 // MANUAL ACTIVATE ORGANIZATION
 // ==========================================
 
-export async function manualActivateOrganization(orgId: string) {
+export async function manualActivateOrganization(orgId: string, customBillingCycle?: string) {
     try {
         await requireSuperAdmin()
         const client = await clientPromise
@@ -395,7 +395,8 @@ export async function manualActivateOrganization(orgId: string) {
             return { error: 'Organization not found' }
         }
 
-        const pricing = PRICING[org.plan]?.[org.billingCycle]
+        const finalBillingCycle = customBillingCycle || org.billingCycle
+        const pricing = PRICING[org.plan]?.[finalBillingCycle]
         if (!pricing && org.plan !== 'FREE') {
             return { error: 'Invalid plan configuration for this organization.' }
         }
@@ -403,7 +404,7 @@ export async function manualActivateOrganization(orgId: string) {
         const amount = pricing ? pricing.amount : 0
 
         const periodStart = new Date()
-        const periodEnd = org.plan === 'FREE' ? null : calculatePeriodEnd(periodStart, org.billingCycle)
+        const periodEnd = org.plan === 'FREE' ? null : calculatePeriodEnd(periodStart, finalBillingCycle as any)
 
         // Update org status
         await db.collection("Organization").updateOne(
@@ -413,6 +414,7 @@ export async function manualActivateOrganization(orgId: string) {
                     planStatus: 'ACTIVE',
                     isActive: true,
                     isSuspended: false,
+                    billingCycle: finalBillingCycle,
                     subscriptionStart: periodStart,
                     subscriptionEnd: periodEnd,
                     updatedAt: new Date(),
@@ -427,7 +429,7 @@ export async function manualActivateOrganization(orgId: string) {
                 organizationId: new ObjectId(orgId),
                 amount: amount,
                 plan: org.plan,
-                billingCycle: org.billingCycle,
+                billingCycle: finalBillingCycle,
                 upiTransactionId: 'MANUAL_OVERRIDE',
                 screenshotUrl: '', // empty for manual overrides
                 status: 'VERIFIED',
