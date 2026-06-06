@@ -77,6 +77,7 @@ export default async function OrganizationsPage({
                                 <TableHead>Organization</TableHead>
                                 <TableHead>Owner</TableHead>
                                 <TableHead>Plan</TableHead>
+                                <TableHead>Tenure</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-center">Buildings</TableHead>
                                 <TableHead className="text-center">Units</TableHead>
@@ -100,6 +101,9 @@ export default async function OrganizationsPage({
                                         </div>
                                     </TableCell>
                                     <TableCell>{getPlanBadge(org.plan)}</TableCell>
+                                    <TableCell className="text-sm text-muted-foreground">
+                                        {({'MONTHLY':'Monthly','QUARTERLY':'Quarterly','HALF_YEARLY':'Half-Yearly','YEARLY':'Yearly','ANNUAL':'Yearly'} as Record<string, string>)[org.billingCycle] || org.billingCycle}
+                                    </TableCell>
                                     <TableCell>{getStatusBadge(org)}</TableCell>
                                     <TableCell className="text-center">{org._count?.buildings || 0}</TableCell>
                                     <TableCell className="text-center">{org.unitCount || 0}</TableCell>
@@ -116,7 +120,7 @@ export default async function OrganizationsPage({
                             ))}
                             {orgs.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="text-center text-muted-foreground py-12">
+                                    <TableCell colSpan={9} className="text-center text-muted-foreground py-12">
                                         No organizations found
                                     </TableCell>
                                 </TableRow>

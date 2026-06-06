@@ -48,6 +48,10 @@ export async function registerOrganization(data: {
     const client = await clientPromise
     const db = client.db('propx')
 
+    // Fetch dynamic platform settings
+    const settings = await db.collection('PlatformSettings').findOne({ key: 'platform' })
+    const activeUpiId = settings?.upiId || PLATFORM_UPI_ID
+
     // 4. Create Organization
     const orgId = new ObjectId()
     const now = new Date()
@@ -96,7 +100,7 @@ export async function registerOrganization(data: {
 
     // Generate UPI intent link for paid plans
     const upiIntentLink = isFree ? '' : generateUpiIntentLink({
-      upiId: PLATFORM_UPI_ID,
+      upiId: activeUpiId,
       amount: pricing.amount,
       plan: data.plan,
       billingCycle: data.billingCycle,
@@ -106,7 +110,7 @@ export async function registerOrganization(data: {
       success: true,
       organizationId: orgId.toString(),
       amount: pricing.amount,
-      upiId: PLATFORM_UPI_ID,
+      upiId: activeUpiId,
       upiIntentLink,
       isFree,
     }

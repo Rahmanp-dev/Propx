@@ -74,8 +74,8 @@ export default async function DashboardLayout({
         }
     }
 
-    // Full-screen block for expired/suspended
-    const isBlocked = planWarning?.type === 'expired' || planWarning?.type === 'suspended'
+    // Full-screen block for expired/suspended/pending
+    const isBlocked = planWarning?.type === 'expired' || planWarning?.type === 'suspended' || planWarning?.type === 'pending'
 
     return (
         <div className="h-full relative">
@@ -145,7 +145,7 @@ export default async function DashboardLayout({
                                 <ShieldAlert className="h-8 w-8 text-red-600" />
                             </div>
                             <h1 className="text-2xl font-bold text-gray-900">
-                                {planWarning?.type === 'suspended' ? 'Account Suspended' : 'Subscription Expired'}
+                                {planWarning?.type === 'suspended' ? 'Account Suspended' : planWarning?.type === 'pending' ? 'Payment Verification Pending' : 'Subscription Expired'}
                             </h1>
                             <p className="text-gray-500 leading-relaxed">
                                 {planWarning?.message}
