@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, Building2, Mail, MapPin, Phone, User } from "lucide-react"
 import Link from "next/link"
 import { OrgStatusToggle } from "./org-status-toggle"
+import { ManualActivationPanel } from "./manual-activation-panel"
 import { PaymentActionButtons } from "../../dashboard/payment-actions"
 
 export const dynamic = 'force-dynamic'
@@ -217,6 +218,8 @@ export default async function OrganizationDetailPage({
                     </CardContent>
                 </Card>
             </div>
+
+            <ManualActivationPanel orgId={org.id} planStatus={org.planStatus} />
 
             {/* Users */}
             <Card className="mb-8">

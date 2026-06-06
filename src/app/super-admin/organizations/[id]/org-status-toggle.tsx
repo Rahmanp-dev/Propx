@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { toggleOrgStatus, manualActivateOrganization } from "@/lib/actions/super-admin"
+import { toggleOrgStatus } from "@/lib/actions/super-admin"
 import { Ban, CheckCircle } from "lucide-react"
 import { useTransition, useState } from "react"
 import {
@@ -35,11 +35,7 @@ export function OrgStatusToggle({
         })
     }
 
-    const handleManualActivate = () => {
-        startTransition(async () => {
-            await manualActivateOrganization(orgId)
-        })
-    }
+
 
     if (isSuspended) {
         return (
@@ -55,7 +51,7 @@ export function OrgStatusToggle({
         )
     }
 
-    if (isActive) {
+    if (isActive && planStatus !== 'PENDING_PAYMENT' && planStatus !== 'EXPIRED') {
         return (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
@@ -92,31 +88,6 @@ export function OrgStatusToggle({
         )
     }
 
-    // Pending or Expired state — show manual override activate button
-    if (planStatus === 'PENDING_PAYMENT' || planStatus === 'EXPIRED') {
-        return (
-            <Button
-                variant="default"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                onClick={handleManualActivate}
-                disabled={isPending}
-            >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                {isPending ? 'Processing...' : 'Manual Verify & Activate'}
-            </Button>
-        )
-    }
-
-    // Default inactive state
-    return (
-        <Button
-            variant="outline"
-            className="text-green-600 border-green-200 hover:bg-green-50"
-            onClick={() => handleToggle('activate')}
-            disabled={isPending}
-        >
-            <CheckCircle className="h-4 w-4 mr-2" />
-            {isPending ? 'Activating...' : 'Activate Organization'}
-        </Button>
-    )
+    // Default
+    return null
 }
