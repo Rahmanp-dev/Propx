@@ -9,20 +9,25 @@ import { PendingPaymentsTable } from "@/components/dashboard/pending-payments-ta
 import { GenerateDuesButton } from "@/components/dashboard/generate-dues-button"
 import { CopyPortalLink } from "@/components/dashboard/copy-portal-link"
 import { MonthFilter } from "@/components/dashboard/month-filter"
+import { BuildingMapView } from "@/components/dashboard/building-map-view"
+import Link from "next/link"
 
 export const dynamic = 'force-dynamic'
 
 interface DashboardPageProps {
-    searchParams: {
+    searchParams: Promise<{
         month?: string
-    }
+        view?: string
+    }>
 }
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
     const session = await auth()
     const userId = session?.user?.id || 'user'
     
-    const monthFilter = searchParams.month || 'all'
+    const params = await searchParams
+    const monthFilter = params.month || 'all'
+    const view = params.view || 'list'
 
     const [bRes, sRes] = await Promise.all([
         getBuildings(monthFilter),
@@ -160,52 +165,75 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 </div>
             )}
 
-            {/* Buildings Grid */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Building2 className="h-6 w-6 text-blue-600" />
-                    <h2 className="text-2xl font-bold tracking-tight">Properties</h2>
+            {/* Properties Section */}
+            <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
+                    <div className="flex items-center gap-2">
+                        <Building2 className="h-6 w-6 text-blue-600" />
+                        <h2 className="text-2xl font-bold tracking-tight">Properties</h2>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {/* Tab Switcher */}
+                        <div className="inline-flex h-9 items-center justify-center rounded-lg bg-slate-100 p-1 text-slate-500">
+                            <Link
+                                href={`/${userId}/dashboard?view=list${monthFilter !== 'all' ? `&month=${monthFilter}` : ''}`}
+                                className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-xs font-semibold ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${view === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'hover:bg-slate-50/50 hover:text-slate-900'}`}
+                            >
+                                List View
+                            </Link>
+                            <Link
+                                href={`/${userId}/dashboard?view=map${monthFilter !== 'all' ? `&month=${monthFilter}` : ''}`}
+                                className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-xs font-semibold ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${view === 'map' ? 'bg-white text-slate-900 shadow-sm' : 'hover:bg-slate-50/50 hover:text-slate-900'}`}
+                            >
+                                Map View
+                            </Link>
+                        </div>
+                        <AddBuildingDialog />
+                    </div>
                 </div>
-                <AddBuildingDialog />
-            </div>
 
-            <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {buildings.map((building) => {
-                    const occupiedFlats = building.flats.filter((f: any) => f.status === 'OCCUPIED').length
-                    
-                    let totalRevenue = 0
-                    let collectedRevenue = 0
-                    
-                    for (const f of building.flats) {
-                        const monthPayment = f.payments?.[0]
-                        if (monthPayment) {
-                            totalRevenue += monthPayment.totalDue || 0
-                            collectedRevenue += monthPayment.amountPaid || 0
-                        } else if (f.status === 'OCCUPIED') {
-                            // Fallback if no payment generated yet but occupied
-                            totalRevenue += (f.rentAmount || 0) + (f.maintenanceAmount || 0)
-                        }
-                    }
+                {view === 'map' ? (
+                    <BuildingMapView buildings={buildings} userId={userId} />
+                ) : (
+                    <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        {buildings.map((building) => {
+                            const occupiedFlats = building.flats.filter((f: any) => f.status === 'OCCUPIED').length
+                            
+                            let totalRevenue = 0
+                            let collectedRevenue = 0
+                            
+                            for (const f of building.flats) {
+                                const monthPayment = f.payments?.[0]
+                                if (monthPayment) {
+                                    totalRevenue += monthPayment.totalDue || 0
+                                    collectedRevenue += monthPayment.amountPaid || 0
+                                } else if (f.status === 'OCCUPIED') {
+                                    // Fallback if no payment generated yet but occupied
+                                    totalRevenue += (f.rentAmount || 0) + (f.maintenanceAmount || 0)
+                                }
+                            }
 
-                    return (
-                        <BuildingCard
-                            key={building.id}
-                            userId={userId}
-                            building={{
-                                id: building.id,
-                                name: building.name,
-                                address: building.address,
-                                totalFlats: building.totalFlats,
-                                occupiedFlats,
-                                totalRevenue,
-                                collectedRevenue,
-                            }}
-                        />
-                    )
-                })}
-                {buildings.length === 0 && (
-                    <div className="col-span-full text-center py-12 text-muted-foreground border-dashed border-2 rounded-xl">
-                        No properties found. Add your first building to get started.
+                            return (
+                                <BuildingCard
+                                    key={building.id}
+                                    userId={userId}
+                                    building={{
+                                        id: building.id,
+                                        name: building.name,
+                                        address: building.address,
+                                        totalFlats: building.totalFlats,
+                                        occupiedFlats,
+                                        totalRevenue,
+                                        collectedRevenue,
+                                    }}
+                                />
+                            )
+                        })}
+                        {buildings.length === 0 && (
+                            <div className="col-span-full text-center py-12 text-muted-foreground border-dashed border-2 rounded-xl">
+                                No properties found. Add your first building to get started.
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

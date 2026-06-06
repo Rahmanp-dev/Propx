@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongo';
 
+import { auth } from '@/lib/auth';
+
 export async function GET(request: Request) {
     try {
+        const session = await auth()
+        if (!session?.user || (session.user as any).role !== 'SUPER_ADMIN') {
+            return NextResponse.json({ error: 'Unauthorized: Super Admin access required' }, { status: 401 });
+        }
+
         const client = await clientPromise;
         const db = client.db('propx'); 
 

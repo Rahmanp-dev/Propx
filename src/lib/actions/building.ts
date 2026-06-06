@@ -30,13 +30,25 @@ export async function createBuilding(data: CreateBuildingInput) {
         return { error: "No organization associated with this account" }
     }
 
+    // Plan limit enforcement (skip for super admins)
+    if (!orgCtx.isSuperAdmin) {
+        const { checkPlanLimits } = await import('@/lib/plan-guard')
+        const limits = await checkPlanLimits(orgCtx.organizationId!)
+        if (!limits.isActive) {
+            return { error: "Your subscription is not active. Please renew to continue." }
+        }
+        if (!limits.canCreateBuilding) {
+            return { error: `You have reached the maximum of ${limits.maxBuildings} building(s) on your ${limits.plan} plan. Upgrade to add more buildings.` }
+        }
+    }
+
     const result = createBuildingSchema.safeParse(data)
 
     if (!result.success) {
         return { error: "Invalid input" }
     }
 
-    const { name, address, totalFloors, defaultRentBHK1, defaultRentBHK2, defaultRentBHK3, ratePerUnit } = result.data
+    const { name, address, totalFloors, defaultRentBHK1, defaultRentBHK2, defaultRentBHK3, ratePerUnit, latitude, longitude } = result.data
 
     try {
         const client = await clientPromise
@@ -47,6 +59,8 @@ export async function createBuilding(data: CreateBuildingInput) {
         const buildingDoc: Record<string, any> = {
             name,
             address,
+            latitude: latitude ?? null,
+            longitude: longitude ?? null,
             totalFloors,
             totalFlats: 0,
             occupancyRate: 0.0,

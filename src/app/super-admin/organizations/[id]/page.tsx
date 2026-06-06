@@ -187,7 +187,7 @@ export default async function OrganizationDetailPage({
                             <div>
                                 <div className="text-sm font-medium">Billing Cycle</div>
                                 <div className="text-sm text-muted-foreground mt-1">
-                                    {org.billingCycle === 'ANNUAL' ? 'Annual' : 'Monthly'}
+                                    {({'MONTHLY':'Monthly','QUARTERLY':'Quarterly','HALF_YEARLY':'Half-Yearly','YEARLY':'Yearly'} as Record<string, string>)[org.billingCycle] || org.billingCycle}
                                 </div>
                             </div>
                             <div>
@@ -324,7 +324,7 @@ export default async function OrganizationDetailPage({
                                         <TableCell>{getPlanBadge(payment.plan)}</TableCell>
                                         <TableCell className="font-medium">{formatCurrency(payment.amount)}</TableCell>
                                         <TableCell className="text-sm">
-                                            {payment.billingCycle === 'ANNUAL' ? 'Annual' : 'Monthly'}
+                                            {({'MONTHLY':'Monthly','QUARTERLY':'Quarterly','HALF_YEARLY':'Half-Yearly','YEARLY':'Yearly'} as Record<string, string>)[payment.billingCycle] || payment.billingCycle}
                                         </TableCell>
                                         <TableCell className="text-sm text-muted-foreground">
                                             {formatDate(payment.periodStart)} – {formatDate(payment.periodEnd)}

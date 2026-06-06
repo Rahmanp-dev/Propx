@@ -13,6 +13,7 @@ import { OffboardTenantDialog } from "@/components/dashboard/offboard-tenant-dia
 import { DeleteFlatDialog } from "@/components/dashboard/delete-flat-dialog"
 import { AddDueDialog } from "@/components/dashboard/add-due-dialog"
 import { EditTenantDialog } from "@/components/dashboard/edit-tenant-dialog"
+import { UpdateFlatDialog } from "@/components/dashboard/update-flat-dialog"
 
 export const dynamic = 'force-dynamic'
 
@@ -54,6 +55,14 @@ export default async function FlatPage({ params }: { params: Promise<{ id: strin
                 </div>
                 <div className="flex items-center gap-2">
                     <MeterReadingDialog flatId={id} flatNumber={flat.flatNumber} />
+                    <UpdateFlatDialog
+                        flatId={id}
+                        currentFlatNumber={flat.flatNumber}
+                        currentFlatType={(flat as any).flatType}
+                        currentRentAmount={flat.rentAmount}
+                        currentMaintenanceAmount={flat.maintenanceAmount}
+                        currentDepositAmount={flat.depositAmount}
+                    />
                     <DeleteFlatDialog flatId={id} flatNumber={flat.flatNumber} />
                     <Badge variant={flat.status === "OCCUPIED" ? "default" : "secondary"} className="text-lg px-4 py-1">
                         {flat.status}

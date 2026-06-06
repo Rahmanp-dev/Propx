@@ -623,3 +623,42 @@ export async function impersonateUser(userId: string) {
         return { error: `Failed to impersonate: ${error.message || String(error)}` }
     }
 }
+
+// ==========================================
+// CHECK EXPIRED SUBSCRIPTIONS
+// ==========================================
+
+export async function checkExpiredSubscriptions() {
+    try {
+        await requireSuperAdmin()
+        const client = await clientPromise
+        const db = client.db("propx")
+        const now = new Date()
+
+        // Find all active, non-FREE orgs whose subscription has ended
+        const result = await db.collection("Organization").updateMany(
+            {
+                planStatus: 'ACTIVE',
+                plan: { $ne: 'FREE' },
+                subscriptionEnd: { $lt: now },
+            },
+            {
+                $set: {
+                    planStatus: 'EXPIRED',
+                    isActive: false,
+                    updatedAt: now,
+                },
+            }
+        )
+
+        revalidatePath('/', 'layout')
+
+        return {
+            success: true,
+            expiredCount: result.modifiedCount,
+        }
+    } catch (error: any) {
+        console.error("Failed to check expired subscriptions:", error)
+        return { error: `Failed to check expired subscriptions: ${error.message || String(error)}` }
+    }
+}

@@ -57,8 +57,8 @@ export async function removeSubscription(endpoint: string) {
         const session = await auth()
         if (!session?.user?.id) return { error: "Not authenticated" }
 
-        await prisma.pushSubscription.delete({
-            where: { endpoint }
+        await prisma.pushSubscription.deleteMany({
+            where: { endpoint, userId: session.user.id }
         })
 
         return { success: true }

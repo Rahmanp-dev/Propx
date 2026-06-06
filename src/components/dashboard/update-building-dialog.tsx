@@ -23,13 +23,29 @@ interface UpdateBuildingDialogProps {
     buildingId: string
     currentRate: number
     buildingName: string
+    currentAddress: string
+    currentLatitude?: number | null
+    currentLongitude?: number | null
     totalFloors: number
     defaultRents?: { BHK1: number; BHK2: number; BHK3: number }
 }
 
-export function UpdateBuildingDialog({ buildingId, currentRate, buildingName, totalFloors, defaultRents }: UpdateBuildingDialogProps) {
+export function UpdateBuildingDialog({
+    buildingId,
+    currentRate,
+    buildingName,
+    currentAddress,
+    currentLatitude = null,
+    currentLongitude = null,
+    totalFloors,
+    defaultRents,
+}: UpdateBuildingDialogProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [name, setName] = useState(buildingName)
+    const [address, setAddress] = useState(currentAddress)
+    const [latitude, setLatitude] = useState(currentLatitude?.toString() || "")
+    const [longitude, setLongitude] = useState(currentLongitude?.toString() || "")
     const [rate, setRate] = useState(currentRate.toString())
     const [floors, setFloors] = useState(totalFloors.toString())
     const [rent1, setRent1] = useState((defaultRents?.BHK1 ?? 8000).toString())
@@ -46,6 +62,10 @@ export function UpdateBuildingDialog({ buildingId, currentRate, buildingName, to
         try {
             const res = await updateBuildingSettings({
                 buildingId,
+                name,
+                address,
+                latitude: latitude ? parseFloat(latitude) : null,
+                longitude: longitude ? parseFloat(longitude) : null,
                 ratePerUnit: parseFloat(rate),
                 totalFloors: parseInt(floors),
                 defaultRentBHK1: parseFloat(rent1),
@@ -58,7 +78,7 @@ export function UpdateBuildingDialog({ buildingId, currentRate, buildingName, to
             if (!res.success && res.error) {
                 setError(res.error)
             } else if (res.success) {
-                toast.success("Settings updated successfully!")
+                toast.success("Building settings updated successfully!")
                 setOpen(false)
                 router.refresh()
             }
@@ -76,18 +96,68 @@ export function UpdateBuildingDialog({ buildingId, currentRate, buildingName, to
                     <Settings className="mr-2 h-4 w-4" /> Manage
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[450px] max-h-[90vh] overflow-y-auto">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle>Building Settings</DialogTitle>
                         <DialogDescription>
-                            Configure settings for {buildingName}.
+                            Configure name, address, coordinates, and pricing defaults for {buildingName}.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
+                        {/* Name and Address */}
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">Name</Label>
+                            <Input
+                                id="name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="col-span-3"
+                                required
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="address" className="text-right">Address</Label>
+                            <Input
+                                id="address"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                className="col-span-3"
+                                required
+                            />
+                        </div>
+
+                        {/* Coordinates */}
+                        <div className="grid grid-cols-2 gap-4 border p-2.5 rounded-lg bg-slate-50">
+                            <div>
+                                <Label className="text-xs">Latitude (optional)</Label>
+                                <Input
+                                    type="number"
+                                    step="any"
+                                    value={latitude}
+                                    placeholder="e.g. 17.3850"
+                                    onChange={(e) => setLatitude(e.target.value)}
+                                    className="h-8 text-xs mt-1"
+                                />
+                            </div>
+                            <div>
+                                <Label className="text-xs">Longitude (optional)</Label>
+                                <Input
+                                    type="number"
+                                    step="any"
+                                    value={longitude}
+                                    placeholder="e.g. 78.4867"
+                                    onChange={(e) => setLongitude(e.target.value)}
+                                    className="h-8 text-xs mt-1"
+                                />
+                            </div>
+                        </div>
+
+                        <Separator />
+
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="rate" className="text-right">
-                                Elec. Rate (₹/Unit)
+                                Elec. Rate (₹/U)
                             </Label>
                             <Input
                                 id="rate"
@@ -115,7 +185,7 @@ export function UpdateBuildingDialog({ buildingId, currentRate, buildingName, to
                         </div>
 
                         <Separator />
-                        <p className="text-sm font-medium text-muted-foreground">Default Rent Structure</p>
+                        <p className="text-sm font-medium text-slate-700">Default Rent Structure</p>
 
                         <div className="grid grid-cols-3 gap-3 bg-slate-50 p-3 rounded-lg border">
                             <div>
@@ -124,6 +194,7 @@ export function UpdateBuildingDialog({ buildingId, currentRate, buildingName, to
                                     type="number"
                                     value={rent1}
                                     onChange={(e) => setRent1(e.target.value)}
+                                    className="h-8 text-xs mt-1"
                                 />
                             </div>
                             <div>
@@ -132,6 +203,7 @@ export function UpdateBuildingDialog({ buildingId, currentRate, buildingName, to
                                     type="number"
                                     value={rent2}
                                     onChange={(e) => setRent2(e.target.value)}
+                                    className="h-8 text-xs mt-1"
                                 />
                             </div>
                             <div>
@@ -140,6 +212,7 @@ export function UpdateBuildingDialog({ buildingId, currentRate, buildingName, to
                                     type="number"
                                     value={rent3}
                                     onChange={(e) => setRent3(e.target.value)}
+                                    className="h-8 text-xs mt-1"
                                 />
                             </div>
                         </div>

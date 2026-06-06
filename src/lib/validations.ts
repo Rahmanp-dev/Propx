@@ -11,6 +11,8 @@ export const createBuildingSchema = z.object({
     ratePerUnit: z.coerce.number().min(0).optional(),
     rentDueDay: z.coerce.number().min(1).max(28).optional(),
     lateFeePercent: z.coerce.number().min(0).max(100).optional(),
+    latitude: z.coerce.number().optional().nullable(),
+    longitude: z.coerce.number().optional().nullable(),
 })
 
 export type CreateBuildingInput = z.infer<typeof createBuildingSchema>

@@ -65,14 +65,20 @@ export function EditTenantDialog({ tenant, paymentMethods = [], children }: Edit
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
-        const res = await updateTenantDetails(formData)
-        if (res.success) {
-            toast("Success", { description: "Tenant details updated successfully." })
-            setOpen(false)
-        } else {
-            toast("Error", { description: res.error || "Failed to update tenant" })
+        try {
+            const res = await updateTenantDetails(formData)
+            if (res.success) {
+                toast("Success", { description: "Tenant details updated successfully." })
+                setOpen(false)
+            } else {
+                toast("Error", { description: res.error || "Failed to update tenant" })
+            }
+        } catch (err: any) {
+            console.error(err)
+            toast("Error", { description: err.message || "An unexpected error occurred." })
+        } finally {
+            setLoading(false)
         }
-        setLoading(false)
     }
 
     return (

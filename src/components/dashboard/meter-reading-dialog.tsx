@@ -39,9 +39,13 @@ export function MeterReadingDialog({ flatId, flatNumber }: MeterReadingDialogPro
     // Fetch previous readings on mount
     useEffect(() => {
         if (open) {
-            getFlatReadings(flatId).then(res => {
-                if (res.success) setReadings(res.data || [])
-            })
+            getFlatReadings(flatId)
+                .then(res => {
+                    if (res.success) setReadings(res.data || [])
+                })
+                .catch(err => {
+                    console.error("Failed to load readings:", err)
+                })
         }
     }, [open, flatId])
 

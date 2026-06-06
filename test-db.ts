@@ -21,7 +21,7 @@ async function testConnection() {
         const client = new MongoClient(process.env.DATABASE_URL as string)
         await client.connect()
         console.log("Mongo connect success.")
-        const count = await client.db("lpm_rental").collection("Building").countDocuments()
+        const count = await client.db("propx").collection("Building").countDocuments()
         console.log("Mongo count success:", count)
         await client.close()
     } catch (e) {

@@ -39,6 +39,7 @@ model User {
 // ==========================================
 
 enum PlanType {
+  FREE
   STARTER
   BUILDER
   PORTFOLIO
@@ -53,7 +54,9 @@ enum PlanStatus {
 
 enum BillingCycle {
   MONTHLY
-  ANNUAL
+  QUARTERLY
+  HALF_YEARLY
+  YEARLY
 }
 
 model Organization {
@@ -68,7 +71,7 @@ model Organization {
   plan          PlanType     @default(STARTER)
   planStatus    PlanStatus   @default(PENDING_PAYMENT)
   maxUnits      Int          @default(20)
-  billingCycle  BillingCycle @default(ANNUAL)
+  billingCycle  BillingCycle @default(YEARLY)
   subscriptionStart DateTime?
   subscriptionEnd   DateTime?
 
@@ -136,6 +139,8 @@ model Building {
   name            String
   address         String
   city            String   @default("Hyderabad")
+  latitude        Float?
+  longitude       Float?
   totalFloors     Int      @default(0)
   totalFlats      Int      @default(0)
   occupancyRate   Float    @default(0.0)

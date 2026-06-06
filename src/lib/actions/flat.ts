@@ -50,6 +50,21 @@ export async function createFlat(data: CreateFlatInput) {
                 where: { id: buildingId, organizationId: orgCtx.organizationId! }
             })
             if (!building) return { error: "Building not found" }
+
+            // ═══ PLAN ENFORCEMENT: Check unit limits ═══
+            const { checkPlanLimits } = await import('@/lib/plan-guard')
+            const limits = await checkPlanLimits(orgCtx.organizationId!)
+            
+            if (!limits.isActive) {
+                return { error: limits.isExpired 
+                    ? 'Your subscription has expired. Please renew your plan to add more units.' 
+                    : 'Your account is not active. Please complete your subscription setup.' 
+                }
+            }
+            
+            if (!limits.canCreateFlat) {
+                return { error: `You have reached the maximum of ${limits.maxUnits} units on your ${limits.plan} plan. Upgrade your plan to add more units.` }
+            }
         }
 
         const client = await clientPromise
@@ -140,5 +155,61 @@ export async function deleteFlat(flatId: string) {
     } catch (error: any) {
         console.error("Failed to delete flat:", error)
         return { error: `Failed to delete flat: ${error.message || String(error)}` }
+    }
+}
+
+const updateFlatSchema = z.object({
+    id: z.string(),
+    flatNumber: z.string().min(1),
+    flatType: z.enum(["STUDIO", "BHK1", "BHK2", "BHK3", "OTHER"]),
+    rentAmount: z.coerce.number().min(0),
+    maintenanceAmount: z.coerce.number().min(0),
+    depositAmount: z.coerce.number().min(0).optional()
+})
+
+export type UpdateFlatInput = z.infer<typeof updateFlatSchema>
+
+export async function updateFlat(data: UpdateFlatInput) {
+    const orgCtx = await getOrgContext()
+    if (!orgCtx) return { error: "Not authenticated" }
+
+    const result = updateFlatSchema.safeParse(data)
+    if (!result.success) {
+        return { error: "Invalid input" }
+    }
+
+    const { id, flatNumber, flatType, rentAmount, maintenanceAmount, depositAmount } = result.data
+
+    try {
+        if (!orgCtx.isSuperAdmin) {
+            const flat = await prisma.flat.findFirst({
+                where: { id, building: { organizationId: orgCtx.organizationId! } }
+            })
+            if (!flat) return { error: "Flat not found" }
+        }
+
+        const client = await clientPromise
+        const db = client.db("propx")
+        const now = new Date()
+
+        await db.collection("Flat").updateOne(
+            { _id: new ObjectId(id) },
+            {
+                $set: {
+                    flatNumber,
+                    flatType,
+                    rentAmount,
+                    maintenanceAmount,
+                    depositAmount: depositAmount || rentAmount * 2,
+                    updatedAt: now
+                }
+            }
+        )
+
+        revalidatePath('/', 'layout')
+        return { success: true }
+    } catch (error: any) {
+        console.error("Failed to update flat:", error)
+        return { error: `Failed to update flat: ${error.message || String(error)}` }
     }
 }

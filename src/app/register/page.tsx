@@ -14,14 +14,30 @@ import Link from 'next/link'
 // ─── Plan Data ───────────────────────────────────────────
 const PLANS = [
   {
+    id: 'FREE' as const,
+    name: 'Free',
+    icon: Users,
+    description: 'Get started with basic features at no cost',
+    monthlyPrice: 0,
+    quarterlyPrice: 0,
+    halfYearlyPrice: 0,
+    yearlyPrice: 0,
+    maxUnits: 7,
+    features: ['Up to 7 units', 'Automated rent invoicing', 'Tenant payment portal', 'WhatsApp notifications', 'Maintenance & inquiry desk', 'Advanced financial insights', '24/7 priority support'],
+    color: 'from-slate-500 to-slate-600',
+    badge: null,
+  },
+  {
     id: 'STARTER' as const,
     name: 'Starter',
     icon: Zap,
     description: 'Perfect for individual property owners',
     monthlyPrice: 499,
-    annualPrice: 4999,
-    maxUnits: 20,
-    features: ['Up to 20 units', 'Tenant management', 'Rent collection', 'Basic reports', 'WhatsApp notifications'],
+    quarterlyPrice: 1349,
+    halfYearlyPrice: 2499,
+    yearlyPrice: 4999,
+    maxUnits: 15,
+    features: ['Up to 15 units', 'Automated rent invoicing', 'Tenant payment portal', 'WhatsApp notifications', 'Maintenance & inquiry desk', 'Advanced financial insights', '24/7 priority support'],
     color: 'from-blue-500 to-blue-600',
     badge: null,
   },
@@ -31,9 +47,11 @@ const PLANS = [
     icon: Shield,
     description: 'For growing property portfolios',
     monthlyPrice: 1199,
-    annualPrice: 11999,
-    maxUnits: 60,
-    features: ['Up to 60 units', 'Everything in Starter', 'Advanced analytics', 'Maintenance tracking', 'Multi-building support', 'Priority support'],
+    quarterlyPrice: 3249,
+    halfYearlyPrice: 5999,
+    yearlyPrice: 11999,
+    maxUnits: 40,
+    features: ['Up to 40 units', 'Up to 3 buildings', 'Automated rent invoicing', 'Tenant payment portal', 'WhatsApp notifications', 'Maintenance & inquiry desk', 'Advanced financial insights', '24/7 priority support'],
     color: 'from-indigo-500 to-violet-600',
     badge: 'Popular',
   },
@@ -43,16 +61,34 @@ const PLANS = [
     icon: Crown,
     description: 'For large-scale property management',
     monthlyPrice: 2499,
-    annualPrice: 24999,
-    maxUnits: 999,
-    features: ['Unlimited units', 'Everything in Builder', 'Custom branding', 'API access', 'Dedicated account manager', 'Custom reports'],
+    quarterlyPrice: 6749,
+    halfYearlyPrice: 12499,
+    yearlyPrice: 24999,
+    maxUnits: 99999,
+    features: ['Unlimited units', 'Unlimited buildings', 'Automated rent invoicing', 'Tenant payment portal', 'WhatsApp notifications', 'Maintenance & inquiry desk', 'Advanced financial insights', '24/7 priority support'],
     color: 'from-fuchsia-500 to-pink-600',
     badge: 'Enterprise',
   },
 ]
 
-type PlanType = 'STARTER' | 'BUILDER' | 'PORTFOLIO'
-type BillingCycle = 'MONTHLY' | 'ANNUAL'
+type PlanType = 'FREE' | 'STARTER' | 'BUILDER' | 'PORTFOLIO'
+type BillingCycle = 'MONTHLY' | 'QUARTERLY' | 'HALF_YEARLY' | 'YEARLY'
+
+const BILLING_LABELS: Record<BillingCycle, string> = {
+  MONTHLY: 'mo',
+  QUARTERLY: 'qtr',
+  HALF_YEARLY: '6mo',
+  YEARLY: 'yr',
+}
+
+function getPlanPrice(plan: typeof PLANS[number], cycle: BillingCycle) {
+  switch (cycle) {
+    case 'MONTHLY': return plan.monthlyPrice
+    case 'QUARTERLY': return plan.quarterlyPrice
+    case 'HALF_YEARLY': return plan.halfYearlyPrice
+    case 'YEARLY': return plan.yearlyPrice
+  }
+}
 
 const featuresList = [
   {
@@ -89,13 +125,14 @@ export default function RegisterPage() {
 
   // Step 2: Plan
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('BUILDER')
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>('ANNUAL')
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('YEARLY')
   const [businessName, setBusinessName] = useState('')
 
   // Step 3: Payment
   const [orgId, setOrgId] = useState('')
   const [amount, setAmount] = useState(0)
   const [upiId, setUpiId] = useState('')
+  const [upiIntentLink, setUpiIntentLink] = useState('')
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null)
   const [screenshotPreview, setScreenshotPreview] = useState('')
   const [utrNumber, setUtrNumber] = useState('')
@@ -113,9 +150,39 @@ export default function RegisterPage() {
     setStep(2)
   }
 
-  const handleStep2 = () => {
+  const handleStep2 = async () => {
     setError('')
     if (!businessName.trim()) return setError('Please enter your business/property name')
+
+    if (selectedPlan === 'FREE') {
+      // FREE plan: register and redirect to login, skip payment
+      setIsLoading(true)
+      try {
+        const result = await registerOrganization({
+          ownerName,
+          businessName,
+          email,
+          phone,
+          city,
+          plan: selectedPlan,
+          billingCycle,
+          password,
+        })
+        if (!result.success) {
+          setError(result.error || 'Registration failed')
+          setIsLoading(false)
+          return
+        }
+        // Skip payment, go straight to success
+        setStep(4)
+      } catch {
+        setError('Something went wrong. Please try again.')
+      } finally {
+        setIsLoading(false)
+      }
+      return
+    }
+
     setStep(3)
     handleRegister()
   }
@@ -145,6 +212,9 @@ export default function RegisterPage() {
       setOrgId(result.organizationId!)
       setAmount(result.amount!)
       setUpiId(result.upiId!)
+      if (result.upiIntentLink) {
+        setUpiIntentLink(result.upiIntentLink)
+      }
     } catch {
       setError('Something went wrong. Please try again.')
       setStep(2)
@@ -463,37 +533,39 @@ export default function RegisterPage() {
 
                 {/* Billing toggle */}
                 <div className="flex justify-center pt-2">
-                  <div className="bg-slate-950/40 rounded-full p-1 border border-white/10 flex items-center">
-                    <button
-                      onClick={() => setBillingCycle('MONTHLY')}
-                      className={`px-5 py-2 rounded-full text-xs font-semibold transition-all duration-200 ${
-                        billingCycle === 'MONTHLY'
-                          ? 'bg-indigo-600 text-white shadow-md'
-                          : 'text-indigo-200/50 hover:text-indigo-200'
-                      }`}
-                    >
-                      Monthly
-                    </button>
-                    <button
-                      onClick={() => setBillingCycle('ANNUAL')}
-                      className={`px-5 py-2 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-2 ${
-                        billingCycle === 'ANNUAL'
-                          ? 'bg-indigo-600 text-white shadow-md'
-                          : 'text-indigo-200/50 hover:text-indigo-200'
-                      }`}
-                    >
-                      Annual
-                      <span className="bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-full text-[9px] border border-emerald-500/20">
-                        Save 17%
-                      </span>
-                    </button>
+                  <div className="bg-slate-950/40 rounded-xl p-1 border border-white/10 flex items-center flex-wrap justify-center gap-0.5">
+                    {(
+                      [
+                        { key: 'MONTHLY' as BillingCycle, label: 'Monthly' },
+                        { key: 'QUARTERLY' as BillingCycle, label: 'Quarterly' },
+                        { key: 'HALF_YEARLY' as BillingCycle, label: 'Half-Yearly' },
+                        { key: 'YEARLY' as BillingCycle, label: 'Yearly' },
+                      ] as const
+                    ).map((opt) => (
+                      <button
+                        key={opt.key}
+                        onClick={() => setBillingCycle(opt.key)}
+                        className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 ${
+                          billingCycle === opt.key
+                            ? 'bg-indigo-600 text-white shadow-md'
+                            : 'text-indigo-200/50 hover:text-indigo-200'
+                        }`}
+                      >
+                        {opt.label}
+                        {opt.key === 'YEARLY' && (
+                          <span className="bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-full text-[9px] border border-emerald-500/20">
+                            Save
+                          </span>
+                        )}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
                 {/* Plan cards list */}
                 <div className="space-y-3">
                   {PLANS.map((plan) => {
-                    const price = billingCycle === 'MONTHLY' ? plan.monthlyPrice : plan.annualPrice
+                    const price = getPlanPrice(plan, billingCycle)
                     const isSelected = selectedPlan === plan.id
                     const Icon = plan.icon
 
@@ -522,8 +594,14 @@ export default function RegisterPage() {
                           <p className="text-xs text-indigo-200/50 mt-0.5 leading-snug">{plan.description}</p>
                         </div>
                         <div className="text-right">
-                          <span className="text-lg font-extrabold text-white">₹{price.toLocaleString('en-IN')}</span>
-                          <p className="text-[10px] text-indigo-300/40">/{billingCycle === 'MONTHLY' ? 'mo' : 'yr'}</p>
+                          {plan.id === 'FREE' ? (
+                            <span className="text-lg font-extrabold text-emerald-400">Free</span>
+                          ) : (
+                            <>
+                              <span className="text-lg font-extrabold text-white">₹{price.toLocaleString('en-IN')}</span>
+                              <p className="text-[10px] text-indigo-300/40">/{BILLING_LABELS[billingCycle]}</p>
+                            </>
+                          )}
                         </div>
                       </div>
                     )
@@ -546,6 +624,8 @@ export default function RegisterPage() {
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" /> Processing...
                       </>
+                    ) : selectedPlan === 'FREE' ? (
+                      'Complete Registration'
                     ) : (
                       'Proceed to Payment'
                     )}
@@ -561,7 +641,7 @@ export default function RegisterPage() {
                 <div className="bg-indigo-500/10 rounded-xl p-4 border border-indigo-500/20 flex justify-between items-center">
                   <div>
                     <p className="text-sm font-semibold text-indigo-300">
-                      {PLANS.find(p => p.id === selectedPlan)?.name} Plan ({billingCycle.toLowerCase()})
+                      {PLANS.find(p => p.id === selectedPlan)?.name} Plan ({billingCycle.toLowerCase().replace('_', '-')})
                     </p>
                   </div>
                   <div className="text-right">
@@ -591,13 +671,23 @@ export default function RegisterPage() {
 
                 {/* Direct UPI Payment Button */}
                 <div className="flex justify-center">
-                  <a
-                    href={`upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent('PropX')}&am=${amount}&cu=INR&tn=${encodeURIComponent('PropX Subscription Payment')}`}
-                    className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-semibold shadow-lg shadow-emerald-500/25 transition-all text-sm"
-                  >
-                    <CreditCard className="h-4 w-4" />
-                    Pay ₹{amount.toLocaleString('en-IN')} via UPI App
-                  </a>
+                  {upiIntentLink ? (
+                    <a
+                      href={upiIntentLink}
+                      className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-semibold shadow-lg shadow-emerald-500/25 transition-all text-sm"
+                    >
+                      <CreditCard className="h-4 w-4" />
+                      Pay ₹{amount.toLocaleString('en-IN')} via UPI App
+                    </a>
+                  ) : (
+                    <a
+                      href={`upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent('PropX')}&am=${amount}&cu=INR&tn=${encodeURIComponent('PropX Subscription Payment')}`}
+                      className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-semibold shadow-lg shadow-emerald-500/25 transition-all text-sm"
+                    >
+                      <CreditCard className="h-4 w-4" />
+                      Pay ₹{amount.toLocaleString('en-IN')} via UPI App
+                    </a>
+                  )}
                 </div>
 
                 {/* Upload Screenshot */}
@@ -688,7 +778,9 @@ export default function RegisterPage() {
                 <div className="space-y-2">
                   <h2 className="text-2xl font-bold text-white">Registration Complete!</h2>
                   <p className="text-indigo-200/70 text-sm max-w-sm mx-auto leading-relaxed">
-                    Your details and payment proof have been received. We'll verify your transaction and activate your account.
+                    {selectedPlan === 'FREE'
+                      ? 'Your free account has been created successfully. You can log in right away!'
+                      : "Your details and payment proof have been received. We'll verify your transaction and activate your account."}
                   </p>
                 </div>
                 <div className="bg-slate-950/40 rounded-xl p-5 text-left border border-white/5 space-y-4">

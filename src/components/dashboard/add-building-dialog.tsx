@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
@@ -30,24 +30,61 @@ import { createBuilding } from "@/lib/actions/building"
 import { createBuildingSchema, CreateBuildingInput } from "@/lib/validations"
 import { Separator } from "@/components/ui/separator"
 
-export function AddBuildingDialog() {
-    const [open, setOpen] = useState(false)
+interface AddBuildingDialogProps {
+    defaultLat?: number | null
+    defaultLng?: number | null
+    defaultAddress?: string
+    open?: boolean
+    onOpenChange?: (open: boolean) => void
+    trigger?: React.ReactNode | null
+}
+
+export function AddBuildingDialog({
+    defaultLat = null,
+    defaultLng = null,
+    defaultAddress = "",
+    open: controlledOpen,
+    onOpenChange: controlledOnOpenChange,
+    trigger = undefined,
+}: AddBuildingDialogProps) {
+    const [internalOpen, setInternalOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
     const router = useRouter()
+
+    const open = controlledOpen !== undefined ? controlledOpen : internalOpen
+    const setOpen = controlledOnOpenChange !== undefined ? controlledOnOpenChange : setInternalOpen
 
     const form = useForm({
         resolver: zodResolver(createBuildingSchema),
         defaultValues: {
             name: "",
-            address: "",
+            address: defaultAddress || "",
             totalFloors: 1,
             defaultRentBHK1: 8000,
             defaultRentBHK2: 12000,
             defaultRentBHK3: 16000,
             ratePerUnit: 10,
+            latitude: defaultLat,
+            longitude: defaultLng,
         },
     })
+
+    useEffect(() => {
+        if (open) {
+            form.reset({
+                name: "",
+                address: defaultAddress || "",
+                totalFloors: 1,
+                defaultRentBHK1: 8000,
+                defaultRentBHK2: 12000,
+                defaultRentBHK3: 16000,
+                ratePerUnit: 10,
+                latitude: defaultLat,
+                longitude: defaultLng,
+            })
+        }
+    }, [open, defaultLat, defaultLng, defaultAddress, form])
 
     async function onSubmit(values: CreateBuildingInput) {
         setLoading(true)
@@ -74,11 +111,15 @@ export function AddBuildingDialog() {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="mr-2 h-4 w-4" /> Add Building
-                </Button>
-            </DialogTrigger>
+            {trigger !== null && (
+                <DialogTrigger asChild>
+                    {trigger || (
+                        <Button className="bg-blue-600 hover:bg-blue-700">
+                            <Plus className="mr-2 h-4 w-4" /> Add Building
+                        </Button>
+                    )}
+                </DialogTrigger>
+            )}
             <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Add New Building</DialogTitle>
@@ -142,6 +183,14 @@ export function AddBuildingDialog() {
                                 )}
                             />
                         </div>
+
+                        {/* Lat/Lng information */}
+                        {(defaultLat !== null || defaultLng !== null) && (
+                            <div className="bg-slate-50 p-2.5 rounded-lg border text-xs text-muted-foreground flex justify-between">
+                                <span>Latitude: {defaultLat?.toFixed(6)}</span>
+                                <span>Longitude: {defaultLng?.toFixed(6)}</span>
+                            </div>
+                        )}
 
                         <Separator />
                         <p className="text-sm font-medium text-muted-foreground">Default Rent Structure</p>

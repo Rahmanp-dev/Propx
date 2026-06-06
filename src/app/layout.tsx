@@ -7,6 +7,7 @@ import { PWAInstallPrompt } from "@/components/shared/pwa-install-prompt"
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://propx.gwdglobal.in"),
   title: "PropX — Smart Property Management",
   description: "Manage your rental properties, collect rent, track maintenance, and communicate with tenants — all in one place.",
   keywords: ["property management", "rental", "tenant management", "rent collection", "Hyderabad"],

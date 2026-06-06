@@ -29,11 +29,15 @@ export function BroadcastDialog() {
 
     useEffect(() => {
         if (open) {
-            getBuildings().then(res => {
-                if (res.data) {
-                    setBuildings(res.data.map((b: any) => ({ id: b.id, name: b.name })))
-                }
-            })
+            getBuildings()
+                .then(res => {
+                    if (res.data) {
+                        setBuildings(res.data.map((b: any) => ({ id: b.id, name: b.name })))
+                    }
+                })
+                .catch(err => {
+                    console.error("Failed to load buildings:", err)
+                })
         }
     }, [open])
 

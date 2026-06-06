@@ -6,12 +6,16 @@ import { revalidatePath } from "next/cache"
 import { ObjectId } from "mongodb"
 import { auth } from "@/lib/auth"
 
-async function getOrgId() {
+async function getOrgContext() {
     const session = await auth()
     if (!session?.user) return null
     const user = session.user as any
-    if (user.role === 'SUPER_ADMIN') return null // super admin sees all
-    return user.organizationId as string | null
+    return {
+        userId: user.id,
+        role: user.role as string,
+        organizationId: user.organizationId as string | null,
+        isSuperAdmin: user.role === 'SUPER_ADMIN',
+    }
 }
 
 // ==========================================
@@ -20,13 +24,15 @@ async function getOrgId() {
 
 export async function getNotifications(unreadOnly: boolean = false) {
     try {
-        const orgId = await getOrgId()
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
+
         const where: Record<string, unknown> = {}
         if (unreadOnly) {
             where.isRead = false
         }
-        if (orgId) {
-            where.organizationId = orgId
+        if (!orgCtx.isSuperAdmin) {
+            where.organizationId = orgCtx.organizationId!
         }
 
         const notifications = await prisma.notification.findMany({
@@ -44,10 +50,12 @@ export async function getNotifications(unreadOnly: boolean = false) {
 
 export async function getUnreadCount() {
     try {
-        const orgId = await getOrgId()
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
+
         const where: Record<string, unknown> = { isRead: false }
-        if (orgId) {
-            where.organizationId = orgId
+        if (!orgCtx.isSuperAdmin) {
+            where.organizationId = orgCtx.organizationId!
         }
 
         const count = await prisma.notification.count({ where })
@@ -65,7 +73,8 @@ export async function getUnreadCount() {
 
 export async function markAsRead(id: string) {
     try {
-        const orgId = await getOrgId()
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
         
         const existing = await prisma.notification.findUnique({
             where: { id },
@@ -75,7 +84,7 @@ export async function markAsRead(id: string) {
             return { error: "Notification not found" }
         }
 
-        if (orgId && existing.organizationId !== orgId) {
+        if (!orgCtx.isSuperAdmin && existing.organizationId !== orgCtx.organizationId) {
             return { error: "Unauthorized" }
         }
 
@@ -98,13 +107,14 @@ export async function markAsRead(id: string) {
 
 export async function markAllAsRead() {
     try {
-        const orgId = await getOrgId()
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
         const client = await clientPromise
         const db = client.db("propx")
 
         const filter: Record<string, unknown> = { isRead: false }
-        if (orgId) {
-            filter.organizationId = new ObjectId(orgId)
+        if (!orgCtx.isSuperAdmin) {
+            filter.organizationId = new ObjectId(orgCtx.organizationId!)
         }
 
         await db.collection("Notification").updateMany(

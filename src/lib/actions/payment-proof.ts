@@ -187,6 +187,26 @@ export async function verifyPaymentProof(proofId: string, verified: boolean, not
 
 export async function getPaymentProofs(paymentId: string) {
     try {
+        const orgCtx = await getOrgContext()
+        if (!orgCtx) return { error: "Not authenticated" }
+
+        const payment = await prisma.payment.findUnique({
+            where: { id: paymentId },
+            include: {
+                flat: {
+                    include: {
+                        building: { select: { organizationId: true } }
+                    }
+                }
+            }
+        })
+
+        if (!payment) return { error: "Payment not found" }
+
+        if (!orgCtx.isSuperAdmin && payment.flat.building.organizationId !== orgCtx.organizationId) {
+            return { error: "Unauthorized" }
+        }
+
         const proofs = await prisma.paymentProof.findMany({
             where: { paymentId },
             orderBy: { createdAt: 'desc' },

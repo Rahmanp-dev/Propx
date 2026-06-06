@@ -20,6 +20,10 @@ async function getOrgContext() {
 
 const updateBuildingSchema = z.object({
     buildingId: z.string(),
+    name: z.string().min(1).optional(),
+    address: z.string().min(1).optional(),
+    latitude: z.coerce.number().optional().nullable(),
+    longitude: z.coerce.number().optional().nullable(),
     ratePerUnit: z.coerce.number().min(0),
     totalFloors: z.coerce.number().min(1).optional(),
     defaultRentBHK1: z.coerce.number().min(0).optional(),
@@ -39,7 +43,7 @@ export async function updateBuildingSettings(data: UpdateBuildingInput) {
         return { error: "Invalid input" }
     }
 
-    const { buildingId, ratePerUnit, totalFloors, defaultRentBHK1, defaultRentBHK2, defaultRentBHK3 } = result.data
+    const { buildingId, name, address, latitude, longitude, ratePerUnit, totalFloors, defaultRentBHK1, defaultRentBHK2, defaultRentBHK3 } = result.data
 
     try {
         const client = await clientPromise
@@ -94,6 +98,10 @@ export async function updateBuildingSettings(data: UpdateBuildingInput) {
             updatedAt: new Date()
         }
 
+        if (name !== undefined) updateFields.name = name
+        if (address !== undefined) updateFields.address = address
+        if (latitude !== undefined) updateFields.latitude = latitude
+        if (longitude !== undefined) updateFields.longitude = longitude
         if (defaultRentBHK1 !== undefined) updateFields.defaultRentBHK1 = defaultRentBHK1
         if (defaultRentBHK2 !== undefined) updateFields.defaultRentBHK2 = defaultRentBHK2
         if (defaultRentBHK3 !== undefined) updateFields.defaultRentBHK3 = defaultRentBHK3

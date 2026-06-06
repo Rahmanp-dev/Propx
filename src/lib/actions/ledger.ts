@@ -49,6 +49,11 @@ export async function getFlatLedger(flatId: string) {
             }
         })
 
+        // Verify flat belongs to user's org
+        if (flat && !orgCtx.isSuperAdmin && flat.building.organizationId !== orgCtx.organizationId) {
+            return { error: "Flat not found" }
+        }
+
         return { data: { payments, flat } }
     } catch (error: any) {
         console.error("Failed to fetch flat ledger:", error)

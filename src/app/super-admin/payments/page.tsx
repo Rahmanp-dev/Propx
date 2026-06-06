@@ -145,7 +145,7 @@ export default async function PaymentsPage({
                                     </TableCell>
                                     <TableCell>{getPlanBadge(payment.plan)}</TableCell>
                                     <TableCell className="text-sm">
-                                        {payment.billingCycle === 'ANNUAL' ? 'Annual' : 'Monthly'}
+                                        {({'MONTHLY':'Monthly','QUARTERLY':'Quarterly','HALF_YEARLY':'Half-Yearly','YEARLY':'Yearly'} as Record<string, string>)[payment.billingCycle] || payment.billingCycle}
                                     </TableCell>
                                     <TableCell className="font-medium">
                                         {formatCurrency(payment.amount)}

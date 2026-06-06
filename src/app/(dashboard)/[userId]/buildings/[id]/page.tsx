@@ -56,6 +56,9 @@ export default async function BuildingPage({ params }: { params: Promise<{ id: s
                         buildingId={id}
                         currentRate={bld.ratePerUnit || 10}
                         buildingName={building.name}
+                        currentAddress={building.address}
+                        currentLatitude={bld.latitude}
+                        currentLongitude={bld.longitude}
                         totalFloors={building.totalFloors}
                         defaultRents={defaultRents}
                     />

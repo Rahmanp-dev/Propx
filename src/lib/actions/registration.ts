@@ -5,22 +5,7 @@ import prisma from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { ObjectId } from 'mongodb'
 import { revalidatePath } from 'next/cache'
-
-// Pricing lookup
-const PRICING: Record<string, Record<string, { amount: number; maxUnits: number }>> = {
-  STARTER: {
-    MONTHLY: { amount: 499, maxUnits: 20 },
-    ANNUAL: { amount: 4999, maxUnits: 20 },
-  },
-  BUILDER: {
-    MONTHLY: { amount: 1199, maxUnits: 60 },
-    ANNUAL: { amount: 11999, maxUnits: 60 },
-  },
-  PORTFOLIO: {
-    MONTHLY: { amount: 2499, maxUnits: 999 },
-    ANNUAL: { amount: 24999, maxUnits: 999 },
-  },
-}
+import { PRICING, calculatePeriodEnd, generateUpiIntentLink } from '@/lib/plan-guard'
 
 const PLATFORM_UPI_ID = process.env.PLATFORM_UPI_ID || 'propx@upi'
 
@@ -30,8 +15,8 @@ export async function registerOrganization(data: {
   email: string
   phone: string
   city: string
-  plan: 'STARTER' | 'BUILDER' | 'PORTFOLIO'
-  billingCycle: 'MONTHLY' | 'ANNUAL'
+  plan: 'FREE' | 'STARTER' | 'BUILDER' | 'PORTFOLIO'
+  billingCycle: 'MONTHLY' | 'QUARTERLY' | 'HALF_YEARLY' | 'YEARLY'
   password: string
 }) {
   try {
@@ -59,6 +44,7 @@ export async function registerOrganization(data: {
       return { success: false, error: 'Invalid plan or billing cycle.' }
     }
 
+    const isFree = data.plan === 'FREE'
     const client = await clientPromise
     const db = client.db('propx')
 
@@ -74,18 +60,19 @@ export async function registerOrganization(data: {
       phone: data.phone,
       city: data.city || 'Hyderabad',
       plan: data.plan,
-      planStatus: 'PENDING_PAYMENT',
+      planStatus: isFree ? 'ACTIVE' : 'PENDING_PAYMENT',
       maxUnits: pricing.maxUnits,
-      billingCycle: data.billingCycle,
-      subscriptionStart: null,
-      subscriptionEnd: null,
+      billingCycle: isFree ? 'MONTHLY' : data.billingCycle,
+      subscriptionStart: isFree ? now : null,
+      subscriptionEnd: isFree ? null : null, // FREE never expires
       upiId: null,
       bankName: null,
       accountNumber: null,
       ifscCode: null,
       accountHolder: null,
       paymentInstructions: null,
-      isActive: false,
+      paymentMethods: null,
+      isActive: isFree, // FREE plan auto-activates
       isSuspended: false,
       createdAt: now,
       updatedAt: now,
@@ -107,11 +94,21 @@ export async function registerOrganization(data: {
 
     revalidatePath('/', 'layout')
 
+    // Generate UPI intent link for paid plans
+    const upiIntentLink = isFree ? '' : generateUpiIntentLink({
+      upiId: PLATFORM_UPI_ID,
+      amount: pricing.amount,
+      plan: data.plan,
+      billingCycle: data.billingCycle,
+    })
+
     return {
       success: true,
       organizationId: orgId.toString(),
       amount: pricing.amount,
       upiId: PLATFORM_UPI_ID,
+      upiIntentLink,
+      isFree,
     }
   } catch (error) {
     console.error('Registration error:', error)
@@ -138,14 +135,9 @@ export async function uploadSubscriptionProof(
       return { success: false, error: 'Organization not found.' }
     }
 
-    // Calculate period dates
+    // Calculate period dates using the centralized helper
     const periodStart = new Date()
-    const periodEnd = new Date()
-    if (org.billingCycle === 'ANNUAL') {
-      periodEnd.setFullYear(periodEnd.getFullYear() + 1)
-    } else {
-      periodEnd.setMonth(periodEnd.getMonth() + 1)
-    }
+    const periodEnd = calculatePeriodEnd(periodStart, org.billingCycle)
 
     const pricing = PRICING[org.plan]?.[org.billingCycle]
     if (!pricing) {

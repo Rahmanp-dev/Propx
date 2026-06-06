@@ -2,25 +2,67 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Check, X, Shield, Zap, Crown, Building2, ArrowLeft, ArrowRight, HelpCircle, Menu } from "lucide-react"
+import { Check, X, Shield, Zap, Crown, Building2, ArrowLeft, ArrowRight, HelpCircle, Menu, Gift } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 
+type BillingCycle = 'MONTHLY' | 'QUARTERLY' | 'HALF_YEARLY' | 'YEARLY'
+
+const CYCLE_MONTHS: Record<BillingCycle, number> = { MONTHLY: 1, QUARTERLY: 3, HALF_YEARLY: 6, YEARLY: 12 }
+
+const BILLING_OPTIONS: { key: BillingCycle; label: string; savings?: string }[] = [
+  { key: "MONTHLY", label: "Monthly" },
+  { key: "QUARTERLY", label: "Quarterly", savings: "Save 10%" },
+  { key: "HALF_YEARLY", label: "Half-Yearly", savings: "Save 15%" },
+  { key: "YEARLY", label: "Yearly", savings: "Save 17%" },
+]
+
+const CYCLE_LABEL: Record<BillingCycle, string> = {
+  MONTHLY: "month",
+  QUARTERLY: "quarter",
+  HALF_YEARLY: "half-year",
+  YEARLY: "year",
+}
+
 const PLANS = [
+  {
+    id: "FREE",
+    name: "Free",
+    icon: Gift,
+    description: "Get started with basic property management. No credit card required.",
+    prices: { MONTHLY: 0, QUARTERLY: 0, HALF_YEARLY: 0, YEARLY: 0 },
+    maxUnits: 7,
+    maxBuildings: "1",
+    features: [
+      "Up to 7 rental units",
+      "1 building",
+      "Automated rent invoicing",
+      "Tenant payment portal",
+      "WhatsApp notifications",
+      "Maintenance & inquiry desk",
+      "Advanced financial insights",
+      "24/7 priority support"
+    ],
+    color: "from-emerald-600 to-green-600",
+    shadow: "shadow-emerald-500/10",
+    badge: "Free Forever"
+  },
   {
     id: "STARTER",
     name: "Starter",
     icon: Zap,
-    description: "Ideal for individual property owners managing small assets.",
-    monthlyPrice: 499,
-    annualPrice: 4999,
-    maxUnits: 20,
+    description: "For individual property owners managing small portfolios.",
+    prices: { MONTHLY: 499, QUARTERLY: 1349, HALF_YEARLY: 2549, YEARLY: 4999 },
+    maxUnits: 15,
+    maxBuildings: "1",
     features: [
-      "Up to 20 rental units",
-      "Tenant database",
-      "Manual rent tracking",
-      "Standard PDF receipts",
-      "Basic WhatsApp logs",
-      "Community support"
+      "Up to 15 rental units",
+      "1 building",
+      "Automated rent invoicing",
+      "Tenant payment portal",
+      "WhatsApp notifications",
+      "Maintenance & inquiry desk",
+      "Advanced financial insights",
+      "24/7 priority support"
     ],
     color: "from-blue-600 to-indigo-600",
     shadow: "shadow-blue-500/10",
@@ -31,18 +73,18 @@ const PLANS = [
     name: "Builder",
     icon: Shield,
     description: "Perfect for growing portfolios with automated management.",
-    monthlyPrice: 1199,
-    annualPrice: 11999,
-    maxUnits: 60,
+    prices: { MONTHLY: 1199, QUARTERLY: 3249, HALF_YEARLY: 6149, YEARLY: 11999 },
+    maxUnits: 40,
+    maxBuildings: "3",
     features: [
-      "Up to 60 rental units",
-      "Everything in Starter",
-      "Automated rent dues engine",
+      "Up to 40 rental units",
+      "Up to 3 buildings",
+      "Automated rent invoicing",
       "Tenant payment portal",
-      "Meter readings & bills calc",
-      "Instant WhatsApp notifications",
-      "Maintenance ticket system",
-      "Priority email support"
+      "WhatsApp notifications",
+      "Maintenance & inquiry desk",
+      "Advanced financial insights",
+      "24/7 priority support"
     ],
     color: "from-violet-600 to-fuchsia-600",
     shadow: "shadow-violet-500/15",
@@ -54,18 +96,18 @@ const PLANS = [
     name: "Portfolio",
     icon: Crown,
     description: "Designed for large property groups and real estate agencies.",
-    monthlyPrice: 2499,
-    annualPrice: 24999,
+    prices: { MONTHLY: 2499, QUARTERLY: 6749, HALF_YEARLY: 12749, YEARLY: 24999 },
     maxUnits: "Unlimited",
+    maxBuildings: "Unlimited",
     features: [
       "Unlimited rental units",
-      "Everything in Builder",
-      "Custom business branding",
-      "Multi-owner account delegation",
+      "Unlimited buildings",
+      "Automated rent invoicing",
+      "Tenant payment portal",
+      "WhatsApp notifications",
+      "Maintenance & inquiry desk",
       "Advanced financial insights",
-      "Custom excel/csv reports",
-      "Dedicated account manager",
-      "24/7 priority phone support"
+      "24/7 priority support"
     ],
     color: "from-amber-500 to-orange-600",
     shadow: "shadow-amber-500/15",
@@ -74,22 +116,31 @@ const PLANS = [
 ]
 
 const FEATURE_COMPARISON = [
-  { category: "Usage", name: "Maximum Units Allowed", starter: "20 units", builder: "60 units", portfolio: "Unlimited" },
-  { category: "Usage", name: "Buildings Support", starter: "Single Building", builder: "Multiple Buildings", portfolio: "Unlimited" },
-  { category: "Automation", name: "Automated Rent Invoicing", starter: false, builder: true, portfolio: true },
-  { category: "Automation", name: "Tenant Mobile Portal", starter: false, builder: true, portfolio: true },
-  { category: "Automation", name: "WhatsApp Notification Engine", starter: "Manual", builder: "Automated", portfolio: "Automated + Custom Templates" },
-  { category: "Financials", name: "Rent & Deposit Ledger", starter: true, builder: true, portfolio: true },
-  { category: "Financials", name: "UPI Payment Verifications", starter: "Manual Approval Only", builder: "UTR Upload Auto-Matching", portfolio: "Instant Automated Reconciliation" },
-  { category: "Operations", name: "Maintenance Desk", starter: false, builder: true, portfolio: true },
-  { category: "Operations", name: "Visitor Logs / Inquiries", starter: true, builder: true, portfolio: true },
-  { category: "Customization", name: "Custom Business Settings", starter: false, builder: true, portfolio: true },
-  { category: "Customization", name: "White-label Invoices", starter: false, builder: false, portfolio: true },
-  { category: "Support", name: "Customer Support Tier", starter: "Email (48h)", builder: "Priority Email (6h)", portfolio: "Dedicated Phone Manager" }
+  { category: "Usage", name: "Maximum Units Allowed", free: "7 units", starter: "15 units", builder: "40 units", portfolio: "Unlimited" },
+  { category: "Usage", name: "Buildings Support", free: "1 Building", starter: "1 Building", builder: "Up to 3", portfolio: "Unlimited" },
+  { category: "Automation", name: "Automated Rent Invoicing", free: true, starter: true, builder: true, portfolio: true },
+  { category: "Automation", name: "Tenant Mobile Portal", free: true, starter: true, builder: true, portfolio: true },
+  { category: "Automation", name: "WhatsApp Notification Engine", free: "Included", starter: "Included", builder: "Included", portfolio: "Included" },
+  { category: "Financials", name: "Rent & Deposit Ledger", free: true, starter: true, builder: true, portfolio: true },
+  { category: "Financials", name: "UPI Payment Verifications", free: "Included", starter: "Included", builder: "Included", portfolio: "Included" },
+  { category: "Operations", name: "Maintenance Desk", free: true, starter: true, builder: true, portfolio: true },
+  { category: "Operations", name: "Visitor Logs / Inquiries", free: true, starter: true, builder: true, portfolio: true },
+  { category: "Customization", name: "Custom Business Settings", free: true, starter: true, builder: true, portfolio: true },
+  { category: "Customization", name: "White-label Invoices", free: true, starter: true, builder: true, portfolio: true },
+  { category: "Support", name: "Customer Support Tier", free: "Priority", starter: "Priority", builder: "Priority", portfolio: "Priority" }
 ]
 
+function renderCellValue(value: boolean | string) {
+  if (typeof value === "boolean") {
+    return value
+      ? <Check className="h-5 w-5 text-emerald-400 mx-auto" />
+      : <X className="h-5 w-5 text-slate-600 mx-auto" />
+  }
+  return value
+}
+
 export default function PackagesPage() {
-  const [billingCycle, setBillingCycle] = useState<"MONTHLY" | "ANNUAL">("ANNUAL")
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('YEARLY')
 
   return (
     <div className="dark min-h-screen bg-[#030712] text-white font-sans overflow-x-hidden selection:bg-violet-500/30 selection:text-white">
@@ -160,7 +211,7 @@ export default function PackagesPage() {
         {/* Title Section */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-6">
           <span className="inline-flex items-center justify-center rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-400">
-            Simple & Transparent Pricing
+            Simple &amp; Transparent Pricing
           </span>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
             Choose the perfect plan for your portfolio
@@ -169,41 +220,43 @@ export default function PackagesPage() {
             Automate tenant tracking, WhatsApp notifications, rent collection, and meter billing. Upgrade or downgrade anytime.
           </p>
 
-          {/* Pricing Toggle */}
+          {/* Billing Cycle Toggle — 4 options */}
           <div className="pt-6 flex justify-center">
-            <div className="bg-[#0f172a] border border-white/5 rounded-full p-1 flex items-center shadow-inner">
-              <button
-                onClick={() => setBillingCycle("MONTHLY")}
-                className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
-                  billingCycle === "MONTHLY"
-                    ? "bg-violet-600 text-white shadow-md shadow-violet-500/10"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                Monthly Billing
-              </button>
-              <button
-                onClick={() => setBillingCycle("ANNUAL")}
-                className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${
-                  billingCycle === "ANNUAL"
-                    ? "bg-violet-600 text-white shadow-md shadow-violet-500/10"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                Annual Billing
-                <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] px-2 py-0.5 rounded-full font-semibold">
-                  Save 17%
-                </span>
-              </button>
+            <div className="bg-[#0f172a] border border-white/5 rounded-full p-1 flex items-center shadow-inner flex-wrap justify-center gap-1">
+              {BILLING_OPTIONS.map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => setBillingCycle(opt.key)}
+                  className={`px-4 sm:px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                    billingCycle === opt.key
+                      ? "bg-violet-600 text-white shadow-md shadow-violet-500/10"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  {opt.label}
+                  {opt.savings && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+                      billingCycle === opt.key
+                        ? "bg-white/20 text-white"
+                        : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    }`}>
+                      {opt.savings}
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Plan Cards Grid */}
-        <div className="grid md:grid-cols-3 gap-8 items-stretch mb-24">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch mb-24">
           {PLANS.map((plan) => {
-            const price = billingCycle === "MONTHLY" ? plan.monthlyPrice : plan.annualPrice
-            const monthlyEquivalent = billingCycle === "ANNUAL" ? Math.round(plan.annualPrice / 12) : plan.monthlyPrice
+            const isFree = plan.id === "FREE"
+            const price = plan.prices[billingCycle]
+            const monthlyEquivalent = billingCycle !== "MONTHLY" && !isFree
+              ? Math.round(price / CYCLE_MONTHS[billingCycle])
+              : null
             const Icon = plan.icon
 
             return (
@@ -239,20 +292,31 @@ export default function PackagesPage() {
                 <div className="flex-1 flex flex-col justify-between mt-4 space-y-6">
                   <div className="space-y-1">
                     <div className="flex items-baseline">
-                      <span className="text-4xl font-extrabold">₹{price.toLocaleString('en-IN')}</span>
-                      <span className="text-slate-400 text-sm ml-2">
-                        /{billingCycle === "MONTHLY" ? "month" : "year"}
-                      </span>
+                      {isFree ? (
+                        <span className="text-4xl font-extrabold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">Free</span>
+                      ) : (
+                        <>
+                          <span className="text-4xl font-extrabold">₹{price.toLocaleString('en-IN')}</span>
+                          <span className="text-slate-400 text-sm ml-2">
+                            /{CYCLE_LABEL[billingCycle]}
+                          </span>
+                        </>
+                      )}
                     </div>
-                    {billingCycle === "ANNUAL" && (
+                    {monthlyEquivalent !== null && (
                       <p className="text-xs text-emerald-400 font-medium">
                         Equivalent to ₹{monthlyEquivalent.toLocaleString('en-IN')}/month
+                      </p>
+                    )}
+                    {isFree && (
+                      <p className="text-xs text-emerald-400 font-medium">
+                        No credit card required
                       </p>
                     )}
                   </div>
 
                   <div className="border-t border-white/5 pt-4">
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">What's Included</p>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">What&apos;s Included</p>
                     <ul className="space-y-3">
                       {plan.features.map((feature, i) => (
                         <li key={i} className="flex items-start gap-2.5 text-sm text-slate-300">
@@ -263,13 +327,25 @@ export default function PackagesPage() {
                     </ul>
                   </div>
 
-                  <Link href={`/register?plan=${plan.id}&cycle=${billingCycle}`} className={`w-full h-11 rounded-lg flex items-center justify-center text-sm font-semibold transition-all duration-300 mt-6 ${
-                    plan.popular
-                      ? "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-violet-500/20"
-                      : "bg-[#1e293b] hover:bg-[#334155] text-white border border-white/5"
-                  }`}>
-                    Get Started <ArrowRight className="h-4 w-4 ml-1" />
-                  </Link>
+                  {isFree ? (
+                    <Link
+                      href="/register?plan=FREE"
+                      className="w-full h-11 rounded-lg flex items-center justify-center text-sm font-semibold transition-all duration-300 mt-6 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white shadow-lg shadow-emerald-500/20"
+                    >
+                      Start Free <ArrowRight className="h-4 w-4 ml-1" />
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/register?plan=${plan.id}&cycle=${billingCycle}`}
+                      className={`w-full h-11 rounded-lg flex items-center justify-center text-sm font-semibold transition-all duration-300 mt-6 ${
+                        plan.popular
+                          ? "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-violet-500/20"
+                          : "bg-[#1e293b] hover:bg-[#334155] text-white border border-white/5"
+                      }`}
+                    >
+                      Get Started <ArrowRight className="h-4 w-4 ml-1" />
+                    </Link>
+                  )}
                 </div>
               </div>
             )
@@ -284,13 +360,14 @@ export default function PackagesPage() {
           </div>
 
           <div className="overflow-x-auto border border-white/5 rounded-2xl bg-[#0f172a]/40 backdrop-blur-sm">
-            <table className="w-full text-left border-collapse min-w-[700px]">
+            <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
                 <tr className="border-b border-white/5 bg-[#0f172a]/80">
                   <th className="p-4 font-semibold text-slate-300 text-sm">Feature Desk</th>
-                  <th className="p-4 font-semibold text-slate-300 text-sm text-center w-48">Starter</th>
-                  <th className="p-4 font-semibold text-slate-300 text-sm text-center w-48 text-violet-400">Builder</th>
-                  <th className="p-4 font-semibold text-slate-300 text-sm text-center w-48 text-amber-400">Portfolio</th>
+                  <th className="p-4 font-semibold text-sm text-center w-36 text-emerald-400">Free</th>
+                  <th className="p-4 font-semibold text-sm text-center w-36 text-slate-300">Starter</th>
+                  <th className="p-4 font-semibold text-sm text-center w-36 text-violet-400">Builder</th>
+                  <th className="p-4 font-semibold text-sm text-center w-36 text-amber-400">Portfolio</th>
                 </tr>
               </thead>
               <tbody>
@@ -303,25 +380,16 @@ export default function PackagesPage() {
                       </div>
                     </td>
                     <td className="p-4 text-sm text-center text-slate-400">
-                      {typeof feature.starter === "boolean" ? (
-                        feature.starter ? <Check className="h-5 w-5 text-emerald-400 mx-auto" /> : <X className="h-5 w-5 text-slate-600 mx-auto" />
-                      ) : (
-                        feature.starter
-                      )}
+                      {renderCellValue(feature.free)}
+                    </td>
+                    <td className="p-4 text-sm text-center text-slate-400">
+                      {renderCellValue(feature.starter)}
                     </td>
                     <td className="p-4 text-sm text-center text-slate-200">
-                      {typeof feature.builder === "boolean" ? (
-                        feature.builder ? <Check className="h-5 w-5 text-emerald-400 mx-auto" /> : <X className="h-5 w-5 text-slate-600 mx-auto" />
-                      ) : (
-                        feature.builder
-                      )}
+                      {renderCellValue(feature.builder)}
                     </td>
                     <td className="p-4 text-sm text-center text-slate-100 font-medium">
-                      {typeof feature.portfolio === "boolean" ? (
-                        feature.portfolio ? <Check className="h-5 w-5 text-emerald-400 mx-auto" /> : <X className="h-5 w-5 text-slate-600 mx-auto" />
-                      ) : (
-                        feature.portfolio
-                      )}
+                      {renderCellValue(feature.portfolio)}
                     </td>
                   </tr>
                 ))}
@@ -356,7 +424,7 @@ export default function PackagesPage() {
                 Is there a limit on how many buildings I can create?
               </h3>
               <p className="text-sm text-slate-400 pl-7 leading-relaxed">
-                The Starter plan is capped at a single building to keep things clean. The Builder and Portfolio plans support multiple and unlimited buildings respectively.
+                The Free and Starter plans allow 1 building, Builder allows up to 3 buildings, and the Portfolio plan offers unlimited buildings.
               </p>
             </div>
             <div className="space-y-2.5">
@@ -365,7 +433,7 @@ export default function PackagesPage() {
                 How does the WhatsApp notification engine work?
               </h3>
               <p className="text-sm text-slate-400 pl-7 leading-relaxed">
-                On the Builder and Portfolio plans, our engine automatically triggers monthly rent invoice messages, receipt confirmations, and pending reminders to your tenants via WhatsApp API, directly from your customized dashboard.
+                On all plans, our engine automatically triggers monthly rent invoice messages, receipt confirmations, and pending reminders to your tenants via WhatsApp API, directly from your customized dashboard, limited only by your plan&apos;s building and unit counts.
               </p>
             </div>
             <div className="space-y-2.5">

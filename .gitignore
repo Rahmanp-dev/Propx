@@ -49,3 +49,24 @@ seed-production.js
 
 # confidential strategy documents
 /strategy/
+
+# local temp and test scripts
+/check-payments.js
+/check-user.js
+/fix-annual.js
+/fix-prisma.js
+/audit.js
+/audit.ps1
+/audit2.js
+/check.js
+/backfill.js
+/invalidate.js
+/force_dynamic.js
+/fix-timezone.js
+/seed-fix.js
+/seed-native.js
+/test-actions.ts
+/test-db.ts
+/test_date.js
+/dev-restart.ps1
+
