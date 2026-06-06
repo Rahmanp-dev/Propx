@@ -124,7 +124,7 @@ export default async function OrganizationDetailPage({
                         {getPlanStatusBadge(org.planStatus)}
                     </div>
                 </div>
-                <OrgStatusToggle orgId={org.id} isActive={org.isActive} isSuspended={org.isSuspended} />
+                <OrgStatusToggle orgId={org.id} isActive={org.isActive} isSuspended={org.isSuspended} planStatus={org.planStatus} />
             </div>
 
             {/* Info Cards */}

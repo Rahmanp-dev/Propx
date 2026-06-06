@@ -5,6 +5,7 @@ import clientPromise from "@/lib/mongo"
 import { ObjectId } from "mongodb"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/lib/auth"
+import { PRICING, calculatePeriodEnd } from "@/lib/plan-guard"
 
 async function requireSuperAdmin() {
     const session = await auth()
@@ -373,6 +374,88 @@ export async function toggleOrgStatus(orgId: string, action: 'activate' | 'suspe
     } catch (error: any) {
         console.error("Failed to toggle org status:", error)
         return { error: `Failed to update organization: ${error.message || String(error)}` }
+    }
+}
+
+// ==========================================
+// MANUAL ACTIVATE ORGANIZATION
+// ==========================================
+
+export async function manualActivateOrganization(orgId: string) {
+    try {
+        await requireSuperAdmin()
+        const client = await clientPromise
+        const db = client.db("propx")
+
+        const org = await prisma.organization.findUnique({
+            where: { id: orgId },
+        })
+
+        if (!org) {
+            return { error: 'Organization not found' }
+        }
+
+        const pricing = PRICING[org.plan]?.[org.billingCycle]
+        if (!pricing && org.plan !== 'FREE') {
+            return { error: 'Invalid plan configuration for this organization.' }
+        }
+        
+        const amount = pricing ? pricing.amount : 0
+
+        const periodStart = new Date()
+        const periodEnd = org.plan === 'FREE' ? null : calculatePeriodEnd(periodStart, org.billingCycle)
+
+        // Update org status
+        await db.collection("Organization").updateOne(
+            { _id: new ObjectId(orgId) },
+            {
+                $set: {
+                    planStatus: 'ACTIVE',
+                    isActive: true,
+                    isSuspended: false,
+                    subscriptionStart: periodStart,
+                    subscriptionEnd: periodEnd,
+                    updatedAt: new Date(),
+                },
+            }
+        )
+
+        // Create a verified payment record for auditing (if not FREE)
+        if (org.plan !== 'FREE') {
+            await db.collection("SubscriptionPayment").insertOne({
+                _id: new ObjectId(),
+                organizationId: new ObjectId(orgId),
+                amount: amount,
+                plan: org.plan,
+                billingCycle: org.billingCycle,
+                upiTransactionId: 'MANUAL_OVERRIDE',
+                screenshotUrl: '', // empty for manual overrides
+                status: 'VERIFIED',
+                verifiedBy: "admin-manual-override",
+                verifiedAt: new Date(),
+                periodStart,
+                periodEnd,
+                notes: 'Manually verified and activated by Super Admin.',
+                createdAt: new Date(),
+            })
+        }
+
+        // Create notification
+        await db.collection("Notification").insertOne({
+            organizationId: new ObjectId(orgId),
+            type: 'ORG_ACTIVATED',
+            title: 'Account Manually Activated',
+            message: `Your ${org.plan} plan has been manually verified and activated by the administrator. Welcome to PropX!`,
+            isRead: false,
+            createdAt: new Date(),
+        })
+
+        revalidatePath('/', 'layout')
+
+        return { success: true }
+    } catch (error: any) {
+        console.error("Failed to manually activate org:", error)
+        return { error: `Failed to activate organization: ${error.message || String(error)}` }
     }
 }
 
