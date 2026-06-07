@@ -64,7 +64,10 @@ export default function DiscoverMap({
     selectedBuilding: string | null
     onBuildingSelect: (id: string | null) => void
 }) {
-    const validBuildings = buildings.filter(b => b.latitude != null && b.longitude != null)
+    const validBuildings = buildings.filter(b => 
+        typeof b.latitude === 'number' && isFinite(b.latitude) && 
+        typeof b.longitude === 'number' && isFinite(b.longitude)
+    )
 
     // Calculate bounds
     const bounds = validBuildings.length > 0
@@ -141,8 +144,7 @@ export default function DiscoverMap({
                 zoom={12}
                 style={{ height: "100%", width: "100%" }}
                 zoomControl={true}
-                bounds={bounds}
-                boundsOptions={{ padding: [50, 50] }}
+                {...(bounds && validBuildings.length >= 2 ? { bounds, boundsOptions: { padding: [50, 50] } } : {})}
             >
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

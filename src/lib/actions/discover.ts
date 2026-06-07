@@ -49,7 +49,10 @@ export async function getDiscoverBuildings(filters?: {
     });
 
     // Transform into public-safe data (no org details, no owner PII)
-    const result = buildings.map((b) => {
+    const result = buildings
+      .filter((b) => typeof b.latitude === 'number' && isFinite(b.latitude) && b.latitude !== 0 &&
+                      typeof b.longitude === 'number' && isFinite(b.longitude) && b.longitude !== 0)
+      .map((b) => {
       const vacantFlats = b.flats.filter((f) => f.status === "VACANT");
       const allRents = b.flats.map((f) => f.rentAmount).filter((r) => r > 0);
       const flatTypes = [...new Set(b.flats.map((f) => f.flatType))];
