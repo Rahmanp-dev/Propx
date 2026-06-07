@@ -62,6 +62,7 @@ export default async function FlatPage({ params }: { params: Promise<{ id: strin
                         currentRentAmount={flat.rentAmount}
                         currentMaintenanceAmount={flat.maintenanceAmount}
                         currentDepositAmount={flat.depositAmount}
+                        photos={(flat as any).photos}
                     />
                     <DeleteFlatDialog flatId={id} flatNumber={flat.flatNumber} />
                     <Badge variant={flat.status === "OCCUPIED" ? "default" : "secondary"} className="text-lg px-4 py-1">

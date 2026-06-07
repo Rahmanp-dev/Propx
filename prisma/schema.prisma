@@ -205,6 +205,7 @@ model Flat {
   depositAmount     Float           @default(0.0)
   electricityType   ElectricityType @default(METERED)
   status            FlatStatus      @default(VACANT)
+  photos            String[]        @default([])
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 

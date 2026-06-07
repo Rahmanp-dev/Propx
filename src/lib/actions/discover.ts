@@ -137,6 +137,7 @@ export async function getDiscoverBuildingDetail(buildingId: string) {
             depositAmount: true,
             electricityType: true,
             status: true,
+            photos: true,
           },
         },
         clauses: {
@@ -206,6 +207,15 @@ export async function getDiscoverBuildingDetail(buildingId: string) {
             ? { min: Math.min(...allRents), max: Math.max(...allRents) }
             : null,
         vacantByType,
+        vacantFlats: vacantFlats.map(f => ({
+          id: f.id,
+          flatNumber: f.flatNumber,
+          flatType: f.flatType,
+          rentAmount: f.rentAmount,
+          maintenanceAmount: f.maintenanceAmount,
+          depositAmount: f.depositAmount,
+          photos: (f as any).photos || [],
+        })),
         clauses: building.clauses,
         contactWhatsApp: building.contactWhatsApp,
       },

@@ -164,7 +164,8 @@ const updateFlatSchema = z.object({
     flatType: z.enum(["STUDIO", "BHK1", "BHK2", "BHK3", "OTHER"]),
     rentAmount: z.coerce.number().min(0),
     maintenanceAmount: z.coerce.number().min(0),
-    depositAmount: z.coerce.number().min(0).optional()
+    depositAmount: z.coerce.number().min(0).optional(),
+    photos: z.array(z.string()).optional()
 })
 
 export type UpdateFlatInput = z.infer<typeof updateFlatSchema>
@@ -178,7 +179,7 @@ export async function updateFlat(data: UpdateFlatInput) {
         return { error: "Invalid input" }
     }
 
-    const { id, flatNumber, flatType, rentAmount, maintenanceAmount, depositAmount } = result.data
+    const { id, flatNumber, flatType, rentAmount, maintenanceAmount, depositAmount, photos } = result.data
 
     try {
         if (!orgCtx.isSuperAdmin) {
@@ -192,18 +193,21 @@ export async function updateFlat(data: UpdateFlatInput) {
         const db = client.db("propx")
         const now = new Date()
 
+        const updateFields: any = {
+            flatNumber,
+            flatType,
+            rentAmount,
+            maintenanceAmount,
+            depositAmount: depositAmount || rentAmount * 2,
+            updatedAt: now
+        }
+        if (photos !== undefined) {
+            updateFields.photos = photos
+        }
+
         await db.collection("Flat").updateOne(
             { _id: new ObjectId(id) },
-            {
-                $set: {
-                    flatNumber,
-                    flatType,
-                    rentAmount,
-                    maintenanceAmount,
-                    depositAmount: depositAmount || rentAmount * 2,
-                    updatedAt: now
-                }
-            }
+            { $set: updateFields }
         )
 
         revalidatePath('/', 'layout')

@@ -17,6 +17,8 @@ import { Pencil } from "lucide-react"
 import { updateFlat } from "@/lib/actions/flat"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { Separator } from "@/components/ui/separator"
+import { ImageUploadClient } from "@/components/shared/image-upload-client"
 
 const FLAT_TYPES = [
     { value: "STUDIO", label: "Studio" },
@@ -33,6 +35,7 @@ interface UpdateFlatDialogProps {
     currentRentAmount: number
     currentMaintenanceAmount: number
     currentDepositAmount: number
+    photos?: string[]
 }
 
 export function UpdateFlatDialog({
@@ -42,6 +45,7 @@ export function UpdateFlatDialog({
     currentRentAmount,
     currentMaintenanceAmount,
     currentDepositAmount,
+    photos = [],
 }: UpdateFlatDialogProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -53,6 +57,7 @@ export function UpdateFlatDialog({
     const [rentAmount, setRentAmount] = useState(currentRentAmount.toString())
     const [maintenanceAmount, setMaintenanceAmount] = useState(currentMaintenanceAmount.toString())
     const [depositAmount, setDepositAmount] = useState(currentDepositAmount.toString())
+    const [flatPhotos, setFlatPhotos] = useState<string[]>(photos)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -67,6 +72,7 @@ export function UpdateFlatDialog({
                 rentAmount: parseFloat(rentAmount),
                 maintenanceAmount: parseFloat(maintenanceAmount),
                 depositAmount: parseFloat(depositAmount),
+                photos: flatPhotos,
             })
 
             setLoading(false)
@@ -162,6 +168,18 @@ export function UpdateFlatDialog({
                                 required
                             />
                         </div>
+
+                        {/* Flat Photos */}
+                        <Separator />
+                        <div className="space-y-2">
+                            <Label>Flat Photos</Label>
+                            <ImageUploadClient 
+                                images={flatPhotos} 
+                                onChange={setFlatPhotos} 
+                                maxImages={5} 
+                            />
+                        </div>
+                        
                         {error && (
                             <p className="text-sm text-red-500 text-center">{error}</p>
                         )}

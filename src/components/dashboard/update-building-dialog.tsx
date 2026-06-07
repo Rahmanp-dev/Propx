@@ -18,6 +18,7 @@ import { updateBuildingSettings } from "@/lib/actions/building-settings"
 import { useRouter } from "next/navigation"
 import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
+import { ImageUploadClient } from "@/components/shared/image-upload-client"
 
 interface UpdateBuildingDialogProps {
     buildingId: string
@@ -31,6 +32,7 @@ interface UpdateBuildingDialogProps {
     discoverEnabled?: boolean
     discoverBio?: string | null
     contactWhatsApp?: string | null
+    photos?: string[]
 }
 
 export function UpdateBuildingDialog({
@@ -45,6 +47,7 @@ export function UpdateBuildingDialog({
     discoverEnabled = false,
     discoverBio = "",
     contactWhatsApp = "",
+    photos = [],
 }: UpdateBuildingDialogProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -60,6 +63,7 @@ export function UpdateBuildingDialog({
     const [isDiscoverEnabled, setIsDiscoverEnabled] = useState(discoverEnabled)
     const [bio, setBio] = useState(discoverBio || "")
     const [whatsapp, setWhatsapp] = useState(contactWhatsApp || "")
+    const [buildingPhotos, setBuildingPhotos] = useState<string[]>(photos)
     const [error, setError] = useState("")
     const router = useRouter()
 
@@ -83,6 +87,7 @@ export function UpdateBuildingDialog({
                 discoverEnabled: isDiscoverEnabled,
                 discoverBio: bio,
                 contactWhatsApp: whatsapp,
+                photos: buildingPhotos,
             })
 
             setLoading(false)
@@ -136,6 +141,17 @@ export function UpdateBuildingDialog({
                                 onChange={(e) => setAddress(e.target.value)}
                                 className="col-span-3"
                                 required
+                            />
+                        </div>
+
+                        {/* Building Photos */}
+                        <Separator />
+                        <div>
+                            <p className="text-sm font-medium text-slate-700 mb-2">Building Photos</p>
+                            <ImageUploadClient 
+                                images={buildingPhotos} 
+                                onChange={setBuildingPhotos} 
+                                maxImages={8} 
                             />
                         </div>
 

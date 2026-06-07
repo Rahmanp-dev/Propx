@@ -79,6 +79,7 @@ export default async function BuildingPage({ params }: { params: Promise<{ id: s
                         discoverEnabled={building.discoverEnabled}
                         discoverBio={building.discoverBio}
                         contactWhatsApp={building.contactWhatsApp}
+                        photos={bld.photos}
                     />
                     <DeleteBuildingDialog buildingId={id} buildingName={building.name} />
                     <AddFlatDialog buildingId={id} floors={floorsForDialog} defaultRents={defaultRents} />

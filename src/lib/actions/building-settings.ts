@@ -33,6 +33,7 @@ const updateBuildingSchema = z.object({
     discoverBio: z.string().optional().nullable(),
     contactWhatsApp: z.string().optional().nullable(),
     amenities: z.array(z.string()).optional(),
+    photos: z.array(z.string()).optional(),
 })
 
 export type UpdateBuildingInput = z.infer<typeof updateBuildingSchema>
@@ -50,7 +51,7 @@ export async function updateBuildingSettings(data: UpdateBuildingInput) {
     const { 
         buildingId, name, address, latitude, longitude, ratePerUnit, 
         totalFloors, defaultRentBHK1, defaultRentBHK2, defaultRentBHK3,
-        discoverEnabled, discoverBio, contactWhatsApp, amenities
+        discoverEnabled, discoverBio, contactWhatsApp, amenities, photos
     } = result.data
 
     try {
@@ -117,6 +118,7 @@ export async function updateBuildingSettings(data: UpdateBuildingInput) {
         if (discoverBio !== undefined) updateFields.discoverBio = discoverBio
         if (contactWhatsApp !== undefined) updateFields.contactWhatsApp = contactWhatsApp
         if (amenities !== undefined) updateFields.amenities = amenities
+        if (photos !== undefined) updateFields.photos = photos
 
         await db.collection("Building").updateOne(
             { _id: bId },

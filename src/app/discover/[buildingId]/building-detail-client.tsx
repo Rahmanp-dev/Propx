@@ -5,7 +5,7 @@ import { submitDiscoverInquiry, logQRScan } from "@/lib/actions/discover"
 import {
     MapPin, Home, Shield, ShieldAlert, ShieldCheck, Zap, Phone,
     Building2, CheckCircle2, Calendar, MessageSquare, ArrowRight,
-    AlertTriangle, Loader2, ChevronDown, ChevronUp, Star
+    AlertTriangle, Loader2, ChevronDown, ChevronUp, Star, Image as ImageIcon
 } from "lucide-react"
 
 type BuildingData = {
@@ -32,6 +32,15 @@ type BuildingData = {
         severity: string
     }>
     contactWhatsApp: string | null
+    vacantFlats: Array<{
+        id: string
+        flatNumber: string
+        flatType: string
+        rentAmount: number
+        maintenanceAmount: number
+        depositAmount: number
+        photos: string[]
+    }>
 }
 
 const FLAT_TYPE_LABELS: Record<string, string> = {
@@ -130,6 +139,24 @@ export function BuildingDetailClient({ building, utmSource }: { building: Buildi
                 )}
             </div>
 
+            {/* Building Photos Gallery */}
+            {building.photos && building.photos.length > 0 && (
+                <div className="mb-10">
+                    <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                        <ImageIcon className="h-5 w-5 text-indigo-400" />
+                        Building Photos
+                    </h2>
+                    <div className="flex overflow-x-auto gap-4 pb-4 snap-x">
+                        {building.photos.map((url, i) => (
+                            <div key={i} className="flex-none w-72 h-48 sm:w-96 sm:h-64 rounded-xl overflow-hidden border border-white/10 snap-center bg-slate-900">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={url} alt={`Building photo ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-8">
@@ -137,36 +164,69 @@ export function BuildingDetailClient({ building, utmSource }: { building: Buildi
                     <section>
                         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                             <Home className="h-5 w-5 text-emerald-400" />
-                            Availability
+                            Available Flats ({building.vacantCount})
                         </h2>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {Object.entries(building.vacantByType).length > 0 ? (
-                                Object.entries(building.vacantByType).map(([type, info]) => (
-                                    <div key={type} className="p-4 rounded-xl bg-slate-900 border border-white/5">
-                                        <div className="text-2xl font-black text-emerald-400">{info.count}</div>
-                                        <div className="text-xs text-slate-400 font-semibold mt-1">{FLAT_TYPE_LABELS[type] || type}</div>
-                                        <div className="text-xs text-slate-500 mt-2">
-                                            ₹{info.rentRange.min.toLocaleString('en-IN')}
-                                            {info.rentRange.min !== info.rentRange.max && ` – ₹${info.rentRange.max.toLocaleString('en-IN')}`}
-                                            <span className="text-slate-600">/mo</span>
+                        
+                        <div className="grid gap-4">
+                            {building.vacantFlats && building.vacantFlats.length > 0 ? (
+                                building.vacantFlats.map((flat) => (
+                                    <div key={flat.id} className="p-5 rounded-xl bg-slate-900 border border-white/5 overflow-hidden flex flex-col sm:flex-row gap-5">
+                                        {/* Flat Photos Slider */}
+                                        <div className="sm:w-48 h-32 rounded-lg bg-slate-800 overflow-hidden shrink-0 flex items-center justify-center border border-white/10 relative">
+                                            {flat.photos && flat.photos.length > 0 ? (
+                                                <div className="flex w-full h-full overflow-x-auto snap-x">
+                                                    {flat.photos.map((url, i) => (
+                                                        <img key={i} src={url} alt={`Flat ${flat.flatNumber}`} className="w-full h-full object-cover flex-none snap-center" />
+                                                    ))}
+                                                    {flat.photos.length > 1 && (
+                                                        <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-[10px] text-white font-medium">
+                                                            {flat.photos.length} photos
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className="text-center text-slate-600 flex flex-col items-center">
+                                                    <Home className="h-6 w-6 mb-1 opacity-50" />
+                                                    <span className="text-[10px] font-medium uppercase tracking-wider">No Image</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Flat Details */}
+                                        <div className="flex-1 flex flex-col justify-center">
+                                            <div className="flex items-start justify-between gap-4 mb-2">
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <h3 className="text-xl font-black text-white">Flat {flat.flatNumber}</h3>
+                                                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                                                            {FLAT_TYPE_LABELS[flat.flatType] || flat.flatType}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-2xl font-bold text-emerald-400">
+                                                        ₹{flat.rentAmount.toLocaleString('en-IN')}<span className="text-sm font-semibold text-slate-500">/mo</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-y-2 gap-x-4 mt-2">
+                                                <div>
+                                                    <div className="text-[10px] text-slate-500 uppercase font-semibold">Deposit</div>
+                                                    <div className="text-sm text-slate-300 font-medium">₹{flat.depositAmount.toLocaleString('en-IN')}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-[10px] text-slate-500 uppercase font-semibold">Maintenance</div>
+                                                    <div className="text-sm text-slate-300 font-medium">₹{flat.maintenanceAmount.toLocaleString('en-IN')}/mo</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <div className="col-span-full p-6 rounded-xl bg-slate-900 border border-white/5 text-center">
+                                <div className="p-8 rounded-xl bg-slate-900 border border-white/5 text-center">
                                     <p className="text-sm text-slate-500">No flats currently available</p>
                                     <p className="text-xs text-slate-600 mt-1">Submit an inquiry to be notified when flats open up</p>
                                 </div>
                             )}
-
-                            {/* Summary Card */}
-                            <div className="p-4 rounded-xl bg-slate-900/50 border border-white/5">
-                                <div className="text-2xl font-black text-white">{building.totalFlats}</div>
-                                <div className="text-xs text-slate-500 font-semibold mt-1">Total Flats</div>
-                                <div className="text-xs text-slate-600 mt-2">
-                                    ₹{building.ratePerUnit}/unit electricity
-                                </div>
-                            </div>
                         </div>
                     </section>
 
