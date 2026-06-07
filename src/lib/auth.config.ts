@@ -22,6 +22,7 @@ export const authConfig = {
                 nextUrl.pathname.startsWith('/pay') ||
                 nextUrl.pathname.startsWith('/inquiry') ||
                 nextUrl.pathname.startsWith('/packages') ||
+                nextUrl.pathname.startsWith('/discover') ||
                 nextUrl.pathname === '/';
 
             if (isPublicRoute) {
