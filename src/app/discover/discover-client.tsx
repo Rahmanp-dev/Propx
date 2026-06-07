@@ -1,9 +1,31 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo, Component, ReactNode } from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
-import { Map, List, ChevronUp, ChevronDown } from "lucide-react"
+import { Map, List, ChevronUp, ChevronDown, AlertTriangle } from "lucide-react"
+
+// Error Boundary to catch Leaflet crashes
+class MapErrorBoundary extends Component<{ children: ReactNode; fallback?: ReactNode }, { hasError: boolean; error?: string }> {
+    constructor(props: any) {
+        super(props)
+        this.state = { hasError: false }
+    }
+    static getDerivedStateFromError(error: Error) {
+        return { hasError: true, error: error.message }
+    }
+    render() {
+        if (this.state.hasError) {
+            return this.props.fallback || (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-slate-400 gap-3 p-8">
+                    <AlertTriangle className="w-8 h-8 text-orange-400" />
+                    <p className="text-sm text-center">Map could not be loaded. Use the List view to browse properties.</p>
+                </div>
+            )
+        }
+        return this.props.children
+    }
+}
 
 // Leaflet map must be dynamically imported with SSR disabled
 const DiscoverMap = dynamic(() => import("./discover-map"), {
@@ -18,17 +40,24 @@ const DiscoverMap = dynamic(() => import("./discover-map"), {
     )
 })
 
+// Helper: strict lat/lng check
+function hasValidCoords(b: any): boolean {
+    return typeof b.latitude === 'number' && isFinite(b.latitude) && b.latitude !== 0 &&
+           typeof b.longitude === 'number' && isFinite(b.longitude) && b.longitude !== 0
+}
+
 export function DiscoverClient({ buildings }: { buildings: any[] }) {
     const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null)
     const [filterVacant, setFilterVacant] = useState(false)
-    // Mobile: "map" shows the map full-screen, "list" shows the list
     const [mobileView, setMobileView] = useState<"map" | "list">("map")
-    // Mobile bottom sheet: collapsed (peek) or expanded
     const [sheetExpanded, setSheetExpanded] = useState(false)
 
-    const filteredBuildings = filterVacant
+    const filteredBuildings = useMemo(() => filterVacant
         ? buildings.filter(b => b.vacantCount > 0)
-        : buildings
+        : buildings, [buildings, filterVacant])
+
+    // ONLY pass buildings with valid GPS coordinates to the map
+    const mapBuildings = useMemo(() => filteredBuildings.filter(hasValidCoords), [filteredBuildings])
 
     return (
         <div className="relative h-[calc(100vh-57px)] lg:h-[calc(100vh-57px)] overflow-hidden">
@@ -67,11 +96,13 @@ export function DiscoverClient({ buildings }: { buildings: any[] }) {
 
                 {/* Map */}
                 <div className="flex-1 h-full relative bg-slate-900">
-                    <DiscoverMap
-                        buildings={filteredBuildings}
-                        selectedBuilding={selectedBuilding}
-                        onBuildingSelect={setSelectedBuilding}
-                    />
+                    <MapErrorBoundary>
+                        <DiscoverMap
+                            buildings={mapBuildings}
+                            selectedBuilding={selectedBuilding}
+                            onBuildingSelect={setSelectedBuilding}
+                        />
+                    </MapErrorBoundary>
                 </div>
             </div>
 
@@ -107,19 +138,20 @@ export function DiscoverClient({ buildings }: { buildings: any[] }) {
                 {/* Map View (mobile) */}
                 {mobileView === "map" && (
                     <div className="flex-1 relative bg-slate-900">
-                        <DiscoverMap
-                            buildings={filteredBuildings}
-                            selectedBuilding={selectedBuilding}
-                            onBuildingSelect={setSelectedBuilding}
-                        />
+                        <MapErrorBoundary>
+                            <DiscoverMap
+                                buildings={mapBuildings}
+                                selectedBuilding={selectedBuilding}
+                                onBuildingSelect={setSelectedBuilding}
+                            />
+                        </MapErrorBoundary>
 
-                        {/* Bottom sheet peek: shows count + drag-up handle */}
+                        {/* Bottom sheet peek */}
                         <div
                             className={`absolute bottom-0 left-0 right-0 z-[500] bg-slate-950 border-t border-white/10 rounded-t-2xl transition-all duration-300 ease-in-out ${
                                 sheetExpanded ? "h-[60vh]" : "h-auto"
                             }`}
                         >
-                            {/* Handle bar */}
                             <button
                                 onClick={() => setSheetExpanded(!sheetExpanded)}
                                 className="w-full flex flex-col items-center pt-2 pb-1 cursor-pointer"
@@ -140,7 +172,6 @@ export function DiscoverClient({ buildings }: { buildings: any[] }) {
                                 </div>
                             </button>
 
-                            {/* Sheet content: filter + scrollable cards */}
                             {sheetExpanded && (
                                 <div className="flex flex-col h-[calc(60vh-48px)]">
                                     <div className="px-4 py-2 border-b border-white/5">

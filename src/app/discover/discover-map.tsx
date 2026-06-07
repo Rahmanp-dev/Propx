@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useMemo } from "react"
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
 import L from "leaflet"
 import Link from "next/link"
@@ -46,8 +46,12 @@ function MapUpdater({ selectedBuilding, buildings }: { selectedBuilding: string 
     useEffect(() => {
         if (selectedBuilding) {
             const b = buildings.find(b => b.id === selectedBuilding)
-            if (b?.latitude && b?.longitude) {
-                map.flyTo([b.latitude, b.longitude], 16, { duration: 0.8 })
+            if (b && typeof b.latitude === 'number' && typeof b.longitude === 'number' && isFinite(b.latitude) && isFinite(b.longitude)) {
+                try {
+                    map.flyTo([b.latitude, b.longitude], 16, { duration: 0.8 })
+                } catch (e) {
+                    console.error("Leaflet flyTo error:", e);
+                }
             }
         }
     }, [selectedBuilding, buildings, map])
@@ -64,15 +68,15 @@ export default function DiscoverMap({
     selectedBuilding: string | null
     onBuildingSelect: (id: string | null) => void
 }) {
-    const validBuildings = buildings.filter(b => 
+    const validBuildings = useMemo(() => buildings.filter(b => 
         typeof b.latitude === 'number' && isFinite(b.latitude) && 
         typeof b.longitude === 'number' && isFinite(b.longitude)
-    )
+    ), [buildings])
 
     // Calculate bounds
-    const bounds = validBuildings.length > 0
+    const bounds = useMemo(() => validBuildings.length > 0
         ? L.latLngBounds(validBuildings.map(b => [b.latitude!, b.longitude!] as [number, number]))
-        : undefined
+        : undefined, [validBuildings])
 
     return (
         <>
