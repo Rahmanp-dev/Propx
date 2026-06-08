@@ -116,11 +116,24 @@ export async function getDashboardStats(monthFilter?: string) {
                         select: {
                             flatNumber: true,
                             flatType: true,
+                            floor: { select: { number: true } },
                             building: { select: { name: true } }
                         }
                     }
-                },
-                orderBy: { balance: 'desc' }
+                }
+            }).then(payments => {
+                // Sort by Building Name -> Floor Number -> Flat Number
+                return payments.sort((a, b) => {
+                    const bA = a.flat.building?.name || ''
+                    const bB = b.flat.building?.name || ''
+                    if (bA !== bB) return bA.localeCompare(bB)
+                    
+                    const floorA = a.flat.floor?.number || 0
+                    const floorB = b.flat.floor?.number || 0
+                    if (floorA !== floorB) return floorA - floorB
+
+                    return a.flat.flatNumber.localeCompare(b.flat.flatNumber, undefined, { numeric: true })
+                })
             }),
 
             // 8. Expiring Leases (next 30 days)

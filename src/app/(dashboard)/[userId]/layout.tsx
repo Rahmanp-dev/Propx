@@ -7,6 +7,8 @@ import Link from "next/link"
 import { AlertTriangle, CreditCard, ShieldAlert } from "lucide-react"
 import { BILLING_CYCLE_LABELS, PRICING, generateUpiIntentLink } from "@/lib/plan-guard"
 
+import { PushNotificationPrompt } from "@/components/dashboard/push-notification-prompt"
+
 export default async function DashboardLayout({
     children,
 }: {
@@ -135,6 +137,11 @@ export default async function DashboardLayout({
                             </a>
                         )}
                     </div>
+                )}
+                
+                {/* ── Push Notification Prompt ── */}
+                {!isBlocked && (
+                    <PushNotificationPrompt />
                 )}
 
                 {/* ── Page Content (or Blocked Screen) ── */}

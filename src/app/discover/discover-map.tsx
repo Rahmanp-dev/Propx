@@ -176,7 +176,7 @@ export default function DiscoverMap({
                         <Popup>
                             <div className="p-4 min-w-[220px]">
                                 <h3 className="text-sm font-bold text-white mb-1">{building.name}</h3>
-                                <p className="text-xs text-slate-400 mb-3">{building.address}</p>
+                                <p className="text-xs text-slate-300 mb-3 leading-relaxed">{building.address}</p>
 
                                 <div className="flex items-center gap-3 mb-3">
                                     {building.vacantCount > 0 ? (
@@ -188,7 +188,7 @@ export default function DiscoverMap({
                                             Fully Occupied
                                         </span>
                                     )}
-                                    <span className="text-xs text-slate-500">{building.totalFlats} total</span>
+                                    <span className="text-xs text-slate-400">{building.totalFlats} total</span>
                                 </div>
 
                                 {building.rentRange && (
@@ -197,7 +197,7 @@ export default function DiscoverMap({
                                             ₹{building.rentRange.min.toLocaleString('en-IN')}
                                             {building.rentRange.min !== building.rentRange.max && ` – ₹${building.rentRange.max.toLocaleString('en-IN')}`}
                                         </span>
-                                        <span className="text-slate-500">/month</span>
+                                        <span className="text-slate-400">/month</span>
                                     </p>
                                 )}
 
