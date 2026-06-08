@@ -72,7 +72,7 @@ export function LogPaymentDialog({ payment, asIcon }: LogPaymentDialogProps) {
             if (result.success) {
                 toast.success("Payment logged successfully!")
                 setOpen(false)
-                router.refresh()
+                window.location.reload()
             } else {
                 console.error("Server Action returned error:", result.error)
                 setError(result.error || "Failed to log payment")

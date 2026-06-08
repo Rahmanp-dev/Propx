@@ -43,7 +43,7 @@ export function PaymentHistoryList({ payments }: PaymentHistoryListProps) {
                     </TableHeader>
                     <TableBody>
                         {payments.map((payment) => {
-                            const pendingAmount = payment.totalDue - (payment.amountPaid || 0)
+                            const pendingAmount = payment.balance
                             return (
                                 <TableRow key={payment.id}>
                                     <TableCell className="font-medium">
@@ -90,7 +90,7 @@ export function PaymentHistoryList({ payments }: PaymentHistoryListProps) {
             {/* Mobile Card View */}
             <div className="md:hidden space-y-3">
                 {payments.map((payment) => {
-                    const pendingAmount = payment.totalDue - (payment.amountPaid || 0)
+                    const pendingAmount = payment.balance
                     return (
                         <div key={payment.id} className="bg-white border rounded-lg p-4 shadow-sm space-y-3">
                             <div className="flex justify-between items-start">

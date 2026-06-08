@@ -6,6 +6,7 @@ import { createBuildingSchema, CreateBuildingInput } from "@/lib/validations"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/lib/auth"
 import { ObjectId } from "mongodb"
+import { checkPlanLimits } from "@/lib/plan-guard"
 
 // ==========================================
 // ORG CONTEXT HELPER
@@ -30,17 +31,7 @@ export async function createBuilding(data: CreateBuildingInput) {
         return { error: "No organization associated with this account" }
     }
 
-    // Plan limit enforcement (skip for super admins)
-    if (!orgCtx.isSuperAdmin) {
-        const { checkPlanLimits } = await import('@/lib/plan-guard')
-        const limits = await checkPlanLimits(orgCtx.organizationId!)
-        if (!limits.isActive) {
-            return { error: "Your subscription is not active. Please renew to continue." }
-        }
-        if (!limits.canCreateBuilding) {
-            return { error: `You have reached the maximum of ${limits.maxBuildings} building(s) on your ${limits.plan} plan. Upgrade to add more buildings.` }
-        }
-    }
+    // Plan limit enforcement moved inside try-catch to avoid unhandled exceptions
 
     const result = createBuildingSchema.safeParse(data)
 
@@ -51,9 +42,19 @@ export async function createBuilding(data: CreateBuildingInput) {
     const { name, address, totalFloors, defaultRentBHK1, defaultRentBHK2, defaultRentBHK3, ratePerUnit, latitude, longitude } = result.data
 
     try {
+        // Plan limit enforcement
+        if (!orgCtx.isSuperAdmin) {
+            const limits = await checkPlanLimits(orgCtx.organizationId!)
+            if (!limits.isActive) {
+                return { error: "Your subscription is not active. Please renew to continue." }
+            }
+            if (!limits.canCreateBuilding) {
+                return { error: `You have reached the maximum of ${limits.maxBuildings} building(s) on your ${limits.plan} plan. Upgrade to add more buildings.` }
+            }
+        }
+
         const client = await clientPromise
         const db = client.db("propx")
-        const { ObjectId } = await import('mongodb')
 
         const now = new Date()
         const buildingDoc: Record<string, any> = {

@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { ObjectId } from "mongodb"
 import { auth } from "@/lib/auth"
+import { checkPlanLimits } from "@/lib/plan-guard"
 
 async function getOrgContext() {
     const session = await auth()
@@ -52,7 +53,6 @@ export async function createFlat(data: CreateFlatInput) {
             if (!building) return { error: "Building not found" }
 
             // ═══ PLAN ENFORCEMENT: Check unit limits ═══
-            const { checkPlanLimits } = await import('@/lib/plan-guard')
             const limits = await checkPlanLimits(orgCtx.organizationId!)
             
             if (!limits.isActive) {
