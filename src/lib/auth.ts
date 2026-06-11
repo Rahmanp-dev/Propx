@@ -12,9 +12,12 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         Credentials({
             id: 'credentials',
             async authorize(credentials) {
+                console.log("AUTHORIZE CALLED WITH:", credentials);
                 const parsedCredentials = z
-                    .object({ email: z.string().email(), password: z.string().min(6) })
+                    .object({ email: z.string().trim().email(), password: z.string().min(6) })
                     .safeParse(credentials);
+
+                console.log("PARSED CREDENTIALS:", parsedCredentials);
 
                 if (parsedCredentials.success) {
                     const { email, password } = parsedCredentials.data;
