@@ -39,7 +39,13 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                     }
 
                     // 2. Fallback to Database for other users
-                    const user = await prisma.user.findUnique({ where: { email } });
+                    let user;
+                    try {
+                        user = await prisma.user.findUnique({ where: { email } });
+                    } catch (error) {
+                        console.error('Database connection error:', error);
+                        throw new Error('Database Connection Failed');
+                    }
                     if (!user) return null;
 
                     const passwordsMatch = await bcrypt.compare(password, user.password);
