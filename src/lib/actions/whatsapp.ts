@@ -190,6 +190,12 @@ export async function sendRentReminders(buildingId?: string) {
                 messageType: "RENT_REMINDER",
                 templateId: "rent_reminder_v1",
                 content: `Dear ${tenant.fullName}, this is a reminder that your rent of ₹${totalBalance.toLocaleString('en-IN')} for flat ${flatNumber} at ${buildingName} is due. Please make the payment at your earliest convenience.`,
+                templateParams: [
+                    tenant.fullName || 'Tenant',
+                    totalBalance.toLocaleString('en-IN'),
+                    flatNumber,
+                    buildingName
+                ],
                 status: "QUEUED",
                 sentAt: null,
                 waMessageId: null,
@@ -209,10 +215,17 @@ export async function sendRentReminders(buildingId?: string) {
         if (waConfigured) {
             for (let i = 0; i < logs.length; i++) {
                 const log = logs[i]
+                
+                const components = log.templateParams ? [{
+                    type: 'body',
+                    parameters: log.templateParams.map((text: string) => ({ type: 'text', text }))
+                }] : undefined;
+
                 const result = await sendWhatsAppTemplate(
                     log.phone,
                     'rent_reminder_v1',
-                    'en'
+                    'en',
+                    components
                 )
 
                 if (result.success && result.messageId) {
@@ -286,7 +299,7 @@ export async function sendBroadcastMessage(message: string, buildingId?: string)
             tenantId: new ObjectId(tenant.id),
             phone: tenant.phone,
             messageType: "BROADCAST",
-            templateId: null,
+            templateId: "building_announcement_v1",
             content: trimmedMessage,
             status: "QUEUED",
             sentAt: null,
@@ -306,9 +319,18 @@ export async function sendBroadcastMessage(message: string, buildingId?: string)
         if (waConfigured) {
             for (let i = 0; i < logs.length; i++) {
                 const log = logs[i]
-                const result = await sendWhatsAppMessage(
+                
+                // Use a generic template to bypass the 24-hour restriction
+                const components = [{
+                    type: 'body',
+                    parameters: [{ type: 'text', text: trimmedMessage }]
+                }];
+
+                const result = await sendWhatsAppTemplate(
                     log.phone, 
-                    trimmedMessage
+                    'building_announcement_v1',
+                    'en',
+                    components
                 )
 
                 if (result.success && result.messageId) {
@@ -335,6 +357,7 @@ export async function sendBroadcastMessage(message: string, buildingId?: string)
         return { error: `Failed to send broadcast message: ${error.message || String(error)}` }
     }
 }
+
 export async function sendWhatsAppNotification(paymentId: string, type: 'INVOICE' | 'RECEIPT') {
     try {
         const orgCtx = await getOrgContext()
@@ -357,25 +380,63 @@ export async function sendWhatsAppNotification(paymentId: string, type: 'INVOICE
             return { error: "Unauthorized access to payment record" }
         }
 
-        // Simulating external Meta WhatsApp API Call delay
-        await new Promise(resolve => setTimeout(resolve, 800))
-
         const messageType = type === 'INVOICE' ? 'RENT_REMINDER' : 'PAYMENT_RECEIPT'
+        const templateName = type === 'INVOICE' ? 'invoice_reminder_v1' : 'payment_receipt_v1'
         const content = type === 'INVOICE' 
             ? `Reminder: Your rent for this month is due. Pending amount: ₹${payment.balance}` 
             : `Thank you! Your payment of ₹${payment.amountPaid} has been received.`
 
-        // Log the WhatsApp message
-        await prisma.whatsAppLog.create({
-            data: {
-                tenantId: payment.tenant.id,
-                phone: payment.tenant.phone,
-                messageType: messageType,
-                content: content,
-                status: 'DELIVERED',
-                sentAt: new Date()
+        const components = [{
+            type: 'body',
+            parameters: type === 'INVOICE' 
+                ? [
+                    { type: 'text', text: payment.tenant.fullName || 'Tenant' },
+                    { type: 'text', text: (payment.balance || 0).toLocaleString('en-IN') }
+                ]
+                : [
+                    { type: 'text', text: payment.tenant.fullName || 'Tenant' },
+                    { type: 'text', text: (payment.amountPaid || 0).toLocaleString('en-IN') }
+                ]
+        }]
+
+        let status: 'QUEUED' | 'SENT' | 'FAILED' = 'QUEUED'
+        let waMessageId = null
+        let errorMsg = null
+
+        if (isWhatsAppConfigured()) {
+            const result = await sendWhatsAppTemplate(payment.tenant.phone, templateName, 'en', components)
+            if (result.success && result.messageId) {
+                status = 'SENT'
+                waMessageId = result.messageId
+            } else {
+                status = 'FAILED'
+                errorMsg = result.error
             }
+        } else {
+            return { error: "WhatsApp API is not configured. Please add ENV variables." }
+        }
+
+        // Log the WhatsApp message using native driver
+        const client = await clientPromise
+        const db = client.db("propx")
+        const collection = db.collection("WhatsAppLog")
+
+        await collection.insertOne({
+            tenantId: new ObjectId(payment.tenant.id),
+            phone: payment.tenant.phone,
+            messageType: messageType,
+            templateId: templateName,
+            content: content,
+            status: status,
+            error: errorMsg,
+            waMessageId: waMessageId,
+            createdAt: new Date(),
+            ...(status === 'SENT' ? { sentAt: new Date() } : {})
         })
+
+        if (status === 'FAILED') {
+            return { error: errorMsg || "Failed to send WhatsApp message" }
+        }
 
         return { success: true }
     } catch (error: any) {

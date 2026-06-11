@@ -595,3 +595,43 @@ model QRScanLog {
   @@index([buildingId])
   @@index([scannedAt])
 }
+
+// ==========================================
+// SCOUT TRACKER / ONBOARDING
+// ==========================================
+
+model Scout {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  phone       String   @unique
+  pin         String   // For mobile login
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  leads       ScoutLead[]
+}
+
+enum ScoutLeadStatus {
+  PENDING
+  CONTACTED
+  CONVERTED
+  REJECTED
+}
+
+model ScoutLead {
+  id               String          @id @default(auto()) @map("_id") @db.ObjectId
+  scoutId          String          @db.ObjectId
+  buildingName     String
+  ownerName        String
+  ownerPhone       String
+  status           ScoutLeadStatus @default(PENDING)
+  convertedToOrgId String?         @db.ObjectId // Links to Organization if converted
+  notes            String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  scout            Scout           @relation(fields: [scoutId], references: [id])
+
+  @@index([scoutId])
+}

@@ -1,221 +1,223 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
-const prisma = new PrismaClient({
-  datasourceUrl: 'mongodb+srv://rp:Rahman%402005@cluster0.ypavype.mongodb.net/propx?appName=Cluster0'
-});
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Connecting to MongoDB...');
-  
-  const email = 'pasha@limra.in';
-  const password = 'owner123';
-  const hashedPassword = await bcrypt.hash(password, 10);
+  try {
+    console.log("Starting Demo Account Seed...");
 
-  let user = await prisma.user.findUnique({ where: { email } });
-  let orgId;
-
-  if (user) {
-    console.log('User found. Updating password...');
-    await prisma.user.update({
-      where: { email },
-      data: { password: hashedPassword }
-    });
-    orgId = user.organizationId;
-    if (!orgId) {
-       console.log('User has no organization. Creating one...');
-       const org = await prisma.organization.create({
-         data: {
-           name: 'Limra Properties',
-           ownerName: 'Pasha',
-           email: email,
-           phone: '9876543210',
-           isActive: true,
-           plan: 'PORTFOLIO'
-         }
-       });
-       orgId = org.id;
-       await prisma.user.update({ where: { email }, data: { organizationId: orgId } });
+    // 1. Check if demo user already exists
+    const existingDemoUser = await prisma.user.findUnique({ where: { email: 'demo@propx.com' } });
+    if (existingDemoUser) {
+      console.log("Demo user already exists. Cleaning up old demo data...");
+      // Clean up old demo organization if exists
+      if (existingDemoUser.organizationId) {
+          const orgId = existingDemoUser.organizationId;
+          // Delete all related data safely
+          await prisma.payment.deleteMany({ where: { tenant: { flat: { building: { organizationId: orgId } } } } });
+          await prisma.tenant.deleteMany({ where: { flat: { building: { organizationId: orgId } } } });
+          await prisma.flat.deleteMany({ where: { building: { organizationId: orgId } } });
+          await prisma.floor.deleteMany({ where: { building: { organizationId: orgId } } });
+          await prisma.building.deleteMany({ where: { organizationId: orgId } });
+          await prisma.user.deleteMany({ where: { organizationId: orgId } });
+          await prisma.organization.delete({ where: { id: orgId } });
+      }
     }
-  } else {
-    console.log('User not found. Creating user and organization...');
+
+    // 2. Create Organization
+    console.log("Creating Organization...");
     const org = await prisma.organization.create({
       data: {
-        name: 'Limra Properties',
-        ownerName: 'Pasha',
-        email: email,
-        phone: '9876543210',
+        name: "PropX Demo Properties",
+        ownerName: "Demo Owner",
+        email: "demo.org@propx.com",
+        phone: "9876543210",
+        city: "Hyderabad",
+        plan: "PORTFOLIO",
+        planStatus: "ACTIVE",
         isActive: true,
-        plan: 'PORTFOLIO'
       }
     });
-    orgId = org.id;
-    user = await prisma.user.create({
+
+    // 3. Create User
+    console.log("Creating User...");
+    const hashedPassword = await bcrypt.hash("DemoPassword123!", 10);
+    const user = await prisma.user.create({
       data: {
-        name: 'Pasha',
-        email,
+        name: "Demo User",
+        email: "demo@propx.com",
         password: hashedPassword,
-        role: 'OWNER',
-        organizationId: orgId
+        phone: "9876543210",
+        role: "OWNER",
+        organizationId: org.id,
       }
     });
-  }
 
-  console.log('Clearing old data for this organization...');
-  const oldBuildings = await prisma.building.findMany({ where: { organizationId: orgId } });
-  for (const b of oldBuildings) {
-    const flats = await prisma.flat.findMany({ where: { buildingId: b.id } });
-    const flatIds = flats.map(f => f.id);
-    if (flatIds.length > 0) {
-      await prisma.payment.deleteMany({ where: { flatId: { in: flatIds } } });
-      await prisma.meterReading.deleteMany({ where: { flatId: { in: flatIds } } });
-      await prisma.tenant.deleteMany({ where: { assignedFlatId: { in: flatIds } } });
-    }
-    await prisma.flat.deleteMany({ where: { buildingId: b.id } });
-    await prisma.floor.deleteMany({ where: { buildingId: b.id } });
-    await prisma.building.delete({ where: { id: b.id } });
-  }
-
-  console.log('Creating 5 buildings...');
-  const buildingNames = ["Limra Towers", "Limra Heights", "Limra Residency", "Limra Enclave", "Limra Pearl"];
-  const tenantNames = [
-    "Aarav", "Vihaan", "Aditya", "Sai", "Arjun", "Reyansh", "Ayaan", "Krishna", "Ishaan", "Shaurya",
-    "Atharv", "Advik", "Pranav", "Kabir", "Ritvik", "Dhruv", "Kian", "Darsh", "Veer", "Aadil",
-    "Diya", "Saanvi", "Aanya", "Ananya", "Pari", "Kavya", "Myra", "Avni", "Riya", "Aarohi",
-    "Isha", "Aditi", "Navya", "Meera", "Zara", "Sara", "Kiara", "Prisha", "Nidhi", "Tanya",
-    "Rohan", "Rahul", "Karan", "Vikas", "Manish", "Amit", "Raj", "Sanjay", "Sunil", "Anil",
-    "Vijay", "Ajay", "Mohit", "Pooja", "Neha", "Sneha", "Kriti", "Shruti", "Swati", "Divya"
-  ];
-  let tenantIndex = 0;
-
-  for (const bName of buildingNames) {
-    console.log(`Creating ${bName}...`);
-    const building = await prisma.building.create({
+    // 4. Create Buildings
+    console.log("Creating Buildings...");
+    const building1 = await prisma.building.create({
       data: {
-        organizationId: orgId,
-        name: bName,
-        address: `${bName} Road, Hyderabad`,
-        totalFloors: 3,
-        totalFlats: 12,
-        occupancyRate: 100,
-        ratePerUnit: 10,
-        defaultRentBHK2: 15000,
+        organizationId: org.id,
+        name: "Gachibowli Heights",
+        address: "123 Tech Park Road",
+        city: "Hyderabad",
+        totalFloors: 4,
+        totalFlats: 8,
+        occupancyRate: 80,
+        ratePerUnit: 12.5,
+        defaultRentBHK1: 15000,
+        defaultRentBHK2: 25000,
+        defaultRentBHK3: 35000,
       }
     });
 
-    for (let f = 1; f <= 3; f++) {
-      const floor = await prisma.floor.create({
+    const building2 = await prisma.building.create({
+      data: {
+        organizationId: org.id,
+        name: "Jubilee Hills Residency",
+        address: "Plot 45, Jubilee Hills",
+        city: "Hyderabad",
+        totalFloors: 3,
+        totalFlats: 6,
+        occupancyRate: 100,
+        ratePerUnit: 15.0,
+        defaultRentBHK1: 20000,
+        defaultRentBHK2: 35000,
+        defaultRentBHK3: 50000,
+      }
+    });
+
+    const buildings = [building1, building2];
+
+    // 5. Create Floors and Flats
+    console.log("Creating Floors and Flats...");
+    const createdFlats = [];
+    for (const b of buildings) {
+      for (let f = 1; f <= b.totalFloors; f++) {
+        const floor = await prisma.floor.create({
+          data: {
+            buildingId: b.id,
+            number: f,
+            flatsCount: 2,
+          }
+        });
+
+        // 2 Flats per floor
+        for (let fl = 1; fl <= 2; fl++) {
+          const isOccupied = Math.random() > 0.15; // 85% occupancy
+          const rent = b.defaultRentBHK2;
+          const flat = await prisma.flat.create({
+            data: {
+              buildingId: b.id,
+              floorId: floor.id,
+              flatNumber: `${f}0${fl}`,
+              flatType: "BHK2",
+              rentAmount: rent,
+              maintenanceAmount: 2000,
+              depositAmount: rent * 2,
+              status: isOccupied ? "OCCUPIED" : "VACANT",
+            }
+          });
+          if (isOccupied) createdFlats.push(flat);
+        }
+      }
+    }
+
+    // 6. Create Tenants
+    console.log("Creating Tenants...");
+    const tenants = [];
+    const names = ["Rahul Sharma", "Priya Singh", "Amit Kumar", "Neha Reddy", "Vikram Patel", "Sneha Rao", "Rohan Gupta", "Kavya Menon", "Arjun Nair", "Pooja Desai", "Suresh Iyer", "Ananya Verma"];
+    let nameIdx = 0;
+    
+    // We'll generate data for the last 5 months
+    const today = new Date();
+    const monthsData = [];
+    for (let i = 4; i >= 0; i--) {
+      monthsData.push(new Date(today.getFullYear(), today.getMonth() - i, 1));
+    }
+
+    for (const flat of createdFlats) {
+      const tName = names[nameIdx % names.length];
+      nameIdx++;
+      
+      const leaseStart = new Date(today.getFullYear(), today.getMonth() - 6, 5); // Leased 6 months ago
+      const tenant = await prisma.tenant.create({
         data: {
-          buildingId: building.id,
-          number: f,
-          flatsCount: 4
+          fullName: tName,
+          phone: "987654" + Math.floor(1000 + Math.random() * 9000),
+          email: `${tName.split(' ')[0].toLowerCase()}@example.com`,
+          leaseStartDate: leaseStart,
+          assignedFlatId: flat.id,
+          isActive: true,
         }
       });
+      tenants.push({ tenant, flat });
+    }
 
-      for (let num = 1; num <= 4; num++) {
-        const flatNumber = `${f}0${num}`;
-        const flat = await prisma.flat.create({
-          data: {
-            buildingId: building.id,
-            floorId: floor.id,
-            flatNumber,
-            flatType: 'BHK2',
-            rentAmount: 15000,
-            maintenanceAmount: 1000,
-            status: 'OCCUPIED'
+    // 7. Create Payments (Ledgers)
+    console.log("Creating 5 Months of Payment Ledgers...");
+    for (const { tenant, flat } of tenants) {
+      for (let i = 0; i < monthsData.length; i++) {
+        const monthDate = monthsData[i];
+        const isCurrentMonth = i === monthsData.length - 1;
+        
+        const rentDue = flat.rentAmount;
+        const maintenanceDue = flat.maintenanceAmount;
+        const totalDue = rentDue + maintenanceDue;
+        
+        let status = "PAID";
+        let amountPaid = totalDue;
+        let balance = 0;
+        let paymentDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), 5 + Math.floor(Math.random() * 5)); // Paid between 5th and 10th
+        
+        // For current month, maybe some are pending or partial
+        if (isCurrentMonth) {
+          const rand = Math.random();
+          if (rand > 0.7) {
+            status = "PENDING";
+            amountPaid = 0;
+            balance = totalDue;
+            paymentDate = null;
+          } else if (rand > 0.5) {
+            status = "PARTIAL";
+            amountPaid = rentDue; // Paid rent, missed maintenance
+            balance = maintenanceDue;
+            paymentDate = new Date();
           }
-        });
+        }
 
-        const tenant = await prisma.tenant.create({
-          data: {
-            fullName: tenantNames[tenantIndex++ % tenantNames.length] + ' Reddy',
-            phone: `99${Math.floor(10000000 + Math.random() * 90000000)}`,
-            leaseStartDate: new Date('2025-01-01T00:00:00.000Z'),
-            assignedFlatId: flat.id,
-            isActive: true
-          }
-        });
-
-        let currentReading = Math.floor(Math.random() * 100) + 500;
-
-        // March (Paid)
-        let units = Math.floor(Math.random() * 80) + 40;
-        currentReading += units;
-        await prisma.meterReading.create({
-          data: { flatId: flat.id, reading: currentReading, month: 3, year: 2026, readingDate: new Date('2026-03-01T00:00:00.000Z') }
-        });
         await prisma.payment.create({
           data: {
             tenantId: tenant.id,
             flatId: flat.id,
-            month: new Date('2026-03-01T00:00:00.000Z'),
-            rentDue: 15000,
-            maintenanceDue: 1000,
-            electricityDue: units * 10,
-            totalDue: 15000 + 1000 + units * 10,
-            amountPaid: 15000 + 1000 + units * 10,
-            balance: 0,
-            status: 'PAID',
-            paymentDate: new Date('2026-03-05T00:00:00.000Z'),
-            paymentMethod: 'UPI'
-          }
-        });
-
-        // April (Paid)
-        units = Math.floor(Math.random() * 80) + 40;
-        currentReading += units;
-        await prisma.meterReading.create({
-          data: { flatId: flat.id, reading: currentReading, month: 4, year: 2026, readingDate: new Date('2026-04-01T00:00:00.000Z') }
-        });
-        await prisma.payment.create({
-          data: {
-            tenantId: tenant.id,
-            flatId: flat.id,
-            month: new Date('2026-04-01T00:00:00.000Z'),
-            rentDue: 15000,
-            maintenanceDue: 1000,
-            electricityDue: units * 10,
-            totalDue: 15000 + 1000 + units * 10,
-            amountPaid: 15000 + 1000 + units * 10,
-            balance: 0,
-            status: 'PAID',
-            paymentDate: new Date('2026-04-05T00:00:00.000Z'),
-            paymentMethod: 'UPI'
-          }
-        });
-
-        // May (Pending)
-        units = Math.floor(Math.random() * 80) + 40;
-        currentReading += units;
-        await prisma.meterReading.create({
-          data: { flatId: flat.id, reading: currentReading, month: 5, year: 2026, readingDate: new Date('2026-05-01T00:00:00.000Z') }
-        });
-        await prisma.payment.create({
-          data: {
-            tenantId: tenant.id,
-            flatId: flat.id,
-            month: new Date('2026-05-01T00:00:00.000Z'),
-            rentDue: 15000,
-            maintenanceDue: 1000,
-            electricityDue: units * 10,
-            totalDue: 15000 + 1000 + units * 10,
-            amountPaid: 0,
-            balance: 15000 + 1000 + units * 10,
-            status: 'PENDING'
+            month: monthDate,
+            rentDue,
+            maintenanceDue,
+            electricityDue: 0,
+            totalDue,
+            amountPaid,
+            balance,
+            status,
+            paymentDate,
+            paymentMethod: status !== "PENDING" ? "UPI" : null,
+            createdAt: new Date(monthDate.getFullYear(), monthDate.getMonth(), 1), // Generated on 1st of month
           }
         });
       }
     }
-  }
 
-  console.log('Seeding complete!');
+    console.log("====================================");
+    console.log("DEMO ACCOUNT CREATED SUCCESSFULLY!");
+    console.log("Login Email: demo@propx.com");
+    console.log("Password: DemoPassword123!");
+    console.log("====================================");
+
+  } catch (error) {
+    console.error("Error generating demo account:", error);
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+main();

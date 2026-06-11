@@ -12,6 +12,8 @@ export const authConfig = {
             const isOnRegister = nextUrl.pathname.startsWith('/register');
             const isTenantLogin = nextUrl.pathname === '/tenant-portal/login';
             const isTenantProtectedRoute = nextUrl.pathname.startsWith('/tenant-portal') && !isTenantLogin;
+            const isScoutLogin = nextUrl.pathname === '/scout-portal/login';
+            const isScoutProtectedRoute = nextUrl.pathname.startsWith('/scout-portal') && !isScoutLogin;
             const isPublicRoute =
                 isOnLogin ||
                 isOnRegister ||
@@ -19,6 +21,7 @@ export const authConfig = {
                 nextUrl.pathname.startsWith('/api/webhook') ||
                 nextUrl.pathname.startsWith('/api/upload') ||
                 isTenantLogin ||
+                isScoutLogin ||
                 nextUrl.pathname.startsWith('/pay') ||
                 nextUrl.pathname.startsWith('/inquiry') ||
                 nextUrl.pathname.startsWith('/packages') ||
@@ -26,11 +29,14 @@ export const authConfig = {
                 nextUrl.pathname === '/';
 
             if (isPublicRoute) {
-                if ((isOnLogin || isTenantLogin) && isLoggedIn) {
+                if ((isOnLogin || isTenantLogin || isScoutLogin) && isLoggedIn) {
                     // @ts-ignore
                     const role = auth?.user?.role;
                     if (role === 'TENANT') {
                         return Response.redirect(new URL('/tenant-portal/dashboard', nextUrl));
+                    }
+                    if (role === 'SCOUT') {
+                        return Response.redirect(new URL('/scout-portal/dashboard', nextUrl));
                     }
                     if (role === 'SUPER_ADMIN') {
                         return Response.redirect(new URL('/super-admin/dashboard', nextUrl));
@@ -47,7 +53,18 @@ export const authConfig = {
                 // @ts-ignore
                 const role = auth?.user?.role;
                 if (role !== 'TENANT') {
-                    // Logged in as owner but trying to access tenant portal
+                    const userId = auth?.user?.id || 'user';
+                    return Response.redirect(new URL(`/${userId}/dashboard`, nextUrl));
+                }
+                return true;
+            }
+
+            // Protect scout routes
+            if (isScoutProtectedRoute) {
+                if (!isLoggedIn) return Response.redirect(new URL('/scout-portal/login', nextUrl));
+                // @ts-ignore
+                const role = auth?.user?.role;
+                if (role !== 'SCOUT') {
                     const userId = auth?.user?.id || 'user';
                     return Response.redirect(new URL(`/${userId}/dashboard`, nextUrl));
                 }
@@ -84,6 +101,9 @@ export const authConfig = {
             const role = auth?.user?.role;
             if (role === 'TENANT') {
                 return Response.redirect(new URL('/tenant-portal/dashboard', nextUrl));
+            }
+            if (role === 'SCOUT') {
+                return Response.redirect(new URL('/scout-portal/dashboard', nextUrl));
             }
             
             return true;

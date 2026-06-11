@@ -94,6 +94,40 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                 console.log('Invalid tenant credentials');
                 return null;
+        }),
+        Credentials({
+            id: 'scout-credentials',
+            name: 'Scout Login',
+            credentials: {
+                phone: { label: "Phone", type: "text" },
+                pin: { label: "PIN", type: "password" }
+            },
+            async authorize(credentials) {
+                const parsedCredentials = z
+                    .object({ phone: z.string().min(10), pin: z.string().min(4) })
+                    .safeParse(credentials);
+
+                if (parsedCredentials.success) {
+                    const { phone, pin } = parsedCredentials.data;
+
+                    const scout = await prisma.scout.findUnique({ 
+                        where: { phone }
+                    });
+                    
+                    if (!scout || !scout.isActive) return null;
+
+                    if (pin !== scout.pin) return null;
+
+                    return {
+                        id: scout.id,
+                        name: scout.name,
+                        phone: scout.phone,
+                        role: "SCOUT"
+                    } as any;
+                }
+
+                console.log('Invalid scout credentials');
+                return null;
             }
         })
     ],

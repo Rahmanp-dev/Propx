@@ -1,27 +1,18 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
-const prisma = new PrismaClient({
-  datasourceUrl: 'mongodb+srv://rp:Rahman%402005@cluster0.ypavype.mongodb.net/propx?appName=Cluster0'
-});
+const prisma = new PrismaClient();
 
-async function main() {
-  const email = 'pasha@limra.in';
-  const password = 'owner123';
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) {
-    console.log("User not found!");
-    return;
-  }
-  const match = await bcrypt.compare(password, user.password);
-  console.log("Password match:", match);
+async function run() {
+    const user = await prisma.user.findUnique({ where: { email: 'demo@propx.com' } });
+    console.log(user ? 'User exists' : 'User missing');
+    if(user) {
+        console.log('User Role:', user.role);
+        console.log('Org ID:', user.organizationId);
+        const match = await bcrypt.compare('DemoPassword123!', user.password);
+        console.log('Match?', match);
+    }
+    await prisma.$disconnect();
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+run();
