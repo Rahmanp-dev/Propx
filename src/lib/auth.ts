@@ -100,6 +100,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                 console.log('Invalid tenant credentials');
                 return null;
+            },
         }),
         Credentials({
             id: 'scout-credentials',

@@ -60,9 +60,9 @@ export default async function LandingPage() {
 
       {/* Header / Navbar */}
       <header className="relative z-10 border-b border-white/5 bg-slate-950/60 backdrop-blur-md sticky top-0">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <img src="/logo.png" alt="Company Logo" className="h-11 w-11 rounded-lg object-contain bg-white/10 p-0.5" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            <img src="/logo.png" alt="Company Logo" className="h-9 w-9 rounded-lg object-contain bg-white/10 p-0.5" />
             <span className="text-xl font-bold tracking-tight text-white">
               Prop<span className="text-indigo-400">X</span>
             </span>
@@ -99,47 +99,84 @@ export default async function LandingPage() {
             )}
           </div>
 
-          {/* Mobile Menu */}
-          <div className="flex md:hidden items-center gap-3">
+          {/* Mobile Actions */}
+          <div className="flex md:hidden items-center gap-2">
             {user ? (
-              <Link href={(user as any).role === 'SUPER_ADMIN' ? '/super-admin/dashboard' : `/${user.id}/dashboard`} className="text-xs font-semibold bg-indigo-600 px-3 py-1.5 rounded-lg text-white">
+              <Link
+                href={(user as any).role === 'SUPER_ADMIN' ? '/super-admin/dashboard' : `/${user.id}/dashboard`}
+                className="text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 px-3.5 py-2 rounded-lg text-white transition-colors"
+              >
                 Dashboard
               </Link>
             ) : (
-              <Link href="/login" className="text-xs font-semibold border border-white/20 bg-white/5 px-3 py-1.5 rounded-lg text-white">
+              <Link
+                href="/login"
+                className="text-xs font-semibold border border-white/20 bg-white/5 hover:bg-white/10 active:bg-white/15 px-3.5 py-2 rounded-lg text-white transition-colors"
+              >
                 Sign In
               </Link>
             )}
             <Sheet>
               <SheetTrigger asChild>
-                <button className="text-slate-300 hover:text-white p-1">
-                  <Menu className="h-6 w-6" />
+                <button
+                  className="flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/5 active:bg-white/10 p-2 rounded-lg transition-colors"
+                  aria-label="Open menu"
+                >
+                  <Menu className="h-5 w-5" />
                 </button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-slate-950 border-l-white/10 text-white w-[280px]">
+              <SheetContent side="right" className="bg-slate-950 border-l border-white/10 text-white w-[300px] p-0">
                 <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
-                <div className="flex flex-col gap-6 mt-8">
-                  <a href="#features" className="text-lg font-medium text-slate-300">Features</a>
-                  <a href="#workflow" className="text-lg font-medium text-slate-300">Platform</a>
-                  <Link href="/packages" className="text-lg font-medium text-slate-300">Packages & Pricing</Link>
-                  <Link href="/discover" className="flex items-center gap-2 text-lg text-orange-400 font-semibold">
-                    <Globe className="h-5 w-5" /> Discover Flats
-                  </Link>
-                  <Link href="/tenant-portal/login" className="flex items-center gap-2 text-lg text-indigo-400 font-semibold">
-                    <Users className="h-5 w-5" /> Tenant Portal
-                  </Link>
-                  <div className="h-px bg-white/10 w-full my-2" />
-                  {!user && (
-                    <div className="flex flex-col gap-3">
-                      <Link href="/login" className="inline-flex items-center justify-center px-5 py-3 rounded-xl text-base font-bold border border-white/20 bg-white/5 text-white">
-                        Sign In
-                      </Link>
-                      <Link href="/register" className="inline-flex items-center justify-center px-5 py-3 rounded-xl text-base font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-500/10">
-                        Register Now
-                      </Link>
-                    </div>
-                  )}
+
+                {/* Sheet header with logo */}
+                <div className="flex items-center gap-3 px-6 py-5 border-b border-white/5">
+                  <img src="/logo.png" alt="PropX" className="h-9 w-9 rounded-lg object-contain bg-white/10 p-0.5" />
+                  <span className="text-lg font-bold text-white">Prop<span className="text-indigo-400">X</span></span>
                 </div>
+
+                {/* Nav links */}
+                <nav className="flex flex-col px-3 py-4 gap-1">
+                  <a href="#features" className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors">
+                    Features
+                  </a>
+                  <a href="#workflow" className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors">
+                    Platform
+                  </a>
+                  <Link href="/packages" className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors">
+                    Packages & Pricing
+                  </Link>
+
+                  <div className="h-px bg-white/5 my-1 mx-1" />
+
+                  <Link href="/discover" className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-base font-semibold text-orange-400 hover:bg-orange-500/10 active:bg-orange-500/20 transition-colors">
+                    <Globe className="h-5 w-5 shrink-0" /> Discover Flats
+                  </Link>
+                  <Link href="/tenant-portal/login" className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-base font-semibold text-indigo-400 hover:bg-indigo-500/10 active:bg-indigo-500/20 transition-colors">
+                    <Users className="h-5 w-5 shrink-0" /> Tenant Portal
+                  </Link>
+                </nav>
+
+                {/* Auth buttons at bottom */}
+                {!user && (
+                  <div className="px-4 py-4 border-t border-white/5 flex flex-col gap-3 mt-auto">
+                    <Link href="/login" className="flex items-center justify-center px-5 py-3.5 rounded-xl text-base font-bold border border-white/20 bg-white/5 hover:bg-white/10 active:bg-white/15 text-white transition-colors">
+                      Sign In
+                    </Link>
+                    <Link href="/register" className="flex items-center justify-center px-5 py-3.5 rounded-xl text-base font-bold bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-lg shadow-indigo-500/10 transition-all">
+                      Register Now
+                    </Link>
+                  </div>
+                )}
+                {user && (
+                  <div className="px-4 py-4 border-t border-white/5">
+                    <Link
+                      href={(user as any).role === 'SUPER_ADMIN' ? '/super-admin/dashboard' : `/${user.id}/dashboard`}
+                      className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-base font-bold bg-gradient-to-r from-indigo-600 to-violet-600 text-white"
+                    >
+                      Go to Dashboard <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                )}
               </SheetContent>
             </Sheet>
           </div>

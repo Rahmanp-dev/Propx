@@ -5,11 +5,12 @@ import { Building2, CheckCircle2, Clock, XCircle } from 'lucide-react'
 
 export default async function ScoutDashboardOverview() {
     const session = await auth()
-    if (!session || session.user?.role !== 'SCOUT') {
+    const user = session?.user as any
+    if (!session || user?.role !== 'SCOUT') {
         redirect('/scout-portal/login')
     }
 
-    const scoutId = session.user.id
+    const scoutId = user.id
 
     const scout = await prisma.scout.findUnique({
         where: { id: scoutId },

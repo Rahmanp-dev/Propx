@@ -137,27 +137,24 @@ export function Sidebar({ user }: { user?: any }) {
 
   return (
     <div className="flex flex-col h-full bg-[#0f172a] bg-gradient-to-b from-[#0f172a] via-[#101d35] to-[#0c1425] border-r border-white/5 shadow-2xl">
-      {/* ── Logo Area ── */}
-      <div className="relative flex items-center gap-3 px-6 py-6">
-        {/* Gradient accent behind the logo */}
+      {/* ── Logo Area — links back to home ── */}
+      <Link href="/" className="relative flex items-center gap-3 px-6 py-5 group hover:bg-white/[0.02] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-sky-500/50 rounded-none">
         <div className="absolute inset-0 bg-gradient-to-r from-sky-500/10 via-violet-500/8 to-transparent pointer-events-none" />
-        <div className="relative flex h-11 w-11 items-center justify-center rounded-lg shadow-lg overflow-hidden bg-white/10">
+        <div className="relative flex h-10 w-10 items-center justify-center rounded-lg shadow-lg overflow-hidden bg-white/10 shrink-0">
           <img src="/logo.png" alt="Company Logo" className="h-full w-full object-contain" />
         </div>
-        <div className="relative">
-          <h1 className="text-lg font-bold tracking-wide text-white">
+        <div className="relative min-w-0">
+          <h1 className="text-lg font-bold tracking-wide text-white leading-tight">
             Prop<span className="text-sky-400">X</span>
           </h1>
           <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">
             Owner Panel
           </p>
         </div>
-
-        {/* Notification bell */}
-        <div className="relative ml-auto">
+        <div className="relative ml-auto shrink-0">
           <NotificationBell />
         </div>
-      </div>
+      </Link>
 
       {/* Subtle separator */}
       <div className="mx-4 h-px bg-gradient-to-r from-transparent via-slate-700/60 to-transparent" />

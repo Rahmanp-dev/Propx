@@ -20,8 +20,8 @@ export default async function DiscoverPage() {
             <header className="border-b border-white/5 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
                 <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2.5">
-                        <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
-                            <Building2 className="h-5 w-5 text-white" />
+                        <div className="h-9 w-9 rounded-lg overflow-hidden bg-white/10 flex items-center justify-center">
+                            <img src="/logo.png" alt="PropX" className="h-full w-full object-contain" />
                         </div>
                         <div>
                             <span className="text-lg font-bold tracking-tight">

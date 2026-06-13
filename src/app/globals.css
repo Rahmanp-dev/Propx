@@ -122,7 +122,29 @@
   }
   html, body {
     @apply bg-background text-foreground overflow-x-hidden w-full;
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
   }
+  /* Smooth touch scrolling on iOS */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Prevent text size adjustment on rotation */
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+}
+
+/* Safe area for iPhone home indicator (tenant bottom nav) */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Touch target minimum */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
 }
 
 @media print {

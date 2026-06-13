@@ -19,11 +19,16 @@ export function SuperAdminMobileSidebar({ user }: { user?: any }) {
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                    <Menu className="h-6 w-6 text-gray-700" />
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden h-9 w-9 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                    aria-label="Open navigation menu"
+                >
+                    <Menu className="h-5 w-5 text-gray-600" />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 bg-[#0f172a] border-r-indigo-950 text-white w-72 max-w-[288px]">
+            <SheetContent side="left" className="p-0 bg-[#0f172a] border-r border-indigo-950/50 text-white w-72 max-w-[85vw]">
                 <SheetTitle className="sr-only">Super Admin Navigation Menu</SheetTitle>
                 <SuperAdminSidebar user={user} />
             </SheetContent>

@@ -91,9 +91,14 @@ export default async function DashboardLayout({
                 {/* ── Mobile Header ── */}
                 <header className="flex items-center gap-3 px-4 h-14 border-b border-gray-200/80 bg-white md:hidden sticky top-0 z-50">
                     <MobileSidebar user={user} />
-                    <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent flex-1">
-                        PropX
-                    </span>
+                    <Link href="/" className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="h-7 w-7 rounded-lg overflow-hidden bg-slate-100 shrink-0 flex items-center justify-center">
+                            <img src="/logo.png" alt="PropX" className="h-full w-full object-contain" />
+                        </div>
+                        <span className="text-base font-bold tracking-tight text-gray-900 truncate">
+                            Prop<span className="text-indigo-500">X</span>
+                        </span>
+                    </Link>
                     <GlobalSearch />
                 </header>
 

@@ -7,11 +7,12 @@ import { redirect } from 'next/navigation'
 
 export async function logScoutVisit(formData: FormData) {
     const session = await auth()
-    if (!session || session.user?.role !== 'SCOUT') {
+    const user = session?.user as any
+    if (!session || user?.role !== 'SCOUT') {
         throw new Error('Unauthorized')
     }
 
-    const scoutId = session.user.id
+    const scoutId = user.id
     const buildingName = formData.get('buildingName') as string
     const ownerName = formData.get('ownerName') as string
     const ownerPhone = formData.get('ownerPhone') as string

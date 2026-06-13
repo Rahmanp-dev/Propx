@@ -3,8 +3,9 @@
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { authenticate } from '@/lib/actions/auth'
-import { Building2, ShieldCheck, BarChart3, Users, ArrowRight, Lock, Mail } from 'lucide-react'
+import { Building2, ShieldCheck, BarChart3, Users, ArrowRight, Lock, Mail, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { Logo } from '@/components/shared/logo'
 
 const features = [
   {
@@ -29,7 +30,7 @@ export default function LoginPage() {
 
   return (
     <div className="dark flex min-h-screen w-full overflow-x-hidden bg-slate-950 text-white">
-      {/* ── Left Branding Panel ── */}
+      {/* ── Left Branding Panel (desktop only) ── */}
       <div className="relative hidden lg:w-1/2 overflow-hidden lg:flex lg:flex-col lg:justify-between border-r border-white/5 bg-slate-950">
         {/* Animated gradient orbs */}
         <div className="pointer-events-none absolute inset-0">
@@ -49,15 +50,17 @@ export default function LoginPage() {
 
         {/* Content */}
         <div className="relative z-10 flex flex-1 flex-col justify-center px-12 xl:px-20">
-          {/* Logo & tagline */}
+          {/* Logo & back link */}
           <div className="mb-14">
-            <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl shadow-lg overflow-hidden bg-white/10">
-                <img src="/logo.png" alt="Company Logo" className="h-full w-full object-contain" />
-              </div>
-              <span className="text-2xl font-bold tracking-tight text-white">
-                Prop<span className="text-indigo-400">X</span>
-              </span>
+            <div className="mb-4 flex items-center gap-4">
+              <Logo size="lg" href="/" />
+              <Link
+                href="/"
+                className="ml-auto flex items-center gap-1.5 text-xs text-indigo-300/60 hover:text-indigo-300 transition-colors"
+              >
+                <ArrowLeft className="h-3 w-3" />
+                Back to home
+              </Link>
             </div>
             <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-white xl:text-5xl">
               Property Management,{' '}
@@ -78,7 +81,7 @@ export default function LoginPage() {
                 key={feature.title}
                 className="group flex items-start gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 backdrop-blur-sm transition-all duration-300 hover:border-indigo-500/20 hover:bg-white/[0.04]"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400 transition-colors duration-300 group-hover:from-indigo-500/20 group-hover:to-violet-500/20">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
                   <feature.icon className="h-5 w-5" />
                 </div>
                 <div>
@@ -101,111 +104,122 @@ export default function LoginPage() {
       </div>
 
       {/* ── Right Form Panel ── */}
-      <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2 lg:px-12 bg-slate-950">
-        <div className="w-full max-w-md">
-          {/* Mobile-only logo */}
-          <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl shadow-lg overflow-hidden bg-white/10">
-              <img src="/logo.png" alt="Company Logo" className="h-full w-full object-contain" />
-            </div>
-            <span className="text-xl font-bold tracking-tight text-white">
-              Prop<span className="text-indigo-400">X</span>
-            </span>
-          </div>
+      <div className="flex w-full flex-col lg:w-1/2 bg-slate-950">
+        {/* Mobile top bar — full navigation */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 lg:hidden">
+          <Logo size="md" href="/" />
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 text-sm text-indigo-300/70 hover:text-indigo-300 transition-colors font-medium"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Home
+          </Link>
+        </div>
 
-          <form action={dispatch} className="w-full">
-            <div className="border border-white/10 bg-slate-900/60 shadow-2xl shadow-black/20 backdrop-blur-xl rounded-2xl p-4 sm:p-8 space-y-6">
-              <div className="space-y-2 text-center">
-                <h2 className="text-2xl font-bold tracking-tight text-white">
-                  Welcome back
-                </h2>
-                <p className="text-sm text-indigo-200/50">
-                  Sign in to your account to continue
-                </p>
-              </div>
-
-              <div className="space-y-5">
-                {/* Email field */}
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-indigo-200/70 block">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-400/40" />
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      required
-                      className="h-11 w-full rounded-lg border border-white/10 bg-slate-950/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-slate-950/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
-                    />
-                  </div>
+        <div className="flex flex-1 items-center justify-center px-5 py-10 sm:px-8">
+          <div className="w-full max-w-md">
+            <form action={dispatch} className="w-full">
+              <div className="border border-white/10 bg-slate-900/60 shadow-2xl shadow-black/20 backdrop-blur-xl rounded-2xl p-6 sm:p-8 space-y-6">
+                <div className="space-y-2 text-center">
+                  <h2 className="text-2xl font-bold tracking-tight text-white">
+                    Welcome back
+                  </h2>
+                  <p className="text-sm text-indigo-200/50">
+                    Sign in to your account to continue
+                  </p>
                 </div>
 
-                {/* Password field */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label htmlFor="password" className="text-sm font-medium text-indigo-200/70">
-                      Password
+                <div className="space-y-5">
+                  {/* Email field */}
+                  <div className="space-y-2">
+                    <label htmlFor="email" className="text-sm font-medium text-indigo-200/70 block">
+                      Email Address
                     </label>
-                    <button
-                      type="button"
-                      className="text-xs font-medium text-indigo-400/70 transition-colors duration-200 hover:text-indigo-300"
-                    >
-                      Forgot password?
-                    </button>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-400/40" />
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        required
+                        autoComplete="email"
+                        className="h-12 w-full rounded-lg border border-white/10 bg-slate-950/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-slate-950/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                      />
+                    </div>
                   </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-400/40" />
-                    <input
-                      id="password"
-                      name="password"
-                      type="password"
-                      placeholder="••••••••"
-                      required
-                      className="h-11 w-full rounded-lg border border-white/10 bg-slate-950/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-slate-950/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
 
-              <div className="space-y-4 pt-2">
-                <LoginButton />
-
-                {/* Error message */}
-                <div
-                  className="flex min-h-[20px] items-center justify-center"
-                  aria-live="polite"
-                  aria-atomic="true"
-                >
-                  {errorMessage && (
-                    <p className="text-center text-sm font-medium text-red-400">
-                      {errorMessage}
-                    </p>
-                  )}
-                </div>
-
-                {/* Divider */}
-                <div className="relative w-full">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/[0.06]" />
+                  {/* Password field */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="password" className="text-sm font-medium text-indigo-200/70">
+                        Password
+                      </label>
+                    </div>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-400/40" />
+                      <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        placeholder="••••••••"
+                        required
+                        autoComplete="current-password"
+                        className="h-12 w-full rounded-lg border border-white/10 bg-slate-950/40 pl-10 pr-4 text-white placeholder:text-indigo-300/30 transition-all duration-200 focus:border-indigo-500/50 focus:bg-slate-950/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                {/* Register link */}
-                <p className="text-center text-sm text-indigo-200/50">
-                  Don&apos;t have an account?{' '}
-                  <Link
-                    href="/register"
-                    className="font-semibold text-indigo-400 transition-colors duration-200 hover:text-indigo-300"
+                <div className="space-y-4 pt-1">
+                  <LoginButton />
+
+                  {/* Error message */}
+                  <div
+                    className="flex min-h-[20px] items-center justify-center"
+                    aria-live="polite"
+                    aria-atomic="true"
                   >
-                    Register
-                  </Link>
-                </p>
+                    {errorMessage && (
+                      <p className="text-center text-sm font-medium text-red-400">
+                        {errorMessage}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="relative w-full">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-white/[0.06]" />
+                    </div>
+                  </div>
+
+                  {/* Register link */}
+                  <p className="text-center text-sm text-indigo-200/50">
+                    Don&apos;t have an account?{' '}
+                    <Link
+                      href="/register"
+                      className="font-semibold text-indigo-400 transition-colors duration-200 hover:text-indigo-300"
+                    >
+                      Register
+                    </Link>
+                  </p>
+
+                  {/* Tenant portal link */}
+                  <p className="text-center text-xs text-indigo-200/30">
+                    Are you a tenant?{' '}
+                    <Link
+                      href="/tenant-portal/login"
+                      className="text-indigo-400/60 hover:text-indigo-400 transition-colors"
+                    >
+                      Tenant Portal →
+                    </Link>
+                  </p>
+                </div>
               </div>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -218,7 +232,7 @@ function LoginButton() {
   return (
     <button
       type="submit"
-      className="group relative h-11 w-full overflow-hidden rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:from-indigo-500 hover:to-violet-500 hover:shadow-xl hover:shadow-indigo-500/30 disabled:opacity-50 text-sm cursor-pointer flex items-center justify-center gap-2"
+      className="group relative h-12 w-full overflow-hidden rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:from-indigo-500 hover:to-violet-500 hover:shadow-xl hover:shadow-indigo-500/30 disabled:opacity-50 text-sm cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]"
       aria-disabled={pending}
       disabled={pending}
     >

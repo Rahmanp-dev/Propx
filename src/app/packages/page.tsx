@@ -174,23 +174,40 @@ export default function PackagesPage() {
           </div>
 
           {/* Mobile Nav */}
-          <div className="flex md:hidden items-center gap-4">
-            <Link href="/login" className="text-xs font-semibold text-slate-300">
+          <div className="flex md:hidden items-center gap-2">
+            <Link href="/login" className="text-xs font-semibold border border-white/20 bg-white/5 hover:bg-white/10 px-3.5 py-2 rounded-lg text-white transition-colors">
               Sign In
             </Link>
             <Sheet>
               <SheetTrigger asChild>
-                <button className="text-slate-300 hover:text-white">
-                  <Menu className="h-6 w-6" />
+                <button
+                  className="flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/5 active:bg-white/10 p-2 rounded-lg transition-colors"
+                  aria-label="Open menu"
+                >
+                  <Menu className="h-5 w-5" />
                 </button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-[#030712] border-l-white/10 text-white">
+              <SheetContent side="right" className="bg-[#030712] border-l border-white/10 text-white w-[300px] p-0">
                 <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
-                <div className="flex flex-col gap-6 mt-8">
-                  <Link href="/" className="text-lg font-medium text-slate-300">Home</Link>
-                  <Link href="/login" className="text-lg font-medium text-slate-300">Sign In</Link>
-                  <div className="h-px bg-white/10 w-full my-2" />
-                  <Link href="/register" className="inline-flex items-center justify-center px-5 py-3 rounded-xl text-base font-bold bg-violet-600 text-white shadow-lg shadow-violet-500/10">
+                {/* Sheet header with logo */}
+                <div className="flex items-center gap-3 px-6 py-5 border-b border-white/5">
+                  <img src="/logo.png" alt="PropX" className="h-9 w-9 rounded-lg object-contain bg-white/10 p-0.5" />
+                  <span className="text-lg font-bold text-white">Prop<span className="text-violet-400">X</span></span>
+                </div>
+                <nav className="flex flex-col px-3 py-4 gap-1">
+                  <Link href="/" className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors">
+                    Home
+                  </Link>
+                  <Link href="/discover" className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors">
+                    Discover
+                  </Link>
+                  <div className="h-px bg-white/5 my-1 mx-1" />
+                  <Link href="/login" className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors">
+                    Sign In
+                  </Link>
+                </nav>
+                <div className="px-4 py-4 border-t border-white/5">
+                  <Link href="/register" className="flex items-center justify-center px-5 py-3.5 rounded-xl text-base font-bold bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-500/10 transition-colors">
                     Start Free Trial
                   </Link>
                 </div>

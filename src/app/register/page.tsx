@@ -6,10 +6,11 @@ import { registerOrganization, uploadSubscriptionProof } from '@/lib/actions/reg
 import {
   Building2, User, Mail, Phone, Lock, MapPin, Check,
   ChevronRight, ChevronLeft, Upload, CreditCard, Zap,
-  Shield, Crown, Loader2, CheckCircle2, Copy, ArrowRight,
+  Shield, Crown, Loader2, CheckCircle2, Copy, ArrowRight, ArrowLeft,
   ShieldCheck, BarChart3, Users
 } from 'lucide-react'
 import Link from 'next/link'
+import { Logo } from '@/components/shared/logo'
 
 // ─── Plan Data ───────────────────────────────────────────
 const PLANS = [
@@ -278,6 +279,17 @@ export default function RegisterPage() {
 
   return (
     <div className="dark flex min-h-screen w-full overflow-x-hidden bg-slate-950 text-white selection:bg-indigo-500/30">
+      {/* ── Mobile sticky top nav ── */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4 border-b border-white/5 bg-slate-950/90 backdrop-blur-md">
+        <Logo size="md" href="/" />
+        <Link
+          href="/"
+          className="flex items-center gap-1.5 text-sm text-indigo-300/70 hover:text-indigo-300 transition-colors font-medium"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Home
+        </Link>
+      </div>
       {/* ── Left Branding Panel ── */}
       <div className="relative hidden lg:w-1/2 overflow-hidden lg:flex lg:flex-col lg:justify-between border-r border-white/5 bg-slate-950">
         {/* Animated gradient orbs */}
@@ -300,14 +312,13 @@ export default function RegisterPage() {
         <div className="relative z-10 flex flex-1 flex-col justify-center px-12 xl:px-20">
           {/* Logo & tagline */}
           <div className="mb-14">
-            <Link href="/" className="mb-6 flex items-center gap-3 w-fit">
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl shadow-lg overflow-hidden bg-white/10">
-                <img src="/logo.png" alt="Company Logo" className="h-full w-full object-contain" />
-              </div>
-              <span className="text-2xl font-bold tracking-tight text-white">
-                Prop<span className="text-indigo-400">X</span>
-              </span>
-            </Link>
+            <div className="mb-6 flex items-center gap-4">
+              <Logo size="lg" href="/" />
+              <Link href="/" className="ml-auto flex items-center gap-1.5 text-xs text-indigo-300/60 hover:text-indigo-300 transition-colors">
+                <ArrowLeft className="h-3 w-3" />
+                Back to home
+              </Link>
+            </div>
             <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-white xl:text-5xl">
               Join the future of{' '}
               <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
@@ -349,19 +360,8 @@ export default function RegisterPage() {
       </div>
 
       {/* ── Right Form Panel ── */}
-      <div className="flex w-full items-center justify-center px-4 py-8 lg:w-1/2 lg:px-8 bg-slate-950 overflow-y-auto">
+      <div className="flex w-full items-center justify-center px-4 pb-8 pt-24 lg:pt-8 lg:w-1/2 lg:px-8 bg-slate-950 overflow-y-auto">
         <div className="w-full max-w-lg pb-12">
-          {/* Mobile-only logo */}
-          <div className="mb-8 flex items-center justify-center gap-3 lg:hidden mt-6">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl shadow-lg overflow-hidden bg-white/10">
-                <img src="/logo.png" alt="Company Logo" className="h-full w-full object-contain" />
-              </div>
-              <span className="text-xl font-bold tracking-tight text-white">
-                Prop<span className="text-indigo-400">X</span>
-              </span>
-            </Link>
-          </div>
 
           <div className="border border-white/10 bg-slate-900/60 shadow-2xl shadow-black/20 backdrop-blur-xl rounded-2xl p-4 sm:p-8">
             

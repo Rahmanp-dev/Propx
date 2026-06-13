@@ -1,12 +1,12 @@
 "use client"
 
-import { Menu } from "lucide-react"
-
+import { Menu, X, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { Sidebar } from "@/components/layout/sidebar"
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
+import Link from "next/link"
 
 export function MobileSidebar({ user }: { user?: any }) {
     const [open, setOpen] = useState(false)
@@ -20,11 +20,19 @@ export function MobileSidebar({ user }: { user?: any }) {
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                    <Menu />
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden h-9 w-9 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                    aria-label="Open navigation menu"
+                >
+                    <Menu className="h-5 w-5 text-gray-600" />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 bg-[#111827] border-r-gray-800 text-white w-72 max-w-[288px]">
+            <SheetContent
+                side="left"
+                className="p-0 bg-[#0f172a] border-r border-white/5 text-white w-72 max-w-[85vw]"
+            >
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 <Sidebar user={user} />
             </SheetContent>
