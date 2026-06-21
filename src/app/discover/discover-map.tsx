@@ -34,7 +34,7 @@ type MapBuilding = {
     longitude: number | null
     vacantCount: number
     totalFlats: number
-    rentRange: { min: number; max: number } | null
+    vacantRents: number[]
 }
 
 // Hyderabad center
@@ -191,11 +191,10 @@ export default function DiscoverMap({
                                     <span className="text-xs text-slate-400">{building.totalFlats} total</span>
                                 </div>
 
-                                {building.rentRange && (
+                                {building.vacantRents && building.vacantRents.length > 0 && (
                                     <p className="text-xs text-slate-300 mb-3">
                                         <span className="font-semibold text-white">
-                                            ₹{building.rentRange.min.toLocaleString('en-IN')}
-                                            {building.rentRange.min !== building.rentRange.max && ` – ₹${building.rentRange.max.toLocaleString('en-IN')}`}
+                                            {building.vacantRents.map((r: number) => `₹${r.toLocaleString('en-IN')}`).join(', ')}
                                         </span>
                                         <span className="text-slate-400">/month</span>
                                     </p>

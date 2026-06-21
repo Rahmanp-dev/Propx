@@ -54,8 +54,9 @@ export async function getDiscoverBuildings(filters?: {
                       typeof b.longitude === 'number' && isFinite(b.longitude) && b.longitude !== 0)
       .map((b) => {
       const vacantFlats = b.flats.filter((f) => f.status === "VACANT");
-      const allRents = b.flats.map((f) => f.rentAmount).filter((r) => r > 0);
-      const flatTypes = [...new Set(b.flats.map((f) => f.flatType))];
+      const vacantRents = vacantFlats.map((f) => f.rentAmount).filter((r) => r > 0);
+      const uniqueVacantRents = [...new Set(vacantRents)].sort((a, b) => a - b);
+      const flatTypes = [...new Set(vacantFlats.map((f) => f.flatType))];
 
       return {
         id: b.id,
@@ -71,10 +72,7 @@ export async function getDiscoverBuildings(filters?: {
         totalFlats: b.flats.length,
         vacantCount: vacantFlats.length,
         flatTypes,
-        rentRange:
-          allRents.length > 0
-            ? { min: Math.min(...allRents), max: Math.max(...allRents) }
-            : null,
+        vacantRents: uniqueVacantRents,
         clauseCount: b.clauses.length,
         hasCriticalClauses: b.clauses.some((c) => c.severity === "CRITICAL"),
       };
@@ -95,13 +93,13 @@ export async function getDiscoverBuildings(filters?: {
 
     if (filters?.minBudget && filters.minBudget > 0) {
       filtered = filtered.filter(
-        (b) => b.rentRange && b.rentRange.max >= filters.minBudget!,
+        (b) => b.vacantRents.length > 0 && Math.max(...b.vacantRents) >= filters.minBudget!,
       );
     }
 
     if (filters?.maxBudget && filters.maxBudget > 0) {
       filtered = filtered.filter(
-        (b) => b.rentRange && b.rentRange.min <= filters.maxBudget!,
+        (b) => b.vacantRents.length > 0 && Math.min(...b.vacantRents) <= filters.maxBudget!,
       );
     }
 
@@ -159,10 +157,9 @@ export async function getDiscoverBuildingDetail(buildingId: string) {
     }
 
     const vacantFlats = building.flats.filter((f) => f.status === "VACANT");
-    const allRents = building.flats
-      .map((f) => f.rentAmount)
-      .filter((r) => r > 0);
-    const flatTypes = [...new Set(building.flats.map((f) => f.flatType))];
+    const vacantRents = vacantFlats.map((f) => f.rentAmount).filter((r) => r > 0);
+    const uniqueVacantRents = [...new Set(vacantRents)].sort((a, b) => a - b);
+    const flatTypes = [...new Set(vacantFlats.map((f) => f.flatType))];
 
     // Group vacant flats by type for display
     const vacantByType: Record<
@@ -202,10 +199,7 @@ export async function getDiscoverBuildingDetail(buildingId: string) {
         totalFlats: building.flats.length,
         vacantCount: vacantFlats.length,
         flatTypes,
-        rentRange:
-          allRents.length > 0
-            ? { min: Math.min(...allRents), max: Math.max(...allRents) }
-            : null,
+        vacantRents: uniqueVacantRents,
         vacantByType,
         vacantFlats: vacantFlats.map(f => ({
           id: f.id,
@@ -282,7 +276,7 @@ export async function submitDiscoverInquiry(data: DiscoverInquiryInput) {
     }
 
     const client = await clientPromise;
-    const db = client.db("propx");
+    const db = client.db();
 
     const now = new Date();
     const doc = {
@@ -346,7 +340,7 @@ export async function logQRScan(
     if (!ObjectId.isValid(buildingId)) return;
 
     const client = await clientPromise;
-    const db = client.db("propx");
+    const db = client.db();
 
     await db.collection("QRScanLog").insertOne({
       buildingId: new ObjectId(buildingId),

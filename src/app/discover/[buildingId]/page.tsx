@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ buildingI
     const b = result.data
     return {
         title: `${b.name} — Flats for Rent | PropX Discover`,
-        description: `${b.vacantCount} flat${b.vacantCount !== 1 ? 's' : ''} available in ${b.name}, ${b.address}. ${b.rentRange ? `Rent from ₹${b.rentRange.min.toLocaleString('en-IN')}` : ''}. Managed on PropX.`,
+        description: `${b.vacantCount} flat${b.vacantCount !== 1 ? 's' : ''} available in ${b.name}, ${b.address}. ${b.vacantRents && b.vacantRents.length > 0 ? `Rent from ₹${Math.min(...b.vacantRents).toLocaleString('en-IN')}` : ''}. Managed on PropX.`,
         openGraph: {
             title: `${b.name} — PropX Discover`,
             description: `Verified rental flats available. Professional management by PropX.`,

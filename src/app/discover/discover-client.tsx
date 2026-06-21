@@ -281,11 +281,10 @@ function BuildingCard({
                     )}
                 </div>
 
-                {b.rentRange && (
+                {b.vacantRents && b.vacantRents.length > 0 && (
                     <p className={`text-slate-300 ${compact ? "text-xs" : "text-sm"}`}>
                         <span className="font-semibold text-white">
-                            ₹{b.rentRange.min.toLocaleString('en-IN')}
-                            {b.rentRange.min !== b.rentRange.max && ` – ₹${b.rentRange.max.toLocaleString('en-IN')}`}
+                            {b.vacantRents.map((r: number) => `₹${r.toLocaleString('en-IN')}`).join(', ')}
                         </span>
                         <span className="text-slate-500 text-xs">/month</span>
                     </p>

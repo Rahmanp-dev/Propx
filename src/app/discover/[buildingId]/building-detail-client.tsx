@@ -22,7 +22,7 @@ type BuildingData = {
     totalFlats: number
     vacantCount: number
     flatTypes: string[]
-    rentRange: { min: number; max: number } | null
+    vacantRents: number[]
     vacantByType: Record<string, { count: number; rentRange: { min: number; max: number } }>
     clauses: Array<{
         id: string
@@ -230,34 +230,20 @@ export function BuildingDetailClient({ building, utmSource }: { building: Buildi
                         </div>
                     </section>
 
-                    {/* Pricing Section */}
-                    {building.rentRange && (
+                    {/* Rent Section */}
+                    {building.vacantRents && building.vacantRents.length > 0 && (
                         <section>
                             <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                                 <Star className="h-5 w-5 text-amber-400" />
-                                Pricing
+                                Rent
                             </h2>
                             <div className="p-5 rounded-xl bg-slate-900 border border-white/5">
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-                                    <div>
-                                        <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Rent</div>
-                                        <div className="text-lg font-bold text-white mt-1">
-                                            ₹{building.rentRange.min.toLocaleString('en-IN')}
-                                            {building.rentRange.min !== building.rentRange.max && ` – ₹${building.rentRange.max.toLocaleString('en-IN')}`}
-                                        </div>
-                                        <div className="text-xs text-slate-600">per month</div>
+                                <div>
+                                    <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Exact Vacant Rent</div>
+                                    <div className="text-lg font-bold text-white mt-1">
+                                        {building.vacantRents.map(r => `₹${r.toLocaleString('en-IN')}`).join(', ')}
                                     </div>
-                                    <div>
-                                        <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Electricity</div>
-                                        <div className="text-lg font-bold text-white mt-1">₹{building.ratePerUnit}</div>
-                                        <div className="text-xs text-slate-600">per unit</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Flat Types</div>
-                                        <div className="text-lg font-bold text-white mt-1">
-                                            {building.flatTypes.map(t => FLAT_TYPE_LABELS[t] || t).join(', ')}
-                                        </div>
-                                    </div>
+                                    <div className="text-xs text-slate-600">per month</div>
                                 </div>
                             </div>
                         </section>
